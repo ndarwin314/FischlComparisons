@@ -40,9 +40,9 @@ class Fischl:
         burstTalent = burstTalent if constellation < 5 else burstTalent + 3
         self.constellation = constellation
         self.skillTurret = self.skillTurretBase * scalingMultiplier[skillTalent]
-        self.skillCast = self.skillCastBase * scalingMultiplier[skillTalent] + 2 if constellation > 1 else 0
+        self.skillCast = self.skillCastBase * scalingMultiplier[skillTalent] + (2 if constellation > 1 else 0)
         # technically c4 is a separate damage instance but it does not make a big difference
-        self.burst = self.burstBase * scalingMultiplier[burstTalent] + 2.22 if constellation > 4 else 0
+        self.burst = self.burstBase * scalingMultiplier[burstTalent] + (2.22 if constellation > 3 else 0)
         self.level = 90
         self.turretHits = 10 if constellation < 6 else 12
         self.stats = Stats({Attr.HPBASE: 9189, Attr.ATKBASE: 244, Attr.DEFBASE: 594, Attr.ATKP: 0.24,
@@ -196,7 +196,7 @@ class Fischl:
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += 12 * self.a4_damage(currentStats)
         if self.constellation == 6:
-            damage += 17 * self.a4_damage(currentStats)
+            damage += 17 * self.c6_damage(currentStats)
         self.reset()
         return damage
 
@@ -225,7 +225,7 @@ class Fischl:
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += a4procs / 2 * self.a4_damage(currentStats)
         if self.constellation == 6:
-            damage += c6procs / 2 * self.a4_damage(currentStats)
+            damage += c6procs / 2 * self.c6_damage(currentStats)
 
         # cast skill after oz duration ends
         if isinstance(self.weapon, bows.PolarStar):
@@ -245,7 +245,7 @@ class Fischl:
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += a4procs / 2 * self.a4_damage(currentStats)
         if self.constellation == 6:
-            damage += c6procs / 2 * self.a4_damage(currentStats)
+            damage += c6procs / 2 * self.c6_damage(currentStats)
         self.reset()
         return damage
 
@@ -258,7 +258,7 @@ class Fischl:
         self.buffs[Attr.ATKP] = 0.2
         # kazuha buffs
         self.buffs[Attr.ELEMENTDMG] = 0.384
-        self.resMultiplier = 0.85
+        self.resMultiplier = 1.15
         # raiden buffs
         self.buffs[Attr.QDMG] = 0.18
 
@@ -284,10 +284,10 @@ class Fischl:
             # physical proc
             damage += 0.6 * 1.25 + currentStats.get_crit_multiplier() * currentStats.get_attack()
         damage += self.turret_damage(currentStats, self.turretHits)
-        damage += 2 * self.a4_damage(currentStats)
+        damage += 1 * self.a4_damage(currentStats)
         if self.constellation == 6:
             # assuming 3n3c n1c and a one extra proc somewhere
-            damage += 12 * self.a4_damage(currentStats)
+            damage += 11 * self.c6_damage(currentStats)
         if isinstance(self.weapon, bows.ElegyForTheEnd):
             self.weapon.set_passive(True)
             currentStats = self.get_stats()
@@ -299,19 +299,17 @@ class Fischl:
         damage += self.turret_damage(currentStats, 5)
         damage += 2 * self.a4_damage(currentStats)
         if self.constellation == 6:
-            damage += 2 * self.a4_damage(currentStats)
+            damage += 3 * self.c6_damage(currentStats)
 
         # second rotation, no fischl e
-        if self.constellation == 6:
-            damage += 2 * self.a4_damage(currentStats)
         damage += self.burst_damage(currentStats)
         if isinstance(self.weapon, bows.SkywardHarp):
             # physical proc
             damage += 0.6 * 1.25 + currentStats.get_crit_multiplier() * currentStats.get_attack()
         damage += self.turret_damage(currentStats, self.turretHits)
-        damage += 3 * self.a4_damage(currentStats)
+        damage += 2 * self.a4_damage(currentStats)
         if self.constellation == 6:
             # assuming 3n3c n1c and a one extra proc somewhere
-            damage += 12 * self.a4_damage(currentStats)
+            damage += 11 * self.c6_damage(currentStats)
         self.reset()
         return damage

@@ -67,7 +67,7 @@ class Water(Weapon):
 
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CD: 0.882, Attr.DMG: 0.15 + 0.05 * refinement,
-                                            Attr.HPP: 0.12 + 0.04 * refinement}), "Aqua")
+                                            Attr.HPP: 0.12 + 0.04 * refinement}), "redacted")
 
 
 class Rust(Weapon):
