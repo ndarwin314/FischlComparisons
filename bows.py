@@ -9,12 +9,18 @@ class Weapon:
         self.conditionalStats = Stats()
         self.refinement = refinement
         self.name = name
+        self.proc_chance = 0
+        self.proc_scaling = 0
 
     def get_stats(self):
         return self.stats + self.conditionalStats
 
     def __repr__(self):
         return f"{self.name} Refinement {self.refinement}"
+
+    def damage_proc(self, stats, chances=1):
+        return self.proc_scaling * stats.get_attack() * stats.get_crit_multiplier() * \
+                (1 + stats[Attr.PHYSDMG] + stats[Attr.DMG]) * (1 - (1-self.proc_chance) ** chances)
 
 
 class PolarStar(Weapon):
@@ -30,18 +36,20 @@ class PolarStar(Weapon):
         self.conditionalStats[Attr.ATKP] = stacks * self._stackValue + 0.8 * (1 if stacks == 4 else 0)
 
 
-
-
 class ThunderingPulse(Weapon):
-
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.ATKP: 0.15 + 0.05 * refinement}), "Pulse")
+        # do something for stacks, currently assuming flat 2
+        super().__init__(refinement,
+                         Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.ATKP: 0.15 + 0.05 * refinement,
+                                Attr.NADMG: 0.18 + 0.6*refinement}),
+                         "Pulse")
 
 
 class AmosBow(Weapon):
 
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.ATKP: 0.496}), "Amos")
+        buff = 0.09 + 0.03*refinement
+        super().__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.ATKP: 0.496, Attr.NADMG: buff, Attr.CADMG: buff}), "Amos")
 
 class ElegyForTheEnd(Weapon):
 
@@ -56,11 +64,12 @@ class ElegyForTheEnd(Weapon):
             self.conditionalStats[Attr.EM] = 75 + 25 * self.refinement
 
 
-
 class SkywardHarp(Weapon):
 
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 674, Attr.CR: 0.221, Attr.CD: 0.15 + 0.05 * refinement}), "Harp")
+        self.proc_chance = 0.5 + 0.1*refinement
+        self.proc_scaling = 1.25
 
 
 class Water(Weapon):
@@ -72,8 +81,8 @@ class Water(Weapon):
 
 class Rust(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461}), "Rust")
-        self._conditionalActive = False
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461,
+                                            Attr.NADMG: 0.3*0.1*refinement, Attr.CADMG: -0.1}), "Rust")
 
 
 class PrototypeCrescent(Weapon):
@@ -91,6 +100,8 @@ class TheViridescentHunt(Weapon):
 
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.CR: 0.276}), "Hunt")
+        self.proc_chance = 0.5
+        self.proc_scaling = (0.4 + 0.1*refinement) * 8
 
 
 class AlleyHunter(Weapon):
@@ -134,11 +145,13 @@ class FavoniusWarbow(Weapon):
 
 class Hamayumi(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.ATKP: 0.551}), "Hamayumi")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.ATKP: 0.551,
+                                            Attr.NADMG: 0.12 * refinement*5, Attr.CADMG: 0.09 + 0.03*refinement}),
+                         "Hamayumi")
 
 class MitternachtsWaltz(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510}), "Waltz")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.PHYSDMG: 0.517}), "Waltz")
         self.passive_active = False
 
     def set_passive(self, value):

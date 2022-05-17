@@ -1,5 +1,6 @@
 from enum import Enum
 import numpy as np
+from functools import cache
 
 class Attr(Enum):
     HPP = 0
@@ -18,12 +19,15 @@ class Attr(Enum):
     DMG = 13
     EDMG = 14
     QDMG = 15
-    ELEMENTDMG = 16
+    NADMG = 16
+    CADMG = 17
+    ELEMENTDMG = 18
+    PHYSDMG = 19
 
 class Stats:
 
     def __init__(self, dict=None):
-        self.attributes = np.zeros(17)
+        self.attributes = np.zeros(20)
         if isinstance(dict, np.ndarray):
             self.attributes = dict
             return
@@ -44,12 +48,15 @@ class Stats:
     def __repr__(self):
         return str([(m.name, round(self[m], 3)) for m in list(Attr)])
 
+    @cache
     def get_crit_multiplier(self):
         return 1 + self[Attr.CD]*min(self[Attr.CR], 1)
 
+    @cache
     def get_attack(self):
         return self[Attr.ATKBASE] * (1 + self[Attr.ATKP]) + self[Attr.ATK]
 
+    @cache
     def transformative_multiplier(self):
         level = 90
         levelMultiplier = 0.00194 * level**3-0.319*level*level+30.7*level-868
