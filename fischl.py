@@ -1,6 +1,9 @@
-from attributes import Attr, Stats
+import attributes
+from attributes import Attr, Stats, ArtifactSlots
 import bows
 from enum import Enum
+from functools import cache
+
 
 scalingMultiplier = [0,
                      1,
@@ -43,6 +46,7 @@ class Set(Enum):
     TF = 0
     ATK = 1
     TS = 2
+    G = 3
 
 
 class Fischl:
@@ -55,7 +59,18 @@ class Fischl:
     A4 = 0.8
     C6 = 0.3
 
-    def __init__(self, autoTalent, skillTalent, burstTalent, constellation, weapon, artifact_set=(Set.TF, Set.ATK)):
+    mainStats = {ArtifactSlots.FLOWER: Attr.HP,
+                 ArtifactSlots.FEATHER: Attr.ATK,
+                 ArtifactSlots.SANDS: Attr.ATKP,
+                 ArtifactSlots.GOBLET: Attr.ELEMENTDMG}
+    mainStatValues = {ArtifactSlots.FLOWER: 4780,
+                      ArtifactSlots.FEATHER: 311,
+                      ArtifactSlots.SANDS: 0.466,
+                      ArtifactSlots.GOBLET: 0.466,
+                      ArtifactSlots.CIRCLET: 0.311}
+
+    def __init__(self, autoTalent, skillTalent, burstTalent, constellation, weapon, artifact_set=(Set.TF, Set.ATK),
+                 gambler_slots=None):
         skillTalent = skillTalent if constellation < 3 else skillTalent + 3
         burstTalent = burstTalent if constellation < 5 else burstTalent + 3
         self.constellation = constellation
@@ -70,64 +85,95 @@ class Fischl:
         self.stats = Stats({Attr.HPBASE: 9189, Attr.ATKBASE: 244, Attr.DEFBASE: 594, Attr.ATKP: 0.24,
                             Attr.CR: 0.05, Attr.CD: 0.5, Attr.ER: 1})
         self.buffs = Stats()
-        self.artifactStats = Stats({Attr.HP: 4780, Attr.ATK: 311, Attr.ATKP: 0.466, Attr.ELEMENTDMG: 0.466})
+        self.artifactStats = Stats()
+        self.fourStarRolls = 0
+        self.fourStarSlots = gambler_slots
+        self.gambler = False
+        for SET in artifact_set:
+            match SET:
+                case Set.TF:
+                    self.artifactStats[Attr.ELEMENTDMG] += 0.15
+                case Set.ATK:
+                    self.artifactStats[Attr.ATKP] += 0.18
+                case Set.TS:
+                    self.artifactStats[Attr.DMG] += 0.35
+                case Set.G:
+                    self.artifactStats[Attr.EDMG] += 0.2
+                    # kqm standards assume 40 susbtats which is 8 per artifact which is min
+                    # so for four-star artifacts i assume 6 rolls which is min
+                    self.fourStarRolls = 12
+                    self.gambler = True
         self.weapon = weapon
         self.resMultiplier = 0.9
         self.defMultiplier = 19 / 39
-        for set in artifact_set:
-            if set == Set.TF:
-                self.artifactStats[Attr.ELEMENTDMG] += 0.15
-            elif set == Set.ATK:
-                self.artifactStats[Attr.ATKP] += 0.18
-            elif set == Set.TS:
-                self.artifactStats[Attr.DMG] += 0.35
 
     def reset(self):
         self.buffs = Stats()
         self.weapon.conditionalStats = Stats()
         self.resMultiplier = 0.9
 
+    #@cache
     def get_stats(self):
         return self.stats + self.buffs + self.weapon.get_stats() + self.artifactStats
 
     def kqm_optimize(self, rotation, er_requirement=1, sweaty=False):
+
         # distribute 2 rolls into each stat
+        # for generosity assume that half the four-star rolls are here and are into bad stats
         substatCounts = {Attr(i): 2 for i in range(10)}
-        currentStats = self.get_stats()
+
+        # add rolls to artifact stats
+        self.artifactStats += Stats({k: v * substatValues[k] for k, v in substatCounts.items()})
+
+        # deduct rolls for 4* artifact
+        substatRolls = 20 - 4 * self.gambler
+
+        # add main stats
+        crCap = 10
+        cdCap = 10
+        for slot in ArtifactSlots:
+            if self.gambler and slot in self.fourStarSlots:
+                m = attributes.fourStarMultiplier
+            else:
+                m = 1
+            if slot == ArtifactSlots.CIRCLET:
+                currentStats = self.get_stats()
+                if currentStats[Attr.CD] > 2 * currentStats[Attr.CR]:
+                    self.artifactStats[Attr.CR] += 0.311 * m
+                    crCap -= 2
+                else:
+                    self.artifactStats[Attr.CD] += 0.622 * m
+                    cdCap -= 2
+            else:
+                self.artifactStats[self.mainStats[slot]] += self.mainStatValues[slot] * m
+
         # distribute enough ER rolls
-        substatRolls = 20
+        currentStats = self.get_stats()
         while currentStats[Attr.ER] + substatCounts[Attr.ER] * substatValues[Attr.ER] < er_requirement:
             substatCounts[Attr.ER] += 1
             substatRolls -= 1
             if substatRolls == 0:
                 pass
 
-        # add rolls to artifact stats
-        self.artifactStats += Stats({k: v * substatValues[k] for k, v in substatCounts.items()})
 
-        # add circlet to balance ratio
-        currentStats = self.get_stats()
-        crCap = 10
-        cdCap = 10
-        if currentStats[Attr.CD] > 2 * currentStats[Attr.CR]:
-            self.artifactStats[Attr.CR] += 0.311
-            crCap -= 2
-        else:
-            self.artifactStats[Attr.CD] += 0.622
-            cdCap -= 2
         # greedy algorithm search for good substats
         goodSubstats = {Attr.CR: crCap, Attr.CD: cdCap, Attr.ATKP: 8, Attr.EM: 10}
         bestDamage = 0
         bestRoll = None
+        m = 1
         for i in range(substatRolls):
+            # distribute last 6 stats as lowered value because four-star
+            if i == substatRolls - 6 and self.gambler:
+                m = 0.8
             for k, v in goodSubstats.items():
-                self.artifactStats[k] += substatValues[k]
+                value = m * substatValues[k]
+                self.artifactStats[k] += value
                 damage = rotation(sweaty=sweaty)
                 if bestDamage < damage:
                     bestDamage = damage
                     bestRoll = k
-                self.artifactStats[k] -= substatValues[k]
-            self.artifactStats[bestRoll] += substatValues[bestRoll]
+                self.artifactStats[k] -= value
+            self.artifactStats[bestRoll] += m * substatValues[bestRoll]
             goodSubstats[bestRoll] -= 1
             # if you run out of allotted rolls, remove that stat
             if goodSubstats[bestRoll] <= 0:
@@ -184,7 +230,6 @@ class Fischl:
         if isinstance(self.weapon, bows.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
-
             currentStats = self.get_stats()
             damage += self.n1_damage(currentStats)
             damage += self.aim_damage(currentStats)
@@ -197,7 +242,6 @@ class Fischl:
                 self.weapon.set_passive(True)
             elif isinstance(self.weapon, bows.PolarStar):
                 self.weapon.set_stacks(2)
-
         currentStats = self.get_stats()
         # use burst
         damage += self.burst_damage(currentStats)

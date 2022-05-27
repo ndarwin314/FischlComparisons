@@ -2,6 +2,9 @@ from enum import Enum
 import numpy as np
 from functools import cache
 
+# approx
+fourStarMultiplier = 0.746
+
 class Attr(Enum):
     HPP = 0
     HP = 1
@@ -23,6 +26,13 @@ class Attr(Enum):
     CADMG = 17
     ELEMENTDMG = 18
     PHYSDMG = 19
+
+class ArtifactSlots(Enum):
+    FLOWER = 0
+    FEATHER = 1
+    SANDS = 2
+    GOBLET = 3
+    CIRCLET = 4
 
 class Stats:
 
@@ -56,9 +66,10 @@ class Stats:
     def get_attack(self):
         return self[Attr.ATKBASE] * (1 + self[Attr.ATKP]) + self[Attr.ATK]
 
-    @cache
+    #@cache
     def transformative_multiplier(self):
-        level = 90
-        levelMultiplier = 0.00194 * level**3-0.319*level*level+30.7*level-868
+        #level = 90
+        #levelMultiplier = 0.00194 * level**3-0.319*level*level+30.7*level-868
+        levelMultiplier = 725.26
         emMultiplier = 1 + 16 * self[Attr.EM] / (2000 + self[Attr.EM])
         return levelMultiplier * emMultiplier
