@@ -116,7 +116,7 @@ class Fischl:
     def get_stats(self):
         return self.stats + self.buffs + self.weapon.get_stats() + self.artifactStats
 
-    def kqm_optimize(self, rotation, er_requirement=1, sweaty=False):
+    def kqm_optimize(self, rotation, sweaty=False):
 
         # distribute 2 rolls into each stat
         # for generosity assume that half the four-star rolls are here and are into bad stats
@@ -149,12 +149,21 @@ class Fischl:
 
         # distribute enough ER rolls
         currentStats = self.get_stats()
+        er_requirement = 1
+        # this is a hack and a bad one at that
+        match rotation:
+            case self.rotation_sukokomon:
+                er_requirement = 1.4
+            case self.rotation_raifish:
+                er_requirement = 1.1
+        if self.constellation != 6:
+            # rough estimate
+            er_requirement += 0.1
         while currentStats[Attr.ER] + substatCounts[Attr.ER] * substatValues[Attr.ER] < er_requirement:
             substatCounts[Attr.ER] += 1
             substatRolls -= 1
             if substatRolls == 0:
                 pass
-
 
         # greedy algorithm search for good substats
         goodSubstats = {Attr.CR: crCap, Attr.CD: cdCap, Attr.ATKP: 8, Attr.EM: 10}
@@ -224,6 +233,8 @@ class Fischl:
 
     def ol_damage(self, stats):
         return 4 * self.resMultiplier * stats.transformative_multiplier()
+
+
 
     def rotation_sukokomon(self, sweaty=True):
         damage = 0

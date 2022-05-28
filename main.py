@@ -4,7 +4,9 @@ from bows import *
 import csv
 import time
 from attributes import *
-from random import random as r
+
+
+
 
 
 def artifact_set_name(array):
@@ -21,10 +23,6 @@ def artifact_set_name(array):
 
 def main():
     start = time.time()
-    weapons = (PolarStar, Water, SkywardHarp, ThunderingPulse, AmosBow, ElegyForTheEnd,
-               PrototypeCrescent, TheStringless, MouunsMoon,
-               WindblumeOde, AlleyHunter, TheViridescentHunt, FavoniusWarbow,
-               SacrificialBow, MitternachtsWaltz, Hamayumi, Rust)
     # weapons = (PolarStar(), ThunderingPulse(), SkywardHarp(), Water())
     artifactSets = [[Set.TF, Set.ATK], [Set.ATK, Set.ATK], [Set.TF], [Set.ATK], [], [Set.TS]]
     CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
@@ -40,17 +38,13 @@ def main():
                     row.append(str(test.kqm_optimize(test.rotation_raifish, sweaty=True)))
             CSV.append(row)
     print(time.time() - start)
-    with open('raifish3.csv', 'w', newline='') as csvfile:
+    with open('raifish.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         for line in CSV:
             writer.writerow(line)
 
 def yelan_moment():
     start = time.time()
-    weapons = (PolarStar, Water, SkywardHarp, ThunderingPulse, AmosBow, ElegyForTheEnd,
-               PrototypeCrescent, TheStringless, MouunsMoon,
-               WindblumeOde, AlleyHunter, TheViridescentHunt, FavoniusWarbow,
-               SacrificialBow, MitternachtsWaltz, Hamayumi, Rust)
     artifactSets = [[Set.G, Set.ATK], [Set.G, Set.TF], [Set.G]]
     # this is bad code but it runs once so idc
     slots = []
@@ -81,6 +75,10 @@ def yelan_moment():
 
 
 if __name__ == '__main__':
+    weapons = (PolarStar, Water, SkywardHarp, ThunderingPulse, AmosBow, ElegyForTheEnd,
+               PrototypeCrescent, TheStringless, MouunsMoon,
+               WindblumeOde, AlleyHunter, TheViridescentHunt, FavoniusWarbow,
+               SacrificialBow, MitternachtsWaltz, Hamayumi, Rust, Twilight)
     yelan_moment()
-    #main()
+    main()
 

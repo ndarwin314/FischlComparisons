@@ -76,7 +76,7 @@ class Water(Weapon):
 
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CD: 0.882, Attr.DMG: 0.15 + 0.05 * refinement,
-                                            Attr.HPP: 0.12 + 0.04 * refinement}), "redacted")
+                                            Attr.HPP: 0.12 + 0.04 * refinement}), "Aqua")
 
 
 class Rust(Weapon):
@@ -157,3 +157,9 @@ class MitternachtsWaltz(Weapon):
     def set_passive(self, value):
         self.passive_active = value
         self.conditionalStats[Attr.EDMG] = (0.15 + 0.05 * self.refinement) * value
+
+class Twilight(Weapon):
+    def __init__(self, refinement=1):
+        # assuming constant middle state cause idgaf
+        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ER: 0.306, Attr.DMG: 0.075 + 0.025*refinement}),
+                         "Twilight")
