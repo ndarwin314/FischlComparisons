@@ -4,9 +4,7 @@ from bows import *
 import csv
 import time
 from attributes import *
-
-
-
+import math
 
 
 def artifact_set_name(array):
@@ -63,14 +61,20 @@ def yelan_moment():
                         w = weapon(refinement=r)
                         test = fischl.Fischl(9, 9, 9, constellation=constellation,
                                              weapon=w, artifact_set=artifact, gambler_slots=slot)
-                        row.append(str(test.kqm_optimize(test.rotation_raifish, sweaty=True)))
+                        row.append(str(test.kqm_optimize(test.rotation_sukokomon, sweaty=True)))
                 CSV.append(row)
     print(time.time() - start)
-    with open('gamblerRaifish.csv', 'w', newline='') as csvfile:
+    with open('gamblerSukokomon.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         for line in CSV:
             writer.writerow(line)
 
+def test():
+    f = fischl.Fischl(9, 9, 9, constellation=6, weapon=PrototypeCrescent(), artifact_set=[Set.ATK, Set.G],
+                      gambler_slots=[ArtifactSlots.FLOWER, ArtifactSlots.FEATHER])
+    f.kqm_optimize(f.rotation_taser, sweaty=True)
+    print(f.artifactStats)
+    print(f.get_stats())
 
 
 
@@ -81,4 +85,5 @@ if __name__ == '__main__':
                SacrificialBow, MitternachtsWaltz, Hamayumi, Rust, Twilight)
     yelan_moment()
     main()
+    #test()
 

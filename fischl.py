@@ -78,7 +78,7 @@ class Fischl:
         self.skillCast = self.skillCastBase * scalingMultiplier[skillTalent] + (2 if constellation > 1 else 0)
         self.n1 = self.n1Base * autoMultiplier[autoTalent]
         self.aim = self.aimBase * autoMultiplier[autoTalent]
-        # technically c4 is a separate damage instance but it does not make a big difference
+        # technically c4 is a separate damage instance, but it does not make a big difference
         self.burst = self.burstBase * scalingMultiplier[burstTalent] + (2.22 if constellation > 3 else 0)
         self.level = 90
         self.turretHits = 10 if constellation < 6 else 12
@@ -116,7 +116,7 @@ class Fischl:
     def get_stats(self):
         return self.stats + self.buffs + self.weapon.get_stats() + self.artifactStats
 
-    def kqm_optimize(self, rotation, sweaty=False):
+    def kqm_optimize(self, rotation, sweaty=True):
 
         # distribute 2 rolls into each stat
         # for generosity assume that half the four-star rolls are here and are into bad stats
@@ -126,16 +126,15 @@ class Fischl:
         self.artifactStats += Stats({k: v * substatValues[k] for k, v in substatCounts.items()})
 
         # deduct rolls for 4* artifact
-        substatRolls = 20 - 4 * self.gambler
+        # 2 4* artifacts get 4 less substats, so to be generous assume half of those are fixed subs and are bad
+        # leaving the other half deducted from distributed subs
+        substatRolls = 20 - 4//2 * self.gambler
 
         # add main stats
         crCap = 10
         cdCap = 10
         for slot in ArtifactSlots:
-            if self.gambler and slot in self.fourStarSlots:
-                m = attributes.fourStarMultiplier
-            else:
-                m = 1
+            m = attributes.fourStarMultiplier if self.gambler and slot in self.fourStarSlots else 1
             if slot == ArtifactSlots.CIRCLET:
                 currentStats = self.get_stats()
                 if currentStats[Attr.CD] > 2 * currentStats[Attr.CR]:
@@ -171,6 +170,7 @@ class Fischl:
         bestRoll = None
         m = 1
         for i in range(substatRolls):
+            # assume that half the 4* substats are in bad fixed subs again to be generous
             # distribute last 6 stats as lowered value because four-star
             if i == substatRolls - 6 and self.gambler:
                 m = 0.8
@@ -193,7 +193,7 @@ class Fischl:
         # currently assuming no phys shred
         return self.weapon.damage_proc(stats, chances) * 0.9 * self.defMultiplier
 
-    def burst_damage(self, stats, targets=1):
+    def burst_damage(self, stats, targets=2):
         return self.burst * stats.get_crit_multiplier() * stats.get_attack() * targets * \
                (1 + stats[Attr.DMG] + stats[Attr.ELEMENTDMG] + stats[Attr.QDMG]) * \
                self.resMultiplier * self.defMultiplier
@@ -213,7 +213,7 @@ class Fischl:
                (1 + stats[Attr.DMG] + stats[Attr.ELEMENTDMG] + stats[Attr.EDMG]) * \
                self.resMultiplier * self.defMultiplier
 
-    def skill_cast(self, stats, targets=1):
+    def skill_cast(self, stats, targets=2):
         return self.skillCast * stats.get_crit_multiplier() * stats.get_attack() * targets * \
                (1 + stats[Attr.DMG] + stats[Attr.ELEMENTDMG] + stats[Attr.EDMG]) * \
                self.resMultiplier * self.defMultiplier
@@ -231,10 +231,8 @@ class Fischl:
     def ec_damage(self, stats):
         return 2.4 * self.resMultiplier * stats.transformative_multiplier()
 
-    def ol_damage(self, stats):
-        return 4 * self.resMultiplier * stats.transformative_multiplier()
-
-
+    def ol_damage(self, stats, targets=2):
+        return 4 * targets * self.resMultiplier * stats.transformative_multiplier()
 
     def rotation_sukokomon(self, sweaty=True):
         damage = 0
@@ -245,7 +243,6 @@ class Fischl:
             damage += self.n1_damage(currentStats)
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
-            # TODO: the formula here is slightly inaccurate since you would have multiple chances to proc the passive
             damage += self.proc_damage(currentStats, 2)
             if isinstance(self.weapon, bows.PrototypeCrescent):
                 self.weapon.set_passive(True)
@@ -359,13 +356,156 @@ class Fischl:
         self.reset()
         return damage
 
-    def rotation_raifish(self, sweaty=False):
+    # https://gcsim.app/viewer/share/RCw_vsIA5xH8GdanvKGIM
+    def rotation_taser(self, sweaty=True):
+        damage = 0
+
+        if isinstance(self.weapon, bows.AlleyHunter):
+            self.weapon.set_stacks(10)
+        elif sweaty:
+            currentStats = self.get_stats()
+            damage += self.n1_damage(currentStats)
+            damage += self.aim_damage(currentStats)
+            # skyward harp / hunt proc
+            if isinstance(self.weapon, bows.PrototypeCrescent):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.PolarStar):
+                self.weapon.set_stacks(2)
+        # rotation 1
+        # use burst
+        currentStats = self.get_stats()
+        damage += self.proc_damage(currentStats, 2)
+        damage += self.burst_damage(currentStats, 2)
+        damage += 4 * self.ec_damage(currentStats)
+        damage += self.turret_damage(currentStats, 2)
+        damage += 3 * self.a4_damage(currentStats)
+        damage += (self.constellation == 6) * 2 * self.c6_damage(currentStats)
+
+        # sucrose swirls
+        self.buffs[Attr.EM] += 200
+        self.resMultiplier = 1.15
+        currentStats = self.get_stats()
+        
+        damage += self.turret_damage(currentStats, self.turretHits * 2 + 5)
+        damage += 28 * self.a4_damage(currentStats)
+        damage += (self.constellation == 6) * 34 * self.c6_damage(currentStats)
+        damage += 10 * self.ec_damage(currentStats)
+        damage += self.skill_cast(currentStats)
+        damage += self.burst_damage(currentStats, 2)
+        if isinstance(self.weapon, bows.SkywardHarp):
+            damage += 2 * self.proc_damage(currentStats, 2)
+        if isinstance(self.weapon, bows.TheViridescentHunt):
+            damage += 1 * self.proc_damage(currentStats, 2)
+
+        """damage += self.turret_damage(currentStats, self.turretHits - 2)
+        damage += 7 * self.a4_damage(currentStats)
+        damage += (self.constellation == 6) * 11 * self.c6_damage(currentStats)
+
+
+        #recast oz first rotaion
+        damage += self.skill_cast(currentStats, 2)
+        damage += self.turret_damage(currentStats, 7)
+        damage += 3 * self.ec_damage(currentStats)
+        damage += 7 * self.a4_damage(currentStats)
+        damage += self.proc_damage(currentStats, 2)
+        damage += (self.constellation == 6) * 10 * self.c6_damage(currentStats)
+
+        # second rotation
+        damage += self.burst_damage(currentStats, 2)
+        damage += 7 * self.ec_damage(currentStats)
+        damage += self.turret_damage(currentStats, self.turretHits)
+        damage += 14 * self.a4_damage(currentStats)
+        damage += (self.constellation == 6) * 13 * self.c6_damage(currentStats)
+        if isinstance(self.weapon, bows.SkywardHarp):
+            damage += self.proc_damage(currentStats, 2)"""
+
+        self.reset()
+        return damage
+
+
+    def rotation_raifish(self, sweaty=True):
         damage = 0
         # bennett buffs
         self.buffs[Attr.ATK] = 1119
         self.buffs[Attr.ATKP] = 0.2
         # kazuha buffs
         self.buffs[Attr.ELEMENTDMG] = 0.384
+        self.resMultiplier = 1.15
+        # raiden buffs
+        self.buffs[Attr.QDMG] = 0.18
+
+        if isinstance(self.weapon, bows.AlleyHunter):
+            self.weapon.set_stacks(10)
+        elif sweaty:
+            currentStats = self.get_stats()
+            damage += self.n1_damage(currentStats)
+            damage += self.aim_damage(currentStats)
+            # skyward harp / hunt proc
+            damage += self.proc_damage(currentStats, 2)
+            if isinstance(self.weapon, bows.PrototypeCrescent):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.PolarStar):
+                self.weapon.set_stacks(2)
+        # use burst
+        """elif isinstance(self.weapon, bows.ElegyForTheEnd):
+            # realistically this is only possible second rotation onward and even then the uptime is sus
+            self.weapon.set_passive(True)"""
+        currentStats = self.get_stats()
+        damage += self.burst_damage(currentStats)
+        damage += self.ol_damage(currentStats)
+        damage += self.turret_damage(currentStats, self.turretHits)
+        damage += 1 * self.a4_damage(currentStats)
+        if self.constellation == 6:
+            # assuming 3n3c n1c and a one extra proc somewhere
+            damage += 11 * self.c6_damage(currentStats)
+        if isinstance(self.weapon, bows.ElegyForTheEnd):
+            self.weapon.set_passive(True)
+            currentStats = self.get_stats()
+        # resummon oz before second rotation but only get 5 hits
+        if isinstance(self.weapon, bows.PolarStar) and not sweaty:
+            self.weapon.set_stacks(1)
+        elif sweaty:
+            currentStats = self.get_stats()
+            damage += self.n1_damage(currentStats)
+            damage += self.aim_damage(currentStats)
+            # skyward harp / hunt proc
+            damage += self.proc_damage(currentStats, 2)
+            if isinstance(self.weapon, bows.PrototypeCrescent):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+                self.weapon.set_passive(True)
+            elif isinstance(self.weapon, bows.PolarStar):
+                self.weapon.set_stacks(3)
+        damage += self.skill_cast(currentStats)
+        damage += self.turret_damage(currentStats, 5)
+        damage += 2 * self.a4_damage(currentStats)
+        if self.constellation == 6:
+            damage += 3 * self.c6_damage(currentStats)
+
+        # second rotation, no fischl e
+        damage += self.burst_damage(currentStats)
+        if isinstance(self.weapon, bows.SkywardHarp):
+            damage += self.proc_damage(currentStats, 2)
+        damage += self.turret_damage(currentStats, self.turretHits)
+        damage += 2 * self.a4_damage(currentStats)
+        if self.constellation == 6:
+            # assuming 3n3c n1c and a one extra proc somewhere
+            damage += 11 * self.c6_damage(currentStats)
+        self.reset()
+        return damage
+
+    def rotation_raifishSuc(self, sweaty=True):
+        damage = 0
+        # bennett buffs
+        self.buffs[Attr.ATK] = 1119
+        self.buffs[Attr.ATKP] = 0.2
+        # kazuha buffs
+        self.buffs[Attr.EM] = 200
+        #self.buffs[Attr.ELEMENTDMG] = 0.384
         self.resMultiplier = 1.15
         # raiden buffs
         self.buffs[Attr.QDMG] = 0.18
