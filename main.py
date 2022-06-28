@@ -1,18 +1,16 @@
-import fischl
-from fischl import Set
-from weapons import *
+#import fischl
+#from fischl import Set
 import csv
 import time
-from attributes import *
-import math
 from rotation import*
 import character
-import artifacts as art
+from actions import Skill, Charged, Normal, Burst, Swap, Reaction
+from weapons import*
 
-weapons = (PolarStar, Water, SkywardHarp, ThunderingPulse, AmosBow, ElegyForTheEnd,
+"""weapons = (PolarStar, Water, SkywardHarp, ThunderingPulse, AmosBow, ElegyForTheEnd,
                PrototypeCrescent, TheStringless, MouunsMoon,
                WindblumeOde, AlleyHunter, TheViridescentHunt, FavoniusWarbow,
-               SacrificialBow, MitternachtsWaltz, Hamayumi, Rust, Twilight)
+               SacrificialBow, MitternachtsWaltz, Hamayumi, Rust, Twilight)"""
 
 def artifact_set_name(array):
     if not array:
@@ -141,11 +139,14 @@ rot = [Skill(0, 0),
                      Normal(3, 18.5, 1),
                      ]
 if __name__ == '__main__':
-    test = Rotation(rot,[character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl()])
-    test.do_rotation()
-    print(test.damage / 19)
-    print({char: d/19 for char, d in test.damageDict.items()})
-    test = Rotation(rot,
+    we = [AlleyHunter(refinement=1), AlleyHunter(refinement=5), ThunderingPulse(refinement=1), PolarStar(refinement=1),
+          Water(refinement=1), ElegyForTheEnd(refinement=1)]
+    for w in we:
+        test = Rotation(rot, [character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl(weapon=w)])
+        test.do_rotation()
+        print(test.damage / 19)
+        print({char: d/19 for char, d in test.damageDict.items()})
+    """test = Rotation(rot,
                     [character.Raiden(), character.Bennett(), character.Kazuha(),
                      character.Fischl(artifact_set=(art.SetCount(art.Set.TOM, 4),))])
     test.do_rotation()
@@ -156,7 +157,7 @@ if __name__ == '__main__':
                      character.Fischl(artifact_set=(art.SetCount(art.Set.TS, 4),))])
     test.do_rotation()
     print(test.damage / 19)
-    print({char: d / 19 for char, d in test.damageDict.items()})
+    print({char: d / 19 for char, d in test.damageDict.items()})"""
 
 
 

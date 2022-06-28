@@ -3,25 +3,30 @@ import math
 
 class Summon(ABC):
 
-    def __init__(self, stats, who_summoned, start, duration):
+    def __init__(self, stats, who_summoned, start, duration, rotation):
         self.stats = stats
         self.summoner = who_summoned
         self.endTime = math.ceil(60*(start + duration))
         self.start = start
         self.duration = duration
         self.buffs = []
+        self.rotation = rotation
 
-    def on_frame(self, rotation):
+    def on_frame(self):
         pass
 
     @abstractmethod
-    def summon(self, rotation):
-        for s in rotation.summons:
+    def summon(self):
+        for s in self.rotation.summons:
             if type(self) == type(s):
-                rotation.summons.remove(s)
-        rotation.summons.append(self)
+                self.rotation.summons.remove(s)
+        self.rotation.summons.append(self)
 
     @abstractmethod
-    def recall(self, rotation):
-        rotation.summons.remove(self)
+    def recall(self):
+        self.rotation.summons.remove(self)
+
+    @property
+    def time(self):
+        return self.rotation.time
 
