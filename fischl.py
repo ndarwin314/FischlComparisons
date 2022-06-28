@@ -1,6 +1,6 @@
 import attributes
 from attributes import Attr, Stats, ArtifactSlots
-import bows
+import weapons
 from enum import Enum
 from functools import cache
 
@@ -59,10 +59,10 @@ class Fischl:
     A4 = 0.8
     C6 = 0.3
 
-    mainStats = {ArtifactSlots.FLOWER: Attr.HP,
+    """mainStats = {ArtifactSlots.FLOWER: Attr.HP,
                  ArtifactSlots.FEATHER: Attr.ATK,
                  ArtifactSlots.SANDS: Attr.ATKP,
-                 ArtifactSlots.GOBLET: Attr.ELEMENTDMG}
+                 ArtifactSlots.GOBLET: Attr.ELEMENTDMG}"""
     mainStatValues = {ArtifactSlots.FLOWER: 4780,
                       ArtifactSlots.FEATHER: 311,
                       ArtifactSlots.SANDS: 0.466,
@@ -236,7 +236,7 @@ class Fischl:
 
     def rotation_sukokomon(self, sweaty=True):
         damage = 0
-        if isinstance(self.weapon, bows.AlleyHunter):
+        if isinstance(self.weapon, weapons.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
             currentStats = self.get_stats()
@@ -244,18 +244,18 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(2)
         currentStats = self.get_stats()
         # use burst
         damage += self.burst_damage(currentStats)
         # average 1 ec proc
         damage += self.ec_damage(currentStats)
-        if isinstance(self.weapon, bows.PolarStar):
+        if isinstance(self.weapon, weapons.PolarStar):
             # 1 stack from burst
             self.weapon.set_stacks(3 if sweaty else 1)
             currentStats = self.get_stats()
@@ -271,14 +271,14 @@ class Fischl:
         damage += 8 * self.a4_damage(currentStats)
         if self.constellation == 6:
             damage += 8 * self.a4_damage(currentStats)
-        if isinstance(self.weapon, bows.ElegyForTheEnd):
+        if isinstance(self.weapon, weapons.ElegyForTheEnd):
             self.weapon.set_passive(True)
             currentStats = self.get_stats()
         # average 0.6 ec procs at lowered res
         damage += 0.6 * self.ec_damage(currentStats)
 
         # cast skill after oz duration ends
-        if isinstance(self.weapon, bows.PolarStar) and not sweaty:
+        if isinstance(self.weapon, weapons.PolarStar) and not sweaty:
             self.weapon.set_stacks(1)
         elif sweaty:
             currentStats = self.get_stats()
@@ -286,16 +286,16 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(3)
         currentStats = self.get_stats()
         damage += self.proc_damage(currentStats, 2)
         damage += self.skill_cast(currentStats)
-        """if isinstance(self.weapon, bows.WindblumeOde):
+        """if isinstance(self.weapon, weapons.WindblumeOde):
             self.weapon.skill_cast(True)
             currentStats = self.get_stats()"""
         damage += self.turret_damage(currentStats, self.turretHits)
@@ -307,7 +307,7 @@ class Fischl:
 
     def rotation(self, a4procs=10, c6procs=10, sweaty=True):
         damage = 0
-        if isinstance(self.weapon, bows.AlleyHunter):
+        if isinstance(self.weapon, weapons.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
             currentStats = self.get_stats()
@@ -315,11 +315,11 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(2)
         # use burst
         currentStats = self.get_stats()
@@ -330,7 +330,7 @@ class Fischl:
             damage += c6procs / 2 * self.c6_damage(currentStats)
 
         # cast skill after oz duration ends
-        if isinstance(self.weapon, bows.PolarStar) and not sweaty:
+        if isinstance(self.weapon, weapons.PolarStar) and not sweaty:
             self.weapon.set_stacks(1)
         elif sweaty:
             currentStats = self.get_stats()
@@ -338,15 +338,15 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(3)
         currentStats = self.get_stats()
         damage += self.skill_cast(currentStats)
-        """if isinstance(self.weapon, bows.WindblumeOde):
+        """if isinstance(self.weapon, weapons.WindblumeOde):
             self.weapon.skill_cast(True)
             currentStats = self.get_stats()"""
         damage += self.turret_damage(currentStats, self.turretHits)
@@ -360,24 +360,24 @@ class Fischl:
     def rotation_taser(self, sweaty=True):
         damage = 0
 
-        if isinstance(self.weapon, bows.AlleyHunter):
+        if isinstance(self.weapon, weapons.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
             currentStats = self.get_stats()
             damage += self.n1_damage(currentStats)
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(2)
         # rotation 1
         # use burst
         currentStats = self.get_stats()
         damage += self.proc_damage(currentStats, 2)
-        damage += self.burst_damage(currentStats, 2)
+        damage += self.burst_damage(currentStats)
         damage += 4 * self.ec_damage(currentStats)
         damage += self.turret_damage(currentStats, 2)
         damage += 3 * self.a4_damage(currentStats)
@@ -393,10 +393,10 @@ class Fischl:
         damage += (self.constellation == 6) * 34 * self.c6_damage(currentStats)
         damage += 10 * self.ec_damage(currentStats)
         damage += self.skill_cast(currentStats)
-        damage += self.burst_damage(currentStats, 2)
-        if isinstance(self.weapon, bows.SkywardHarp):
+        damage += self.burst_damage(currentStats)
+        if isinstance(self.weapon, weapons.SkywardHarp):
             damage += 2 * self.proc_damage(currentStats, 2)
-        if isinstance(self.weapon, bows.TheViridescentHunt):
+        if isinstance(self.weapon, weapons.TheViridescentHunt):
             damage += 1 * self.proc_damage(currentStats, 2)
 
         """damage += self.turret_damage(currentStats, self.turretHits - 2)
@@ -418,7 +418,7 @@ class Fischl:
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += 14 * self.a4_damage(currentStats)
         damage += (self.constellation == 6) * 13 * self.c6_damage(currentStats)
-        if isinstance(self.weapon, bows.SkywardHarp):
+        if isinstance(self.weapon, weapons.SkywardHarp):
             damage += self.proc_damage(currentStats, 2)"""
 
         self.reset()
@@ -436,7 +436,7 @@ class Fischl:
         # raiden buffs
         self.buffs[Attr.QDMG] = 0.18
 
-        if isinstance(self.weapon, bows.AlleyHunter):
+        if isinstance(self.weapon, weapons.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
             currentStats = self.get_stats()
@@ -444,14 +444,14 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(2)
         # use burst
-        """elif isinstance(self.weapon, bows.ElegyForTheEnd):
+        """elif isinstance(self.weapon, weapons.ElegyForTheEnd):
             # realistically this is only possible second rotation onward and even then the uptime is sus
             self.weapon.set_passive(True)"""
         currentStats = self.get_stats()
@@ -462,11 +462,11 @@ class Fischl:
         if self.constellation == 6:
             # assuming 3n3c n1c and a one extra proc somewhere
             damage += 11 * self.c6_damage(currentStats)
-        if isinstance(self.weapon, bows.ElegyForTheEnd):
+        if isinstance(self.weapon, weapons.ElegyForTheEnd):
             self.weapon.set_passive(True)
             currentStats = self.get_stats()
         # resummon oz before second rotation but only get 5 hits
-        if isinstance(self.weapon, bows.PolarStar) and not sweaty:
+        if isinstance(self.weapon, weapons.PolarStar) and not sweaty:
             self.weapon.set_stacks(1)
         elif sweaty:
             currentStats = self.get_stats()
@@ -474,11 +474,11 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(3)
         damage += self.skill_cast(currentStats)
         damage += self.turret_damage(currentStats, 5)
@@ -488,7 +488,7 @@ class Fischl:
 
         # second rotation, no fischl e
         damage += self.burst_damage(currentStats)
-        if isinstance(self.weapon, bows.SkywardHarp):
+        if isinstance(self.weapon, weapons.SkywardHarp):
             damage += self.proc_damage(currentStats, 2)
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += 2 * self.a4_damage(currentStats)
@@ -510,7 +510,7 @@ class Fischl:
         # raiden buffs
         self.buffs[Attr.QDMG] = 0.18
 
-        if isinstance(self.weapon, bows.AlleyHunter):
+        if isinstance(self.weapon, weapons.AlleyHunter):
             self.weapon.set_stacks(10)
         elif sweaty:
             currentStats = self.get_stats()
@@ -518,14 +518,14 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(2)
         # use burst
-        """elif isinstance(self.weapon, bows.ElegyForTheEnd):
+        """elif isinstance(self.weapon, weapons.ElegyForTheEnd):
             # realistically this is only possible second rotation onward and even then the uptime is sus
             self.weapon.set_passive(True)"""
         currentStats = self.get_stats()
@@ -536,11 +536,11 @@ class Fischl:
         if self.constellation == 6:
             # assuming 3n3c n1c and a one extra proc somewhere
             damage += 11 * self.c6_damage(currentStats)
-        if isinstance(self.weapon, bows.ElegyForTheEnd):
+        if isinstance(self.weapon, weapons.ElegyForTheEnd):
             self.weapon.set_passive(True)
             currentStats = self.get_stats()
         # resummon oz before second rotation but only get 5 hits
-        if isinstance(self.weapon, bows.PolarStar) and not sweaty:
+        if isinstance(self.weapon, weapons.PolarStar) and not sweaty:
             self.weapon.set_stacks(1)
         elif sweaty:
             currentStats = self.get_stats()
@@ -548,11 +548,11 @@ class Fischl:
             damage += self.aim_damage(currentStats)
             # skyward harp / hunt proc
             damage += self.proc_damage(currentStats, 2)
-            if isinstance(self.weapon, bows.PrototypeCrescent):
+            if isinstance(self.weapon, weapons.PrototypeCrescent):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.MitternachtsWaltz):
+            elif isinstance(self.weapon, weapons.MitternachtsWaltz):
                 self.weapon.set_passive(True)
-            elif isinstance(self.weapon, bows.PolarStar):
+            elif isinstance(self.weapon, weapons.PolarStar):
                 self.weapon.set_stacks(3)
         damage += self.skill_cast(currentStats)
         damage += self.turret_damage(currentStats, 5)
@@ -562,7 +562,7 @@ class Fischl:
 
         # second rotation, no fischl e
         damage += self.burst_damage(currentStats)
-        if isinstance(self.weapon, bows.SkywardHarp):
+        if isinstance(self.weapon, weapons.SkywardHarp):
             damage += self.proc_damage(currentStats, 2)
         damage += self.turret_damage(currentStats, self.turretHits)
         damage += 2 * self.a4_damage(currentStats)

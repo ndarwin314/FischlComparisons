@@ -22,6 +22,9 @@ class Weapon:
         return self.proc_scaling * stats.get_attack() * stats.get_crit_multiplier() * \
                 (1 + stats[Attr.PHYSDMG] + stats[Attr.DMG]) * (1 - (1-self.proc_chance) ** chances)
 
+    def equip(self, character):
+        character.weapon = self
+
 
 class PolarStar(Weapon):
 
@@ -107,7 +110,7 @@ class TheViridescentHunt(Weapon):
 class AlleyHunter(Weapon):
 
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}), "Alley")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276, Attr.DMG: 0.15 + 0.05*refinement}), "Alley")
         self._stacks = False
         self._stackValue = 0.015 + 0.005 * refinement
 
@@ -163,3 +166,31 @@ class Twilight(Weapon):
         # assuming constant middle state cause idgaf
         super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ER: 0.306, Attr.DMG: 0.075 + 0.025*refinement}),
                          "Twilight")
+
+class AlleyFlash(Weapon):
+    def __init__(self, refinement=1):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 620, Attr.EM: 55, Attr.DMG: 0.09 + 0.03 * refinement}),
+                         "Alley Flash")
+
+class IronSting(Weapon):
+
+    def __init__(self, refinement=5):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.EM: 165, Attr.DMG: 0.09 + 0.03*refinement}),
+                         "Iron Sting")
+
+    def equip(self, character):
+        super().equip(character)
+        #character
+
+    def on_damage(self, rotaation):
+        pass
+
+
+class Catch(Weapon):
+    def __init__(self, refinement=5):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ER: 0.459, Attr.QDMG: 0.32, Attr.QCR: 0.12}),
+                         '"The Catch"')
+
+class Grass(Weapon):
+    def __init__(self, refinement=1):
+        super().__init__(refinement, Stats({Attr.ATKBASE:608}), "Engulfing Lightning")
