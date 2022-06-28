@@ -72,6 +72,8 @@ class Damage(Action):
                               debug=self.debug)
         for hook in rotation.damageHooks:
             hook()
+        for hook in self.character.damageHook:
+            hook(self.character)
         match self.damageType:
             case DamageType.SKILL:
                 for hook in self.character.skillHitHook:

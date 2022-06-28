@@ -5,7 +5,7 @@ from abc import ABC
 from actions import OtherAction, Buff
 from uuid import uuid1 as uuid
 import buff
-
+import random as r
 
 class Weapon:
 
@@ -17,8 +17,8 @@ class Weapon:
         self.proc_chance = 0
         self.proc_scaling = 0
 
-    def get_stats(self, rotation):
-        return self.stats + self.conditionalStats
+    def get_stats(self, time):
+        return self.stats
 
     def __repr__(self):
         return f"{self.name} Refinement {self.refinement}"
@@ -144,6 +144,20 @@ class SkywardHarp(Weapon):
                          "Harp")
         self.proc_chance = 0.5 + 0.1 * refinement
         self.proc_scaling = 1.25
+        self.cooldown = 4.5 - 0.5 * refinement
+        self.lastHit = -5
+
+    def on_damage(self, char):
+        t = char.time
+        if t > self.lastHit + self.cooldown and char.rotation.onField == char and r.random() < self.proc_chance:
+            self.lastHit = t
+            stats = char.get_stats(t)
+            m = stats.get_attack() * stats.get_DMG(Element.PHYSICAL) * stats.get_crit_multiplier()
+            char.rotation.do_damage(char, self.proc_scaling*m, Element.PHYSICAL, DamageType.OTHER)
+
+    def equip(self, character):
+        super().equip(character)
+        character.damageHook.append(self.on_damage)
 
 
 class Water(Weapon):
@@ -163,12 +177,25 @@ class PrototypeCrescent(Weapon):
 
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461}), "Crescent")
-        self._conditionalActive = False
+        self.weakpointStats = Stats({Attr.ATKP: 0.27 + 0.09 * self.refinement})
+        self.passiveExpiration = -1
 
-    def set_passive(self, is_active):
+    """def set_passive(self, is_active):
         self._conditionalActive = is_active
-        self.conditionalStats[Attr.ATKP] = (0.27 + 0.09 * self.refinement) * is_active
+        self.conditionalStats[Attr.ATKP] = (0.27 + 0.09 * self.refinement) * is_active"""
 
+    def charged_hit(self, char):
+        self.passiveExpiration = char.time + 10
+
+    def get_stats(self, time):
+        if time > self.passiveExpiration:
+            return self.stats
+        else:
+            return self.stats + self.weakpointStats
+
+    def equip(self, character):
+        super().equip(character)
+        character.chargedHitHook.append(self.charged_hit)
 
 class TheViridescentHunt(Weapon):
 
@@ -201,7 +228,17 @@ class TheStringless(Weapon):
 class MouunsMoon(Weapon):
     def __init__(self, refinement=1):
         temp = 280 * (0.0009 + 0.0003 * refinement)
-        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276, Attr.QDMG: temp}), "Moon Moon")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}), "Moon Moon")
+
+    def equip(self, character):
+        super().equip(character)
+        cost = 270
+        # TODO: make this work
+        """rot = character.rotation
+        cost = 0
+        for char in rot.characters:
+            cost += char.energyCost"""
+        self.stats += Stats({Attr.QDMG: cost * (0.0009 + 0.0003 * self.refinement)})
 
 
 class WindblumeOde(Weapon):

@@ -13,6 +13,7 @@ class DamageType(Enum):
     SKILL = auto()
     BURST = auto()
     REACTION = auto()
+    OTHER = auto()
 
 
 class Element(Enum):

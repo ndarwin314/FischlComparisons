@@ -125,6 +125,7 @@ class Character(ABC):
         self.skillHitHook = []
         self.normalHitHook = []
         self.chargedHitHook = []
+        self.damageHook = []
 
         self.stats = stats
         self.buffs = []
@@ -371,9 +372,8 @@ class Fischl(Character):
         self.rotation.do_damage(self, damage, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self, stats):
-        damage = self.aim * stats.get_crit_multiplier() * stats.get_attack() * \
-                 (1 + stats[Attr.PHYSDMG] + stats[Attr.DMG] + stats[Attr.CADMG])
-        self.rotation.do_damage(self, damage, self.element, DamageType.CHARGED)
+        damage = self.aim * super().charged(stats)
+        self.rotation.do_damage(self, damage, Element.PHYSICAL, DamageType.CHARGED)
 
     def skill(self, stats):
         multiplier = super().skill(stats)
