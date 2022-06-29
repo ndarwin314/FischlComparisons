@@ -152,8 +152,7 @@ class SkywardHarp(Weapon):
         if t > self.lastHit + self.cooldown and char.rotation.onField == char and r.random() < self.proc_chance:
             self.lastHit = t
             stats = char.get_stats(t)
-            m = stats.get_attack() * stats.get_DMG(Element.PHYSICAL) * stats.get_crit_multiplier()
-            char.rotation.do_damage(char, self.proc_scaling*m, Element.PHYSICAL, DamageType.OTHER)
+            char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER)
 
     def equip(self, character):
         super().equip(character)
@@ -203,6 +202,19 @@ class TheViridescentHunt(Weapon):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.CR: 0.276}), "Hunt")
         self.proc_chance = 0.5
         self.proc_scaling = (0.4 + 0.1 * refinement) * 8
+        self.lastHit = -10
+        self.cooldown = 15 - refinement
+
+    def on_damage(self, char):
+        t = char.time
+        if t > self.lastHit + self.cooldown and char.rotation.onField == char and r.random() < self.proc_chance:
+            self.lastHit = t
+            stats = char.get_stats(t)
+            char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER)
+
+    def equip(self, character):
+        super().equip(character)
+        character.damageHook.append(self.on_damage)
 
 
 class AlleyHunter(Weapon):
@@ -228,7 +240,6 @@ class TheStringless(Weapon):
 
 class MouunsMoon(Weapon):
     def __init__(self, refinement=1):
-        temp = 280 * (0.0009 + 0.0003 * refinement)
         super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}), "Moon Moon")
 
     def equip(self, character):
@@ -249,7 +260,7 @@ class WindblumeOde(Weapon):
         self.buff = Stats({Attr.ATKP: 0.32})
 
     def skill_cast(self, char):
-        self.buffActive = char.time + 6
+        self.buffExpiration = char.time + 6
 
     def get_stats(self, time):
         if time > self.buffExpiration:
@@ -289,11 +300,25 @@ class MitternachtsWaltz(Weapon):
 
 
 class Twilight(Weapon):
-    def __init__(self, refinement=1):
-        # assuming constant middle state cause idgaf
-        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ER: 0.306, Attr.DMG: 0.075 + 0.025 * refinement}),
+    states = [0.12, 0.2, 0.28]
+    def __init__(self, refinement=5):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ER: 0.306}),
                          "Twilight")
+        self.lastChange = -10
+        self.state = 0
 
+    def damage_hook(self, char):
+        t = char.time
+        if t > self.lastChange + 7:
+            self.state = (self.state + 1) % 3
+            self.lastChange = t
+
+    def equip(self, character):
+        super().equip(character)
+        character.damageHook.append(self.damage_hook)
+
+    def get_stats(self, time):
+        return self.stats + Stats({Attr.DMG: self.states[self.state]})
 
 class AlleyFlash(Weapon):
     def __init__(self, refinement=1):

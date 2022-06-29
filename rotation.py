@@ -14,7 +14,8 @@ class AutoSequence:
 
 class Rotation:
 
-    def __init__(self, action_list, characters, enemy_count=1):
+    def __init__(self, action_list, characters, length, enemy_count=1):
+        self.length = length
         self.characters = characters
         for char in self.characters:
             char.set_rotation(self)
@@ -80,8 +81,10 @@ class Rotation:
         return self.frame / 60
 
     def do_rotation(self):
-        damage = 4 * [0]
+        frameEnd = self.length * 60
         for frame in self.events:
+            if self.frame >= frameEnd:
+                return
             for summon in self.summons:
                 if self.frame == summon.endTime:
                     summon.recall()
@@ -89,7 +92,6 @@ class Rotation:
             for action in frame:
                 action.do_action(self)
             self.frame += 1
-        return damage
 
     def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None):
         if time is None:
@@ -112,7 +114,7 @@ class Rotation:
 
     @property
     def damage(self):
-        return sum([e.damage for e in self.enemies])
+        return sum([v for v in self.damageDict.values()])
 
     @property
     def damage_pretty(self):

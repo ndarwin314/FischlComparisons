@@ -43,6 +43,12 @@ class Enemy:
         rotation.damageDict[character] += damage
         self.damage += damage
 
+    def reset(self):
+        self.damage = 0
+        # assuming level 100 enemy and 90 character
+        self.defMultiplier = 19 / 39
+        self.resistances = {element: 0.1 for element in Element}
+        self.resShred = {element: list() for element in Element}
 
     @staticmethod
     @cache

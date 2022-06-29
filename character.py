@@ -161,6 +161,8 @@ class Character(ABC):
 
         self.emblem = False
         self.vv = False
+        if len(artifact_set)==0:
+            return
         for s in artifact_set:
             match s.set:
                 case Set.TF:
@@ -191,11 +193,11 @@ class Character(ABC):
                     self.artifactStats[Attr.HPP] += 0.2
                     if s.count >= 4:
                         self.lastTOM = -1
-
-                        def tom(rotation, character):
-                            t = rotation.time
+                        """delegate = lambda c: actions.Buff(self, c.time, Buff(self.noblesseBuff, c.time, 3, self.tomID))"""
+                        def tom(character):
+                            t = character.time
                             if t > character.lastTOM + 0.5:
-                                rotation.add_event(actions.Buff(self, t, Buff(self.noblesseBuff, t, 3, self.tomID)))
+                                character.rotation.add_event(actions.Buff(self, t, Buff(self.noblesseBuff, t, 3, self.tomID)))
 
                         self.skillHitHook.append(tom)
 
@@ -292,11 +294,12 @@ class Fischl(Character):
 
     class Oz(Summon):
         # i am ignoring hitlag
-        def __init__(self, mv, stats, who_summoned, start, duration, con, rotation):
-            super().__init__(stats, who_summoned, start, duration, rotation)
+        def __init__(self, mv, statsRef, who_summoned, start, duration, con, rotation):
+            super().__init__(None, who_summoned, start, duration, rotation)
             self.mv = mv
             self.lastA4 = start
             self.con = con
+            self.statsRef = statsRef
             # technically this could change over the burst (sara c6) but i'm not including anything that will so idc
 
         def on_frame(self):
@@ -318,6 +321,7 @@ class Fischl(Character):
 
         def summon(self):
             super().summon()
+            self.stats = self.statsRef()
             if self.con >= 6:
                 self.rotation.normalAttackHook.append(self.c6)
             self.rotation.reactionHook.append(self.a4)
@@ -381,7 +385,7 @@ class Fischl(Character):
         # so the stats may be different for different parts because of exact buff timings
         # this also isn't related to snapshot since for that i kinda avoid it by copying the stats of unit as some time
         self.rotation.add_event(actions.Summon(self, self.time + 1.6,
-                                               self.Oz(self.skillTurret, self.get_stats(self.time),
+                                               self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
                                                        self, self.time + 1.6, self.turretHits, self.constellation,
                                                        self.rotation)))
 
@@ -390,7 +394,7 @@ class Fischl(Character):
         self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + 1.4,
-                                               self.Oz(self.skillTurret, self.get_stats(self.time),
+                                               self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
                                                        self, self.time + 1.4, self.turretHits, self.constellation,
                                                        self.rotation)))
 
@@ -449,7 +453,6 @@ class Bennett(Character):
     def burst(self, stats):
         super().burst(stats)
         # TODO maybe: bennett burst in game take several ticks to apply which isn't represented with this currently
-        # buff applies to itself
         self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
                                 time=self.time + 0.62, stats_ref= lambda : self.get_stats() + self.buffStats)
         self.rotation.add_event(self.buffCreator(self.time + 0.62))

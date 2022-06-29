@@ -2,6 +2,7 @@
 # from fischl import Set
 import csv
 import time
+from artifacts import Set, SetCount
 from rotation import *
 import character
 from actions import Skill, Charged, Normal, Burst, Swap, Reaction
@@ -11,6 +12,13 @@ from weapons import *
                PrototypeCrescent, TheStringless, MouunsMoon,
                WindblumeOde, AlleyHunter, TheViridescentHunt, FavoniusWarbow,
                SacrificialBow, MitternachtsWaltz, Hamayumi, Rust, Twilight)"""
+
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        func(*args, **kwargs)
+        print(time.time()-start)
+    return wrapper
 
 
 def artifact_set_name(array):
@@ -90,7 +98,7 @@ def test():
     print(g.rotation_raifish())
 
 
-rot = [Skill(0, 0),
+actionList = [Skill(0, 0),
        Swap(2, 0.62),
        Skill(2, 0.85, infusion=Element.ELECTRO),
        Reaction(2, 1.1, Reactions.ELECTROSWIRL),
@@ -144,32 +152,46 @@ rot = [Skill(0, 0),
        Normal(3, 18, 1),  # fuck
        Normal(3, 18.5, 1),
        ]
+
+@timer
+def bad(name):
+    weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
+               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow]
+    artifactSets = [[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)],
+                    [SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)],
+                    [SetCount(Set.TF, 2)],
+                    [SetCount(Set.ATK, 2)],
+                    [],
+                    [SetCount(Set.TS, 4)],
+                    [SetCount(Set.TOM, 4)]]
+    CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
+    CSV2 = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
+    for artifact in artifactSets:
+        CSV.append([f"{artifact_set_name(artifact)}"])
+        CSV2.append([f"{artifact_set_name(artifact)}"])
+        for weapon in weapons:
+            bad = weapon()
+            row = [f"{bad.name}"]
+            row2 = [f"{bad.name}"]
+            for constellation in range(7):
+                for r in range(1, 6):
+                    w = weapon(refinement=r)
+                    fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact)
+                    rot = Rotation(actionList, characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish], length=19)
+                    rot.do_rotation()
+                    row.append(rot.damageDict[fish] / 19)
+                    row2.append(rot.damage / 19)
+            CSV.append(row)
+            CSV2.append(row2)
+    with open('results2/' + name + '.csv', 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        for line in CSV:
+            writer.writerow(line)
+    with open('results2/' + name + 'TeamDPS.csv', 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        for line in CSV2:
+            writer.writerow(line)
+
+
 if __name__ == '__main__':
-    w = WindblumeOde()
-    test = Rotation(rot, [character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl(weapon=w)],
-                    enemy_count=1)
-    test.do_rotation()
-    print(test.damage / 19, w)
-    print({char: d / 19 for char, d in test.damageDict.items()})
-    """we = [AlleyHunter(refinement=1), AlleyHunter(refinement=5), ThunderingPulse(refinement=1), PolarStar(refinement=1),
-          Water(refinement=1), ElegyForTheEnd(refinement=1), SkywardHarp(refinement=1), PrototypeCrescent(refinement=1),
-          PrototypeCrescent(refinement=5), TheStringless(refinement=1), TheStringless(refinement=5),
-          MouunsMoon(refinement=5), WindblumeOde()]
-    for w in we:
-        test = Rotation(rot, [character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl(weapon=w)],
-                        enemy_count=1)
-        test.do_rotation()
-        print(test.damage / 19, w)
-        print({char: d / 19 for char, d in test.damageDict.items()})"""
-    """test = Rotation(rot,
-                    [character.Raiden(), character.Bennett(), character.Kazuha(),
-                     character.Fischl(artifact_set=(art.SetCount(art.Set.TOM, 4),))])
-    test.do_rotation()
-    print(test.damage / 19)
-    print({char: d / 19 for char, d in test.damageDict.items()})
-    test = Rotation(rot,
-                    [character.Raiden(), character.Bennett(), character.Kazuha(),
-                     character.Fischl(artifact_set=(art.SetCount(art.Set.TS, 4),))])
-    test.do_rotation()
-    print(test.damage / 19)
-    print({char: d / 19 for char, d in test.damageDict.items()})"""
+    bad("raifish")
