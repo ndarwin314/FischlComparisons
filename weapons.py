@@ -149,9 +149,8 @@ class SkywardHarp(Weapon):
 
     def on_damage(self, char):
         t = char.time
-        if t > self.lastHit + self.cooldown and char.rotation.onField == char and r.random() < self.proc_chance:
+        if t > self.lastHit + self.cooldown and char.rotation.onField == char:
             self.lastHit = t
-            stats = char.get_stats(t)
             char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER)
 
     def equip(self, character):
@@ -207,9 +206,9 @@ class TheViridescentHunt(Weapon):
 
     def on_damage(self, char):
         t = char.time
-        if t > self.lastHit + self.cooldown and char.rotation.onField == char and r.random() < self.proc_chance:
+        if t > self.lastHit + self.cooldown and char.rotation.onField == char:
             self.lastHit = t
-            stats = char.get_stats(t)
+            #print(self.proc_scaling)
             char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER)
 
     def equip(self, character):

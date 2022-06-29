@@ -225,11 +225,10 @@ class Character(ABC):
     def reaction(self, stats, reaction):
         if reaction.is_swirl():
             element = reaction.element()
-            # TODO: make this give the correct swirl
             self.rotation.do_damage(self, 1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
-            if self.vv:
+            if self.vv and self.rotation.onField == self:
                 for e in self.rotation.enemies:
                     e.add_shred(ResShred(element, -0.4, self.time + 10, self.vvID))
             return
@@ -253,14 +252,20 @@ class Character(ABC):
         for buff in self.buffs:
             b += buff.buff()
         stats = self.stats + self.weapon.get_stats(time) + self.artifactStats + b
+        #print(self, time, self.buffs)
         return stats
 
     def add_buff(self, buff):
-        for other in self.buffs:
+        # TODO: make this not suck
+        for i in range(len(self.buffs)):
+            other = self.buffs[i]
             if buff == other:
-                buff += other
+                self.buffs[i] = buff + other
                 return
-        self.buffs.append(buff)
+        else:
+            self.buffs.append(buff)
+        #[other if buff!=other else other+buff for other in self.buffs]
+
 
     def remove_buff(self, buff):
         try:
@@ -292,6 +297,7 @@ class Fischl(Character):
     A4 = 0.8
     C6 = 0.3
 
+
     class Oz(Summon):
         # i am ignoring hitlag
         def __init__(self, mv, statsRef, who_summoned, start, duration, con, rotation):
@@ -304,7 +310,7 @@ class Fischl(Character):
 
         def on_frame(self):
             if (self.rotation.frame - math.ceil(60 * self.start)) % 60 == 0:
-                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO,
+                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO, debug=True,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
         def c6(self):
@@ -378,24 +384,18 @@ class Fischl(Character):
         super().skill(stats)
         self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
-        # TODO: this kinda runs into a serious design question
-        # the issue is how get_stat should work, rn it is a method i call right now and get some value from
-        # but it would be more accurate to have it be sort of a method or a reference i pass that is then checked later
-        # its pretty edge casey but you could have situations where stats change in the middle of some skill or burst
-        # so the stats may be different for different parts because of exact buff timings
-        # this also isn't related to snapshot since for that i kinda avoid it by copying the stats of unit as some time
-        self.rotation.add_event(actions.Summon(self, self.time + 1.6,
+        self.rotation.add_event(actions.Summon(self, self.time + .6,
                                                self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
-                                                       self, self.time + 1.6, self.turretHits, self.constellation,
+                                                       self, self.time + .6, self.turretHits, self.constellation,
                                                        self.rotation)))
 
     def burst(self, stats):
         super().burst(stats)
         self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
-        self.rotation.add_event(actions.Summon(self, self.time + 1.4,
+        self.rotation.add_event(actions.Summon(self, self.time + .4,
                                                self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
-                                                       self, self.time + 1.4, self.turretHits, self.constellation,
+                                                       self, self.time + .4, self.turretHits, self.constellation,
                                                        self.rotation)))
 
 
@@ -425,7 +425,7 @@ class Bennett(Character):
         if constellation >= 6:
             self.buffStats += Stats({Attr.PYRODMG: 0.15})
         # TODO: fix this to make it more correct
-        self.buffCreator = lambda t: actions.Buff(self, t, Buff(self.buffStats, t, 12, self.buffID))
+        self.buffCreator = lambda t: actions.Buff(self, t, Buff(self.buffStats, t, 2.1, self.buffID), True)
         self.artifactStats[Attr.ER] += 0.518
         stats = self.get_stats(0)
         if 2 * stats[Attr.CR] > stats[Attr.CD]:
@@ -454,8 +454,11 @@ class Bennett(Character):
         super().burst(stats)
         # TODO maybe: bennett burst in game take several ticks to apply which isn't represented with this currently
         self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
-                                time=self.time + 0.62, stats_ref= lambda : self.get_stats() + self.buffStats)
-        self.rotation.add_event(self.buffCreator(self.time + 0.62))
+                                time=self.time + 0.62, stats_ref= lambda : self.get_stats())
+
+        self.rotation.add_event(self.buffCreator(self.time))
+        for i in range(13):
+            self.rotation.add_event(self.buffCreator(self.time + 0.57 + i))
 
 
 class Raiden(Character):
@@ -506,7 +509,7 @@ class Raiden(Character):
                                 Attr.CD: 0.5}),
                          Element.ELECTRO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 90)
-        # TODO: add stuff cor cons if i care
+        # TODO: add stuff for cons if i care
         self.resolve = 0
         self.burstActive = False
         self.burstExpiration = 0

@@ -86,16 +86,12 @@ def yelan_moment():
 
 
 def test():
-    f = fischl.Fischl(9, 9, 9, constellation=6, weapon=PrototypeCrescent(), artifact_set=[Set.ATK, Set.TF])
-    f.kqm_optimize(f.rotation_raifishSuc, sweaty=True)
-    print(f.artifactStats)
-    print(f.get_stats())
-    print(f.rotation_raifishSuc())
-    g = fischl.Fischl(9, 9, 9, constellation=6, weapon=PrototypeCrescent(), artifact_set=[Set.ATK, Set.TF])
-    g.kqm_optimize(g.rotation_raifish, sweaty=True)
-    print(g.artifactStats)
-    print(g.get_stats())
-    print(g.rotation_raifish())
+    w = AlleyHunter(refinement=1)
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
+    rot = Rotation(actionList, characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
+                   length=19)
+    rot.do_rotation()
+    print({k: round(v/19,2) for k,v in rot.damageDict.items()})
 
 
 actionList = [Skill(0, 0),
@@ -195,3 +191,4 @@ def bad(name):
 
 if __name__ == '__main__':
     bad("raifish")
+    #test()

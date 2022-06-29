@@ -102,7 +102,7 @@ class Damage(Action):
                     hook(self.character)
 
     def __repr__(self):
-        return f"{self.character} dealing {round(self.damage,2)} at {self.time}"
+        return f"{self.character} with mv {round(self.mv,2)} at {self.time}"
 
 
 """class Auto(Action):
@@ -195,13 +195,17 @@ class Reaction(Action):
         return f"{self.character} doing {self.reaction} at {self.time}"
 
 class Buff(Action):
-    def __init__(self, character, time, buff):
+    def __init__(self, character, time, buff, on_field=False):
         super().__init__(character, time)
         self.buff = buff
+        self.onField = on_field
 
     def do_action(self, rotation):
-        for char in rotation.characters:
-            char.add_buff(self.buff)
+        if self.onField:
+            rotation.onField.add_buff(self.buff)
+        else:
+            for char in rotation.characters:
+                char.add_buff(self.buff)
 
     def __repr__(self):
         return f"{self.character} buffing {self.buff} at {self.time}"
