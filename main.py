@@ -133,7 +133,7 @@ rot = [Skill(0, 0),
        Swap(3, 15.37),
        Reaction(2, 15.5, Reactions.ELECTROSWIRL),
        Reaction(2, 15.5, Reactions.OVERLOAD),
-       Charged(3, 15.5),
+       Charged(3, 15.55),
        Normal(3, 15.55, 1),
        Skill(3, 15.6),
        Swap(2, 16.6),
@@ -145,16 +145,22 @@ rot = [Skill(0, 0),
        Normal(3, 18.5, 1),
        ]
 if __name__ == '__main__':
-    we = [AlleyHunter(refinement=1), AlleyHunter(refinement=5), ThunderingPulse(refinement=1), PolarStar(refinement=1),
+    w = WindblumeOde()
+    test = Rotation(rot, [character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl(weapon=w)],
+                    enemy_count=1)
+    test.do_rotation()
+    print(test.damage / 19, w)
+    print({char: d / 19 for char, d in test.damageDict.items()})
+    """we = [AlleyHunter(refinement=1), AlleyHunter(refinement=5), ThunderingPulse(refinement=1), PolarStar(refinement=1),
           Water(refinement=1), ElegyForTheEnd(refinement=1), SkywardHarp(refinement=1), PrototypeCrescent(refinement=1),
           PrototypeCrescent(refinement=5), TheStringless(refinement=1), TheStringless(refinement=5),
-          MouunsMoon(refinement=5)]
+          MouunsMoon(refinement=5), WindblumeOde()]
     for w in we:
         test = Rotation(rot, [character.Raiden(), character.Bennett(), character.Kazuha(), character.Fischl(weapon=w)],
                         enemy_count=1)
         test.do_rotation()
         print(test.damage / 19, w)
-        print({char: d / 19 for char, d in test.damageDict.items()})
+        print({char: d / 19 for char, d in test.damageDict.items()})"""
     """test = Rotation(rot,
                     [character.Raiden(), character.Bennett(), character.Kazuha(),
                      character.Fischl(artifact_set=(art.SetCount(art.Set.TOM, 4),))])

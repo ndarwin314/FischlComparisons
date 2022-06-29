@@ -25,6 +25,16 @@ class Element(Enum):
     GEO = auto()
     PHYSICAL = auto()
 
+    def swirl(self):
+        match self:
+            case Element.PYRO:
+                return Reactions.PYROSWIRL
+            case Element.HYDRO:
+                return Reactions.HYDROSWIRL
+            case Element.ELECTRO:
+                return Reactions.ELECTROSWIRL
+            case Element.CRYO:
+                return Reactions.CRYOSWIRL
 
 
 class Reactions(Enum):
@@ -171,6 +181,9 @@ class Stats:
             case DamageType.PLUNGE:
                 base += self[Attr.PLUNGEDMG]
         return base
+
+    def get_multiplier(self, element=Element.PHYSICAL, damage_type=None, emblem=False):
+        return self.get_attack() * self.get_crit_multiplier(damage_type) * self.get_DMG(element, damage_type, emblem)
 
     # @cache
     def transformative_multiplier(self, reaction=None):

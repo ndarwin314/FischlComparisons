@@ -116,7 +116,7 @@ class ElegyForTheEnd(Weapon):
     buffID = uuid()
 
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.ER: 0.551, Attr.EM: 60}), "Elegy")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.ER: 0.551, Attr.EM: 45 + 15*refinement}), "Elegy")
         self.sigils = 0
         self.lastHit = -1
         self.buff = Stats({Attr.EM: 75 + 25 * self.refinement, Attr.ATKP: 0.15 + 0.05 * self.refinement})
@@ -213,10 +213,11 @@ class AlleyHunter(Weapon):
         self._stacks = False
         self._stackValue = 0.015 + 0.005 * refinement
 
+    """"""
+
     def set_stacks(self, stacks):
         self._stacks = stacks
         self.conditionalStats[Attr.DMG] = stacks * self._stackValue
-
 
 class TheStringless(Weapon):
     def __init__(self, refinement=1):
@@ -243,12 +244,21 @@ class MouunsMoon(Weapon):
 
 class WindblumeOde(Weapon):
     def __init__(self, refinement=5):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.EM: 165, Attr.ATKP: 0.32}), "Ode")
-        self.skill_activated = False
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.EM: 165}), "Ode")
+        self.buffExpiration = -1
+        self.buff = Stats({Attr.ATKP: 0.32})
 
-    def skill_cast(self, var):
-        self.skill_activated = var
-        self.conditionalStats[Attr.ATKP] = 0.32 if var else 0
+    def skill_cast(self, char):
+        self.buffActive = char.time + 6
+
+    def get_stats(self, time):
+        if time > self.buffExpiration:
+            return self.stats
+        return self.stats + self.buff
+
+    def equip(self, character):
+        super().equip(character)
+        character.skillCastHook.append(lambda c: OtherAction(character, c.time, lambda r: c.weapon.skill_cast(r)))
 
 
 class SacrificialBow(Weapon):

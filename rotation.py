@@ -91,10 +91,12 @@ class Rotation:
             self.frame += 1
         return damage
 
-    def do_damage(self, char, damage, element, damage_type, time=None, aoe=False, is_reaction=False, debug=False):
+    def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None):
         if time is None:
             time = self.time
-        self.add_event(Damage(char, time, damage, element, damage_type, aoe, is_reaction, debug))
+        if stats_ref is None:
+            stats_ref = char.get_stats
+        self.add_event(Damage(char, time, stats_ref, mv, element, damage_type, aoe, reaction, debug))
 
     def add_summon(self, summon):
         for s in self.summons:

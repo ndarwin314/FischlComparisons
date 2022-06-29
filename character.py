@@ -4,7 +4,7 @@ import attributes
 from attributes import Attr, Stats, ArtifactSlots, DamageType, Element, Reactions
 from artifacts import Set, SetCount
 import weapons
-import rotation as r
+import rotation as rot
 from summon import Summon
 from enemy import ResShred
 from buff import Buff, PermanentBuff
@@ -114,8 +114,8 @@ class Character(ABC):
     vvID = uuid()
     tomID = uuid()
 
-    def __init__(self, stats, element, autoTalent, skillTalent, burstTalent,
-                 constellation, weapon, artifact_set, type, energyCost):
+    def __init__(self, stats, element, auto_talent, skill_talent, burst_talent,
+                 constellation, weapon, artifact_set, weapon_type, energy_cost):
         self.rotation = None
 
         # hooks
@@ -133,16 +133,16 @@ class Character(ABC):
         self.element = element
         self.weapon = None
         weapon.equip(self)
-        self.autoTalent = autoTalent
-        if type == ConType.SkillFirst:
-            self.skillTalent = skillTalent if constellation < 3 else skillTalent + 3
-            self.burstTalent = burstTalent if constellation < 5 else burstTalent + 3
+        self.autoTalent = auto_talent
+        if weapon_type == ConType.SkillFirst:
+            self.skillTalent = skill_talent if constellation < 3 else skill_talent + 3
+            self.burstTalent = burst_talent if constellation < 5 else burst_talent + 3
         else:
-            self.skillTalent = skillTalent if constellation < 5 else skillTalent + 3
-            self.burstTalent = burstTalent if constellation < 3 else burstTalent + 3
+            self.skillTalent = skill_talent if constellation < 5 else skill_talent + 3
+            self.burstTalent = burst_talent if constellation < 3 else burst_talent + 3
         self.constellation = constellation
         self.level = 90
-        self.energyCost = energyCost
+        self.energyCost = energy_cost
 
         # distribute 2 rolls into each stat
         substatCounts = {Attr(i): 2 for i in range(10)}
@@ -161,75 +161,70 @@ class Character(ABC):
 
         self.emblem = False
         self.vv = False
-        for set in artifact_set:
-            match set.set:
+        for s in artifact_set:
+            match s.set:
                 case Set.TF:
                     self.artifactStats[Attr.ELECTRODMG] += 0.15
                 case Set.ATK:
                     self.artifactStats[Attr.ATKP] += 0.18
                 case Set.TS:
-                    if set.count >= 4:
+                    if s.count >= 4:
                         self.artifactStats[Attr.DMG] += 0.35
                 case Set.GAMBLER:
                     self.artifactStats[Attr.EDMG] += 0.2
                 case Set.NO:
                     self.artifactStats[Attr.QDMG] += 0.2
-                    if set.count >= 4:
-                        delegate = lambda c: actions.Buff(self, c.time, Buff(self.noblesseBuff, c.time, 12, self.noblesseID))
+                    if s.count >= 4:
+                        delegate = lambda c: actions.Buff(self, c.time,
+                                                          Buff(self.noblesseBuff, c.time, 12, self.noblesseID))
                         self.burstCastHook.append(delegate)
                 case Set.EMBLEM:
                     self.artifactStats[Attr.ER] += 0.2
-                    if set.count >= 4:
+                    if s.count >= 4:
                         self.emblem = True
                 case Set.VV:
                     self.artifactStats[Attr.ANEMODMG] += 0.15
-                    if set.count >= 4:
+                    if s.count >= 4:
                         self.vv = True
                         self.artifactStats[Attr.SWIRLBONUS] += 0.6
                 case Set.TOM:
                     self.artifactStats[Attr.HPP] += 0.2
-                    if set.count >= 4:
+                    if s.count >= 4:
                         self.lastTOM = -1
 
-                        def TOM(rotation, character):
+                        def tom(rotation, character):
                             t = rotation.time
                             if t > character.lastTOM + 0.5:
-                                rotation.add_event(r.Buff(self, t, Buff(self.noblesseBuff, t, 3, self.tomID)))
+                                rotation.add_event(actions.Buff(self, t, Buff(self.noblesseBuff, t, 3, self.tomID)))
 
-                        self.skillHitHook.append(TOM)
+                        self.skillHitHook.append(tom)
 
     def set_rotation(self, r):
         self.rotation = r
 
     @abstractmethod
     def normal(self, stats, hit):
-        return stats.get_attack() * stats.get_crit_multiplier(damageType=DamageType.NORMAL) * \
-               stats.get_DMG(Element.PHYSICAL, damageType=DamageType.NORMAL)
+        pass
 
     @abstractmethod
     def charged(self, stats):
-        return stats.get_attack() * stats.get_crit_multiplier(damageType=DamageType.CHARGED) * \
-               stats.get_DMG(Element.PHYSICAL, damageType=DamageType.CHARGED)
+        pass
 
     @abstractmethod
     def skill(self, stats):
         for delegate in self.skillCastHook:
             self.rotation.add_event(delegate(self))
-        return stats.get_attack() * stats.get_crit_multiplier(damageType=DamageType.SKILL) * \
-               stats.get_DMG(self.element, damageType=DamageType.SKILL)
 
     @abstractmethod
     def burst(self, stats):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
-        return stats.get_attack() * stats.get_crit_multiplier(damageType=DamageType.BURST) * \
-               stats.get_DMG(self.element, damageType=DamageType.BURST, emblem=self.emblem)
 
     def reaction(self, stats, reaction):
-        multiplier = stats.transformative_multiplier(reaction)
         if reaction.is_swirl():
             element = reaction.element()
-            self.rotation.do_damage(self, multiplier * 1.2, element, DamageType.REACTION, aoe=True, is_reaction=True)
+            # TODO: make this give the correct swirl
+            self.rotation.do_damage(self, 1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv:
@@ -238,13 +233,14 @@ class Character(ABC):
             return
         match reaction:
             case Reactions.OVERLOAD:
-                self.rotation.do_damage(self, multiplier * 4, Element.PYRO, DamageType.REACTION, aoe=True,
-                                        is_reaction=True)
+                self.rotation.do_damage(self, 4, Element.PYRO, DamageType.REACTION, aoe=True,
+                                        reaction=Reactions.OVERLOAD)
             case Reactions.EC:
-                self.rotation.do_damage(self, multiplier * 2.4, Element.ELECTRO, DamageType.REACTION, aoe=True,
-                                        is_reaction=True)
+                self.rotation.do_damage(self, 2.4, Element.ELECTRO, DamageType.REACTION,
+                                        aoe=True,reaction=Reactions.EC)
             case Reactions.SUPERCONDUCT:
-                self.rotation.do_damage(self, multiplier, Element.CRYO, DamageType.REACTION, aoe=True, is_reaction=True)
+                self.rotation.do_damage(self, 1, Element.CRYO, DamageType.REACTION,
+                                        aoe=True, reaction=Reactions.SUPERCONDUCT)
                 for e in self.rotation.enemies:
                     e.add_shred(ResShred(Element.PHYSICAL, -0.4, self.time + 12, self.vvID))
 
@@ -302,23 +298,22 @@ class Fischl(Character):
             self.lastA4 = start
             self.con = con
             # technically this could change over the burst (sara c6) but i'm not including anything that will so idc
-            self.multiplier = self.stats.get_crit_multiplier() * self.stats.get_attack() * \
-                              (1 + self.stats[Attr.DMG] + self.stats[Attr.ELECTRODMG] + self.stats[Attr.EDMG])
 
         def on_frame(self):
             if (self.rotation.frame - math.ceil(60 * self.start)) % 60 == 0:
-                self.rotation.do_damage(self.summoner, self.mv * self.multiplier, Element.ELECTRO,
-                                        damage_type=DamageType.SKILL)
+                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO,
+                                        damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
         def c6(self):
-            self.rotation.do_damage(self.summoner, 0.3 * self.multiplier, Element.ELECTRO, damage_type=DamageType.SKILL)
+            self.rotation.do_damage(self.summoner, 0.3, Element.ELECTRO,
+                                    damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
         def a4(self, character):
             # TODO: make only off field
             # TODO: make it only apply to electro reactions
             if self.rotation.time > self.lastA4 + 0.5 and self.rotation.onField == self.rotation.characters[character]:
-                self.rotation.do_damage(self.summoner, 0.8 * self.multiplier, Element.ELECTRO,
-                                        damage_type=DamageType.SKILL)
+                self.rotation.do_damage(self.summoner, 0.8, Element.ELECTRO,
+                                        damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
                 self.lastA4 = self.time
 
         def summon(self):
@@ -333,7 +328,7 @@ class Fischl(Character):
                 self.rotation.normalAttackHook.remove(self.c6)
             self.rotation.reactionHook.remove(self.a4)
 
-    def __init__(self, autoTalent=9, skillTalent=9, burstTalent=9, constellation=6,
+    def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=weapons.AlleyHunter(refinement=1), artifact_set=(SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)),
                  gambler_slots=None):
         super().__init__(Stats({Attr.HPBASE: 9189,
@@ -343,15 +338,15 @@ class Fischl(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5,
                                 Attr.ER: 1}),
-                         Element.ELECTRO, autoTalent, skillTalent, burstTalent,
+                         Element.ELECTRO, auto_talent, skill_talent, burst_talent,
                          constellation, weapon, artifact_set, ConType.SkillFirst, 60)
         self.turretHits = 10 if constellation < 6 else 12
-        self.skillTurret = self.skillTurretBase * scalingMultiplier[skillTalent]
-        self.skillCast = self.skillCastBase * scalingMultiplier[skillTalent] + (2 if constellation > 1 else 0)
-        self.n1 = self.n1Base * autoMultiplier[autoTalent]
-        self.aim = self.aimBase * autoMultiplier[autoTalent]
+        self.skillTurret = self.skillTurretBase * scalingMultiplier[skill_talent]
+        self.skillCast = self.skillCastBase * scalingMultiplier[skill_talent] + (2 if constellation > 1 else 0)
+        self.n1 = self.n1Base * autoMultiplier[auto_talent]
+        self.aim = self.aimBase * autoMultiplier[auto_talent]
         # technically c4 is a separate damage instance, but it does not make a big difference
-        self.burstMV = self.burstBase * scalingMultiplier[burstTalent] + (2.22 if constellation > 3 else 0)
+        self.burstMV = self.burstBase * scalingMultiplier[burst_talent] + (2.22 if constellation > 3 else 0)
 
         # artifacts
         self.artifactStats[Attr.ATKP] += 0.466
@@ -367,17 +362,17 @@ class Fischl(Character):
         self.artifactStats[Attr.ATKP] += 2 * substatValues[Attr.ATKP]
 
     def normal(self, stats, hit):
-        damage = self.n1 * super().normal(stats, hit)
+        super().normal(stats, hit)
         # TODO: add c1 loser
-        self.rotation.do_damage(self, damage, Element.PHYSICAL, DamageType.NORMAL)
+        self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self, stats):
-        damage = self.aim * super().charged(stats)
-        self.rotation.do_damage(self, damage, Element.PHYSICAL, DamageType.CHARGED)
+        super().charged(stats)
+        self.rotation.do_damage(self, self.aim, Element.PHYSICAL, DamageType.CHARGED)
 
     def skill(self, stats):
-        multiplier = super().skill(stats)
-        self.rotation.do_damage(self, self.skillCast * multiplier, self.element, DamageType.SKILL, time=self.time + 0.6)
+        super().skill(stats)
+        self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         # TODO: this kinda runs into a serious design question
         # the issue is how get_stat should work, rn it is a method i call right now and get some value from
@@ -386,18 +381,18 @@ class Fischl(Character):
         # so the stats may be different for different parts because of exact buff timings
         # this also isn't related to snapshot since for that i kinda avoid it by copying the stats of unit as some time
         self.rotation.add_event(actions.Summon(self, self.time + 1.6,
-                                         self.Oz(self.skillTurret, self.get_stats(self.time),
-                                                 self, self.time + 1.6, self.turretHits, self.constellation,
-                                                 self.rotation)))
+                                               self.Oz(self.skillTurret, self.get_stats(self.time),
+                                                       self, self.time + 1.6, self.turretHits, self.constellation,
+                                                       self.rotation)))
 
     def burst(self, stats):
-        multiplier = super().burst(stats)
-        self.rotation.do_damage(self, self.burstMV * multiplier, self.element, DamageType.BURST, time=self.time + 0.24,
+        super().burst(stats)
+        self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + 1.4,
-                                         self.Oz(self.skillTurret, self.get_stats(self.time),
-                                                 self, self.time + 1.4, self.turretHits, self.constellation,
-                                                 self.rotation)))
+                                               self.Oz(self.skillTurret, self.get_stats(self.time),
+                                                       self, self.time + 1.4, self.turretHits, self.constellation,
+                                                       self.rotation)))
 
 
 class Bennett(Character):
@@ -407,7 +402,7 @@ class Bennett(Character):
     atkBuffRatio = [0, .56, .602, .644, .7, .742, .784, .84, .896, .952, 1.008, 1.064, 1.12, 1.19]
     buffID = uuid()
 
-    def __init__(self, autoTalent=9, skillTalent=9, burstTalent=9, constellation=6,
+    def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=weapons.AlleyFlash(), artifact_set=(SetCount(Set.NO, 4),)):
         super().__init__(Stats({Attr.HPBASE: 12397,
                                 Attr.ATKBASE: 191,
@@ -415,11 +410,11 @@ class Bennett(Character):
                                 Attr.ER: 1.267,
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
-                         Element.PYRO, autoTalent, skillTalent, burstTalent, constellation,
+                         Element.PYRO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.SkillFirst, 60)
-        self.skillBase = self.skillBase * scalingMultiplier[skillTalent]
-        self.burstBase = self.burstBase * scalingMultiplier[burstTalent]
-        self.n1 = self.n1Base * autoMultiplier[autoTalent]
+        self.skillBase = self.skillBase * scalingMultiplier[skill_talent]
+        self.burstBase = self.burstBase * scalingMultiplier[burst_talent]
+        self.n1 = self.n1Base * autoMultiplier[auto_talent]
         self.buffValue = (self.atkBuffRatio[self.burstTalent] + (0.2 if constellation >= 1 else 0)) \
                          * self.get_stats(0)[Attr.ATKBASE]
         self.buffStats = Stats({Attr.ATK: self.buffValue})
@@ -440,30 +435,23 @@ class Bennett(Character):
         self.artifactStats[Attr.ER] += 4 * substatValues[Attr.ER]
 
     def normal(self, stats, hit):
-        damage = self.n1 * stats.get_crit_multiplier() * stats.get_attack() * \
-                 (1 + stats[Attr.PHYSDMG] + stats[Attr.DMG] + stats[Attr.NADMG])
-        self.rotation.do_damage(self, damage, Element.PHYSICAL, DamageType.NORMAL)
-
-    def reaction(self, stats, reaction):
-        super().reaction(stats, reaction)
+        super().normal(stats, hit)
+        self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self, stats):
-        pass
+        raise NotImplementedError
 
     def skill(self, stats):
-        multiplier = super().burst(stats)
-        self.rotation.do_damage(self, multiplier * self.skillBase, self.element, damage_type=DamageType.SKILL,
+        super().skill(stats)
+        self.rotation.do_damage(self, self.skillBase, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.27)
 
     def burst(self, stats):
+        super().burst(stats)
         # TODO maybe: bennett burst in game take several ticks to apply which isn't represented with this currently
         # buff applies to itself
-        stats += self.buffStats
-        multiplier = super().burst(stats)
-        print(stats.get_attack() * stats.get_DMG(element=Element.PYRO,
-                                                 damageType=DamageType.BURST) * self.burstBase * 19 / 39 * 0.9)
-        self.rotation.do_damage(self, multiplier * self.burstBase, self.element,
-                                DamageType.BURST, aoe=True, time=self.time + 0.62)
+        self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
+                                time=self.time + 0.62, stats_ref= lambda : self.get_stats() + self.buffStats)
         self.rotation.add_event(self.buffCreator(self.time + 0.62))
 
 
@@ -489,12 +477,9 @@ class Raiden(Character):
 
         def coordinated_attack(self):
             if self.time > self.lastHit + 0.9:
-                stats = self.summoner.get_stats(self.time)
-                damage = self.mv * stats.get_attack() * stats.get_crit_multiplier() * \
-                         stats.get_DMG(Element.ELECTRO, damageType=DamageType.SKILL)
                 self.lastHit = self.time
-                self.rotation.do_damage(self.summoner, damage, Element.ELECTRO,
-                                        damage_type=DamageType.SKILL, time=self.time + 0.09)
+                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO, damage_type=DamageType.SKILL,
+                                        time=self.time + 0.09, stats_ref=lambda : self.summoner.get_stats())
 
         def summon(self):
             super().summon()
@@ -508,7 +493,7 @@ class Raiden(Character):
             for char in self.rotation.characters:
                 char.remove_buff(PermanentBuff(Stats(), self.buffID))
 
-    def __init__(self, autoTalent=9, skillTalent=9, burstTalent=9, constellation=0,
+    def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
                  weapon=weapons.Catch(), artifact_set=(SetCount(Set.EMBLEM, 4),)):
         super().__init__(Stats({Attr.HPBASE: 12907,
                                 Attr.ATKBASE: 337,
@@ -516,7 +501,7 @@ class Raiden(Character):
                                 Attr.ER: 1.32,
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
-                         Element.ELECTRO, autoTalent, skillTalent, burstTalent, constellation,
+                         Element.ELECTRO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 90)
         # TODO: add stuff cor cons if i care
         self.resolve = 0
@@ -524,7 +509,7 @@ class Raiden(Character):
         self.burstExpiration = 0
         self.autoMVS = self.autoBase * autoMultiplier[self.autoTalent]
         self.infusedMVS = self.autoInfuseBase * physHighMultiplier[self.burstTalent]
-        self.skillcastHookMV = self.skillcastHookBase * scalingMultiplier[self.skillTalent]
+        self.skillCastMV = self.skillcastHookBase * scalingMultiplier[self.skillTalent]
         self.skillTurretMV = self.skillTurretBase * scalingMultiplier[self.skillTalent]
         self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstBonusMV = self.burstBaseBonus * scalingMultiplier[self.burstTalent]
@@ -548,42 +533,39 @@ class Raiden(Character):
 
     # TODO: this doesn't account for multi-hits since i suck
     def normal(self, stats, hit):
+        super().normal(stats, hit)
         # TODO: refactor this
         if self.burstActive and self.time > self.burstExpiration:
             self.burstActive = False
             self.resolve = 0
         if self.burstActive:
-            multiplier = stats.get_crit_multiplier(damageType=DamageType.BURST) * stats.get_attack() * \
-                         stats.get_DMG(self.element, damageType=DamageType.BURST, emblem=self.emblem)
-            mv = self.infusedMVS[hit] + self.resolve * self.burstAutoBonus
-            self.rotation.do_damage(self, multiplier * mv, self.element, DamageType.BURST)
+            mv = self.infusedMVS[hit] + self.resolve * self.infusedBonusMV
+            self.rotation.do_damage(self, mv, self.element, DamageType.BURST)
 
         else:
-            multiplier = super().normal(stats, hit)
-            self.rotation.do_damage(self, self.autoMVS[hit] * multiplier, Element.PHYSICAL, DamageType.NORMAL)
+            self.rotation.do_damage(self, self.autoMVS[hit], Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self, stats):
+        super().charged(stats)
         if self.burstActive and self.time > self.burstExpiration:
             self.burstActive = False
             self.resolve = 0
         if self.burstActive:
-            multiplier = stats.get_crit_multiplier(damageType=DamageType.BURST) * stats.get_attack() * \
-                         stats.get_DMG(self.element, damageType=DamageType.BURST, emblem=self.emblem)
             # this is a hack to add both mvs together since i'm lazy and they are simultaneous
             mv = self.infusedMVS[-1] + self.infusedMVS[-2] + 2 * self.resolve * self.infusedBonusMV
-            self.rotation.do_damage(self, multiplier * mv, self.element, DamageType.BURST)
+            self.rotation.do_damage(self, mv, self.element, DamageType.BURST)
 
         else:
-            multiplier = super().charged(stats)
-            self.rotation.do_damage(self, self.autoMVS[-1] * multiplier, Element.PHYSICAL, DamageType.CHARGED)
+            self.rotation.do_damage(self, self.autoMVS[-1], Element.PHYSICAL, DamageType.CHARGED)
 
     def skill(self, stats):
-        multiplier = super().skill(stats)
-        self.rotation.do_damage(self, self.skillcastHookMV * multiplier, self.element, damage_type=DamageType.SKILL,
+        super().skill(stats)
+        self.rotation.do_damage(self, self.skillCastMV, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.85)
         self.rotation.add_summon(self.NotOz(self.skillTurretMV, stats, self, self.time, self.rotation))
 
     def burst(self, stats):
+        super().burst(stats)
         self.burstActive = True
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add
@@ -591,13 +573,12 @@ class Raiden(Character):
         # stacks from 1
         self.resolve += 3 * 2
         mv = self.burstMV + self.burstBonusMV * max(self.resolve, 60)
-        # there is a problem wherein if a burst is used between this being called and the burst hit the resolve wont count
+        # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
-        multiplier = super().burst(stats)
-        self.rotation.do_damage(self, mv * multiplier, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
+        self.rotation.do_damage(self, mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
 
     def add_resolve(self, cost):
-        # change multiplier to be correct for other talent levels
+        # TODO: change multiplier to be correct for other talent levels
         self.resolve += cost * 0.19
 
     def get_stats(self, time=None):
@@ -620,7 +601,7 @@ class Kazuha(Character):
                Element.ELECTRO: uuid(),
                Element.CRYO: uuid()}
 
-    def __init__(self, autoTalent=9, skillTalent=9, burstTalent=9, constellation=0,
+    def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
                  weapon=weapons.IronSting(), artifact_set=(SetCount(Set.VV, 4),)):
         super().__init__(Stats({Attr.HPBASE: 13348,
                                 Attr.ATKBASE: 297,
@@ -629,16 +610,16 @@ class Kazuha(Character):
                                 Attr.ER: 1,
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
-                         Element.ANEMO, autoTalent, skillTalent, burstTalent, constellation,
+                         Element.ANEMO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 90)
         # TODO: add stuff cor cons if i care
-        self.burstCast = self.burstCastBase * scalingMultiplier[burstTalent]
-        self.burstDOT = self.burstDOTBase * scalingMultiplier[burstTalent]
-        self.burstInfuseDOT = self.burstInfuseDOTBase * scalingMultiplier[burstTalent]
-        self.skillHold = self.skillHoldBase * scalingMultiplier[skillTalent]
-        self.skillPress = self.skillPressBase * scalingMultiplier[skillTalent]
-        self.lowPlunge = self.lowPlungeBase * scalingMultiplier[autoTalent]
-        self.highPlunge = self.highPlungeBase * scalingMultiplier[autoTalent]
+        self.burstCast = self.burstCastBase * scalingMultiplier[burst_talent]
+        self.burstDOT = self.burstDOTBase * scalingMultiplier[burst_talent]
+        self.burstInfuseDOT = self.burstInfuseDOTBase * scalingMultiplier[burst_talent]
+        self.skillHold = self.skillHoldBase * scalingMultiplier[skill_talent]
+        self.skillPress = self.skillPressBase * scalingMultiplier[skill_talent]
+        self.lowPlunge = self.lowPlungeBase * scalingMultiplier[auto_talent]
+        self.highPlunge = self.highPlungeBase * scalingMultiplier[auto_talent]
 
         # artifacts stats
         self.artifactStats[Attr.ANEMODMG] -= 0.466
@@ -654,37 +635,29 @@ class Kazuha(Character):
         raise NotImplemented("why")
 
     def skill(self, stats, **kwargs):
+        super().skill(stats)
         # TODO: tap/hold
         infusion = kwargs["infusion"]
         stats = self.get_stats(self.rotation)
-        atk = stats.get_attack()
-        # the only thing that effects skill cr is festering as far as i know so idk
-        crit = stats.get_crit_multiplier()
-        skillDMG = stats.get_DMG(self.element, damageType=DamageType.SKILL)
-        plungeDMG = stats.get_DMG(infusion, damageType=DamageType.PLUNGE)
         time = self.time + 0.23
         # chiha whatever
-        self.rotation.do_damage(self, atk * crit * skillDMG * self.skillPress, self.element, DamageType.SKILL, time,
-                                True)
+        self.rotation.do_damage(self, self.skillPress, self.element, DamageType.SKILL, time, True)
         time += 0.8
         # a1
-        self.rotation.do_damage(self, atk * crit * plungeDMG * 2, infusion, DamageType.PLUNGE, time, True)
+        self.rotation.do_damage(self, 2, infusion, DamageType.PLUNGE, time, True)
         # plunge
-        self.rotation.do_damage(self, atk * crit * plungeDMG * self.highPlunge, self.element, DamageType.PLUNGE, time,
-                                True)
+        self.rotation.do_damage(self, self.highPlunge, self.element, DamageType.PLUNGE, time, True)
 
     def burst(self, stats, **kwargs):
+        super().burst(stats)
         element = kwargs["infusion"]
-        multiplier = super().burst(stats)
-        infuseMultiplier = stats.get_attack() * stats.get_crit_multiplier(damageType=DamageType.BURST) * \
-                           stats.get_DMG(element, damageType=DamageType.BURST)
         t = self.time + 93 / 60
-        self.rotation.do_damage(self, multiplier * self.burstCast, self.element, DamageType.BURST, t, True)
+        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True)
         t += 1.08
         for i in range(4):
             t += 1.95
-            self.rotation.do_damage(self, multiplier * self.burstDOT, self.element, DamageType.BURST, t, True)
-            self.rotation.do_damage(self, infuseMultiplier * self.burstInfuseDOT, element, DamageType.BURST, t, True)
+            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
+            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True)
 
     def reaction(self, stats, reaction):
         super().reaction(stats, reaction)

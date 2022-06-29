@@ -30,6 +30,9 @@ class Swap(Action):
     def do_action(self, rotation):
         rotation.swap(rotation.characters[self.character])
 
+    def __repr__(self):
+        return f"Swapping to {self.character} at {self.time}"
+
 
 class Summon(Action):
     def __init__(self, character, time, summon):
@@ -39,6 +42,8 @@ class Summon(Action):
     def do_action(self, rotation):
         rotation.add_summon(self.summon)
 
+    def __repr__(self):
+        return f"Summoning {self.summon} by {self.character} at {self.time}"
 
 class Recall(Action):
     def __init__(self, character, time, summon):
@@ -48,27 +53,35 @@ class Recall(Action):
     def do_action(self, rotation):
         rotation.recall_summon(self.summon)
 
+    def __repr__(self):
+        return f"Recalling {self.summon} by {self.character} at {self.time}"
+
 
 class Damage(Action):
-    def __init__(self, character, time, damage, element, damage_type, aoe=False, is_reaction=False, debug=False):
+    def __init__(self, character, time, statsRef, mv, element, damage_type, aoe=False, reaction=None, debug=False):
         super().__init__(character, time)
-        self.damage = damage
+        self.statsRef = statsRef
+        self.mv = mv
         self.aoe = aoe
         self.element = element
-        self.isReaction = is_reaction
+        self.reaction = reaction
         self.debug = debug
         self.damageType = damage_type
 
     def do_action(self, rotation):
         """for enemy in self.targets:
             rotation.enemies[enemy].take_damage(self.damage, self.element, rotation)"""
+        if self.damageType == DamageType.REACTION:
+            damage = self.mv * self.statsRef().transformative_multiplier(self.reaction)
+        else:
+            damage = self.mv * self.statsRef().get_multiplier(self.element, self.damageType, self.character.emblem)
         if self.aoe:
             for enemy in rotation.enemies:
-                enemy.take_damage(self.damage, self.element, rotation, self.character, is_reaction=self.isReaction,
+                enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,
                                   debug=self.debug)
         else:
             enemy = rotation.enemies[0]
-            enemy.take_damage(self.damage, self.element, rotation, self.character, is_reaction=self.isReaction,
+            enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,
                               debug=self.debug)
         for hook in rotation.damageHooks:
             hook()
@@ -87,6 +100,9 @@ class Damage(Action):
             case DamageType.BURST:
                 for hook in self.character.burstHitHook:
                     hook(self.character)
+
+    def __repr__(self):
+        return f"{self.character} dealing {round(self.damage,2)} at {self.time}"
 
 
 """class Auto(Action):
@@ -117,6 +133,9 @@ class Normal(Action):
         for hook in rotation.normalAttackHook:
             hook()
 
+    def __repr__(self):
+        return f"{self.character} normal attacking at {self.time}"
+
 
 class Charged(Action):
     def __init__(self, character, time, **kwargs):
@@ -128,6 +147,8 @@ class Charged(Action):
         c = rotation.characters[self.character]
         c.charged(c.get_stats(rotation.time), **self.args)
 
+    def __repr__(self):
+        return f"{self.character} charged attacking at {self.time}"
 
 class Skill(Action):
     def __init__(self, character, time, **kwargs):
@@ -139,6 +160,9 @@ class Skill(Action):
         c = rotation.characters[self.character]
         c.skill(c.get_stats(rotation.time), **self.args)
 
+    def __repr__(self):
+        return f"{self.character} casting skill at {self.time}"
+
 
 class Burst(Action):
     def __init__(self, character, time, **kwargs):
@@ -149,6 +173,9 @@ class Burst(Action):
         super().do_action(rotation)
         c = rotation.characters[self.character]
         c.burst(c.get_stats(rotation.time), **self.args)
+
+    def __repr__(self):
+        return f"{self.character} casting burst at {self.time}"
 
 
 class Reaction(Action):
@@ -164,6 +191,8 @@ class Reaction(Action):
         for delegate in rotation.reactionHook:
             delegate(self.character)
 
+    def __repr__(self):
+        return f"{self.character} doing {self.reaction} at {self.time}"
 
 class Buff(Action):
     def __init__(self, character, time, buff):
@@ -173,3 +202,6 @@ class Buff(Action):
     def do_action(self, rotation):
         for char in rotation.characters:
             char.add_buff(self.buff)
+
+    def __repr__(self):
+        return f"{self.character} buffing {self.buff} at {self.time}"
