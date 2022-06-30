@@ -1,4 +1,4 @@
-from character_base import*
+from character.character_base import*
 from weapons import TTDS
 
 class Kokomi(Character):

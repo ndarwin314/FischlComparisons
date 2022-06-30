@@ -60,7 +60,6 @@ class PolarStar(Weapon):
                 self.stacks[k] = None
             else:
                 stackCount += 1
-        #print(Stats({Attr.ATKP: self.stackValue[stackCount]}))
         return self.stats + Stats({Attr.ATKP: self.stackValue[stackCount]})
 
     def equip(self, character):
@@ -201,7 +200,7 @@ class TheViridescentHunt(Weapon):
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.CR: 0.276}), "Hunt")
         self.proc_chance = 0.5
-        self.proc_scaling = (0.3 + 0.1 * refinement)
+        self.proc_scaling = (0.4 + 0.1 * refinement) * 8
         self.lastHit = -10
         self.cooldown = 15 - refinement
 
@@ -210,8 +209,7 @@ class TheViridescentHunt(Weapon):
         if t > self.lastHit + self.cooldown and char.rotation.onField == char:
             self.lastHit = t
             #print(self.proc_scaling)
-            for i in range(8):
-                char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER, time=char.time+0.5*i)
+            char.rotation.do_damage(char, self.proc_scaling, Element.PHYSICAL, DamageType.OTHER)
 
     def equip(self, character):
         super().equip(character)
@@ -349,7 +347,6 @@ class Catch(Weapon):
 
 class Grass(Weapon):
     def __init__(self, refinement=1):
-        #TODO: implement this nonsense
         super().__init__(refinement, Stats({Attr.ATKBASE: 608}), "Engulfing Lightning")
 
 class TTDS(Weapon):

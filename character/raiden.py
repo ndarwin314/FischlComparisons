@@ -82,7 +82,7 @@ class Raiden(Character):
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
 
     # TODO: this doesn't account for multi-hits since i suck
-    def normal(self, hit, **kwargs):
+    def normal(self, stats, hit, **kwargs):
         charged = kwargs.get("character")
         if charged is None:
             charged = True
@@ -117,8 +117,8 @@ class Raiden(Character):
                 self.rotation.do_damage(self, mvs[-1], Element.PHYSICAL, DamageType.CHARGED, time=t)
 
 
-    def charged(self):
-        super().charged()
+    def charged(self, stats):
+        super().charged(stats)
         if self.burstActive and self.time > self.burstExpiration:
             self.burstActive = False
             self.resolve = 0
@@ -130,14 +130,14 @@ class Raiden(Character):
         else:
             self.rotation.do_damage(self, self.autoMVS[-1], Element.PHYSICAL, DamageType.CHARGED)
 
-    def skill(self):
-        super().skill()
+    def skill(self, stats):
+        super().skill(stats)
         self.rotation.do_damage(self, self.skillCastMV, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.85)
-        self.rotation.add_summon(self.NotOz(self.skillTurretMV, None, self, self.time, self.rotation))
+        self.rotation.add_summon(self.NotOz(self.skillTurretMV, stats, self, self.time, self.rotation))
 
-    def burst(self):
-        super().burst()
+    def burst(self, stats):
+        super().burst(stats)
         self.burstActive = True
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add

@@ -1,6 +1,6 @@
 from character.character_base import*
 from weapons import AlleyFlash
-import actions
+from actions import Buff
 
 class Bennett(Character):
     skillBase = 1.376
@@ -44,20 +44,20 @@ class Bennett(Character):
         self.artifactStats[Attr.CD] += (self.cdCap - 1) * substatValues[Attr.CD]
         self.artifactStats[Attr.ER] += 4 * substatValues[Attr.ER]
 
-    def normal(self, hit, **kwargs):
-        super().normal(hit)
+    def normal(self, stats, hit, **kwargs):
+        super().normal(stats, hit)
         self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
-    def charged(self):
+    def charged(self, stats):
         raise NotImplementedError
 
-    def skill(self):
-        super().skill()
+    def skill(self, stats):
+        super().skill(stats)
         self.rotation.do_damage(self, self.skillBase, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.27)
 
-    def burst(self):
-        super().burst()
+    def burst(self, stats):
+        super().burst(stats)
         # TODO maybe: bennett burst in game take several ticks to apply which isn't represented with this currently
         self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
                                 time=self.time + 0.62, stats_ref= lambda : self.get_stats())

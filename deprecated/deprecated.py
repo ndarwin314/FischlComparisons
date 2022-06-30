@@ -21,7 +21,7 @@ def main():
                     row.append(str(test.kqm_optimize(test.rotation_raifish, sweaty=True)))
             CSV.append(row)
     print(time.time() - start)
-    with open('results/raifish.csv', 'w', newline='') as csvfile:
+    with open('../results/raifish.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         for line in CSV:
             writer.writerow(line)
@@ -50,7 +50,7 @@ def yelan_moment():
                         row.append(str(test.kqm_optimize(test.rotation_raifish, sweaty=True)))
                 CSV.append(row)
     print(time.time() - start)
-    with open('results/gamblerRaifish.csv', 'w', newline='') as csvfile:
+    with open('../results/gamblerRaifish.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         for line in CSV:
             writer.writerow(line)

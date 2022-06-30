@@ -43,14 +43,14 @@ class Kazuha(Character):
         self.artifactStats[Attr.ER] += 10 * substatValues[Attr.ER]
         self.artifactStats[Attr.ATKP] += 6 * substatValues[Attr.ATKP]
 
-    def normal(self, hit, **kwargs):
+    def normal(self, stats, hit, **kwargs):
         raise NotImplemented("why")
 
-    def charged(self):
+    def charged(self, stats):
         raise NotImplemented("why")
 
-    def skill(self, **kwargs):
-        super().skill()
+    def skill(self, stats, **kwargs):
+        super().skill(stats)
         # TODO: tap/hold
         infusion = kwargs["infusion"]
         time = self.time + 0.23
@@ -62,21 +62,20 @@ class Kazuha(Character):
         # plunge
         self.rotation.do_damage(self, self.highPlunge, self.element, DamageType.PLUNGE, time, True)
 
-    def burst(self, **kwargs):
-        super().burst()
+    def burst(self, stats, **kwargs):
+        super().burst(stats)
         element = kwargs["infusion"]
         t = self.time + 93 / 60
-        statsRef = lambda : self.get_stats()
-        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True, stats_ref=statsRef)
+        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True)
         t += 1.08
         for i in range(4):
             t += 1.95
-            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True, stats_ref=statsRef)
-            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True, stats_ref=statsRef)
+            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
+            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True)
 
     def reaction(self, stats, reaction):
         super().reaction(stats, reaction)
         if reaction.is_swirl():
             element = reaction.element()
             dmgBonus = Stats({attributes.elementDict[element]: self.get_stats(self.time)[Attr.EM] * 0.0004})
-            self.rotation.add_event(actions.Buff(self, self.time, Buff(dmgBonus, self.time, 8, self.buffIDS[element])))
+            self.rotation.add_event(actions.Buff(self, self.time, buff.Buff(dmgBonus, self.time, 8, self.buffIDS[element])))

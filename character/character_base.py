@@ -6,9 +6,9 @@ from uuid import uuid1 as uuid
 from summon import Summon
 import math
 import numpy as np
-import buff
 import actions
 from artifacts import Set, SetCount
+import buff
 
 class ConType(Enum):
     SkillFirst = 0
@@ -205,7 +205,7 @@ class Character(ABC):
         self.rotation = r
 
     @abstractmethod
-    def normal(self, hits, **kwargs):
+    def normal(self, stats, hits, **kwargs):
         t = self.time
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
@@ -214,16 +214,16 @@ class Character(ABC):
                 hook()
 
     @abstractmethod
-    def charged(self):
+    def charged(self, stats):
         pass
 
     @abstractmethod
-    def skill(self):
+    def skill(self, stats):
         for delegate in self.skillCastHook:
             self.rotation.add_event(delegate(self))
 
     @abstractmethod
-    def burst(self):
+    def burst(self, stats):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
 

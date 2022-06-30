@@ -159,8 +159,7 @@ class Stats:
                 cd += self[Attr.QCD]
             case None:
                 pass
-        # fucking kokomi
-        return 1 + cd * max(min(cr, 1), 0)
+        return 1 + cd * min(cr, 1)
 
     @cache
     def get_attack(self):
