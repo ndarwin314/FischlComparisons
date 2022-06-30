@@ -1,4 +1,4 @@
-from character_base import*
+from character.character_base import*
 from weapons import IronSting
 import attributes
 from buff import Buff
@@ -43,14 +43,14 @@ class Kazuha(Character):
         self.artifactStats[Attr.ER] += 10 * substatValues[Attr.ER]
         self.artifactStats[Attr.ATKP] += 6 * substatValues[Attr.ATKP]
 
-    def normal(self, stats, hit, **kwargs):
+    def normal(self, hit, **kwargs):
         raise NotImplemented("why")
 
-    def charged(self, stats):
+    def charged(self):
         raise NotImplemented("why")
 
-    def skill(self, stats, **kwargs):
-        super().skill(stats)
+    def skill(self, **kwargs):
+        super().skill()
         # TODO: tap/hold
         infusion = kwargs["infusion"]
         time = self.time + 0.23
@@ -62,16 +62,17 @@ class Kazuha(Character):
         # plunge
         self.rotation.do_damage(self, self.highPlunge, self.element, DamageType.PLUNGE, time, True)
 
-    def burst(self, stats, **kwargs):
-        super().burst(stats)
+    def burst(self, **kwargs):
+        super().burst()
         element = kwargs["infusion"]
         t = self.time + 93 / 60
-        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True)
+        statsRef = lambda : self.get_stats()
+        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True, stats_ref=statsRef)
         t += 1.08
         for i in range(4):
             t += 1.95
-            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
-            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True)
+            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True, stats_ref=statsRef)
+            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True, stats_ref=statsRef)
 
     def reaction(self, stats, reaction):
         super().reaction(stats, reaction)

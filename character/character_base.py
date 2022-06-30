@@ -6,6 +6,7 @@ from uuid import uuid1 as uuid
 from summon import Summon
 import math
 import numpy as np
+import buff
 import actions
 from artifacts import Set, SetCount
 
@@ -177,7 +178,7 @@ class Character(ABC):
                     self.artifactStats[Attr.QDMG] += 0.2
                     if s.count >= 4:
                         delegate = lambda c: actions.Buff(self, c.time,
-                                                          Buff(self.noblesseBuff, c.time, 12, self.noblesseID))
+                                                          buff.Buff(self.noblesseBuff, c.time, 12, self.noblesseID))
                         self.burstCastHook.append(delegate)
                 case Set.EMBLEM:
                     self.artifactStats[Attr.ER] += 0.2
@@ -196,7 +197,7 @@ class Character(ABC):
                         def tom(character):
                             t = character.time
                             if t > character.lastTOM + 0.5:
-                                character.rotation.add_event(actions.Buff(self, t, Buff(self.noblesseBuff, t, 3, self.tomID)))
+                                character.rotation.add_event(actions.Buff(self, t, buff.Buff(self.noblesseBuff, t, 3, self.tomID)))
 
                         self.skillHitHook.append(tom)
 
@@ -204,7 +205,7 @@ class Character(ABC):
         self.rotation = r
 
     @abstractmethod
-    def normal(self, stats, hits, **kwargs):
+    def normal(self, hits, **kwargs):
         t = self.time
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
@@ -213,16 +214,16 @@ class Character(ABC):
                 hook()
 
     @abstractmethod
-    def charged(self, stats):
+    def charged(self):
         pass
 
     @abstractmethod
-    def skill(self, stats):
+    def skill(self):
         for delegate in self.skillCastHook:
             self.rotation.add_event(delegate(self))
 
     @abstractmethod
-    def burst(self, stats):
+    def burst(self):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
 

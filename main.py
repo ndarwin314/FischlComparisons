@@ -75,5 +75,5 @@ def test():
     print({k: round(v/36,2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    #bad("raifish")
-    test()
+    bad("raifish")
+    #test()

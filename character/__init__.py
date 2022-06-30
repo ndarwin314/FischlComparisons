@@ -1,4 +1,4 @@
-import bennett
-import kazuha
-import raiden
-import fischl
+from character.bennett import*
+from character.kazuha import*
+from character.raiden import*
+from character.fischl import*

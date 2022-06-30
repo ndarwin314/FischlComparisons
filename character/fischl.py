@@ -1,4 +1,4 @@
-from character_base import*
+from character.character_base import*
 from weapons import AlleyHunter
 
 class Fischl(Character):
@@ -14,12 +14,12 @@ class Fischl(Character):
 
     class Oz(Summon):
         # i am ignoring hitlag
-        def __init__(self, mv, statsRef, who_summoned, start, duration, con, rotation):
+        def __init__(self, mv, stats_ref, who_summoned, start, duration, con, rotation):
             super().__init__(None, who_summoned, start, duration, rotation)
             self.mv = mv
             self.lastA4 = start
             self.con = con
-            self.statsRef = statsRef
+            self.statsRef = stats_ref
             # technically this could change over the burst (sara c6) but i'm not including anything that will so idc
 
         def on_frame(self):
@@ -47,6 +47,7 @@ class Fischl(Character):
             if self.con >= 1:
                 self.rotation.normalAttackHook.remove(self.summoner.c1)
             self.rotation.reactionHook.append(self.a4)
+            self.summoner.oz = self
 
         def recall(self):
             super().recall()
@@ -55,6 +56,7 @@ class Fischl(Character):
             if self.con >= 1:
                 self.rotation.normalAttackHook.append(self.summoner.c1)
             self.rotation.reactionHook.remove(self.a4)
+            self.summoner.oz = None
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=AlleyHunter(refinement=1), artifact_set=(SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)),
@@ -75,6 +77,7 @@ class Fischl(Character):
         # technically c4 is a separate damage instance, but it does not make a big difference
         self.burstMV = self.burstBase * scalingMultiplier[burst_talent] + (2.22 if constellation > 3 else 0)
         self.autoMVS = [self.autoBase[0]*autoMultiplier[auto_talent]]
+        self.oz = None
         self.autoTiming = [[10, 18, 33, 41, 29]]
         # artifacts
         self.artifactStats[Attr.ATKP] += 0.466
@@ -97,17 +100,19 @@ class Fischl(Character):
         if self.constellation >= 1:
             self.rotation.normalAttackHook.append(self.c1)
 
-    def normal(self, stats, hit, **kwargs):
-        super().normal(stats, hit)
+    def normal(self, hit, **kwargs):
+        super().normal(hit)
         # TODO: add c1 loser
         #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
-    def charged(self, stats):
-        super().charged(stats)
+    def charged(self):
+        super().charged()
         self.rotation.do_damage(self, self.aim, Element.PHYSICAL, DamageType.CHARGED)
 
-    def skill(self, stats):
-        super().skill(stats)
+    def skill(self):
+        super().skill()
+        if self.oz is not None:
+            self.oz.statsRef = self.get_stats()
         self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         self.rotation.add_event(actions.Summon(self, self.time + .6,
@@ -115,8 +120,8 @@ class Fischl(Character):
                                                        self, self.time + .6, self.turretHits, self.constellation,
                                                        self.rotation)))
 
-    def burst(self, stats):
-        super().burst(stats)
+    def burst(self):
+        super().burst()
         self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + .4,

@@ -349,4 +349,12 @@ class Catch(Weapon):
 
 class Grass(Weapon):
     def __init__(self, refinement=1):
+        #TODO: implement this nonsense
         super().__init__(refinement, Stats({Attr.ATKBASE: 608}), "Engulfing Lightning")
+
+class TTDS(Weapon):
+    def __init__(self, refinement=5):
+        # TODO: add the character switch thing
+        super().__init__(refinement, Stats({Attr.ATKBASE: 401, Attr.HPP: 0.352}), "Thrilling Tales of Dragon Slayers")
+        self.lastProc = -10
+        self.buff = Stats({Attr.ATKP: 0.18 + 0.06 * refinement})

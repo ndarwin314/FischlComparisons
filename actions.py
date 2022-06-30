@@ -130,7 +130,7 @@ class Normal(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.normal(c.get_stats(rotation.time), self.hit, **self.kwargs)
+        c.normal(self.hit, **self.kwargs)
         """for hook in rotation.normalAttackHook:
             hook()"""
 
@@ -146,7 +146,7 @@ class Charged(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.charged(c.get_stats(rotation.time), **self.args)
+        c.charged(**self.args)
 
     def __repr__(self):
         return f"{self.character} charged attacking at {self.time}"
@@ -159,7 +159,7 @@ class Skill(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.skill(c.get_stats(rotation.time), **self.args)
+        c.skill(**self.args)
 
     def __repr__(self):
         return f"{self.character} casting skill at {self.time}"
@@ -173,7 +173,7 @@ class Burst(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.burst(c.get_stats(rotation.time), **self.args)
+        c.burst(**self.args)
 
     def __repr__(self):
         return f"{self.character} casting burst at {self.time}"
