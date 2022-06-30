@@ -122,16 +122,17 @@ class Damage(Action):
 
 
 class Normal(Action):
-    def __init__(self, character, time, hit=1):
+    def __init__(self, character, time, hit=1, **kwargs):
         super().__init__(character, time)
-        self.hit = hit - 1
+        self.hit = hit
+        self.kwargs = kwargs
 
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.normal(c.get_stats(rotation.time), self.hit)
-        for hook in rotation.normalAttackHook:
-            hook()
+        c.normal(c.get_stats(rotation.time), self.hit, **self.kwargs)
+        """for hook in rotation.normalAttackHook:
+            hook()"""
 
     def __repr__(self):
         return f"{self.character} normal attacking at {self.time}"

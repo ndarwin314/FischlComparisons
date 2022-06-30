@@ -17,18 +17,18 @@ class Rotation:
     def __init__(self, action_list, characters, length, enemy_count=1):
         self.length = length
         self.characters = characters
-        for char in self.characters:
-            char.set_rotation(self)
-        self.onField = characters[0]
-        self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
-        # dont ask
-        self.enemyCount = enemy_count - 1
         self.summons = []
         self.damageDict = {char: 0 for char in self.characters}
         self.frame = 0
         self.damageHooks = []
         self.normalAttackHook = []
         self.reactionHook = []
+        for char in self.characters:
+            char.set_rotation(self)
+        self.onField = characters[0]
+        self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
+        # dont ask
+        self.enemyCount = enemy_count - 1
         # scuffed
         self.events = [[] for _ in range(60 * 45)]
         for action in action_list:

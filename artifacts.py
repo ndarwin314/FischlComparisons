@@ -10,6 +10,9 @@ class Set(Enum):
     EMBLEM = 6
     VV = 7
 
+    def __repr__(self):
+        return self.name
+
 # represents a pair of an artifact set with its count, ie 4 piece emblem
 class SetCount:
 
@@ -18,3 +21,6 @@ class SetCount:
     def __init__(self, set, count):
         self.set = set
         self.count = count
+
+    def __repr__(self):
+        return f"{self.count} {self.set}"

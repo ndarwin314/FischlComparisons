@@ -14,6 +14,8 @@ import math
 import actions
 
 
+
+
 class ConType(Enum):
     SkillFirst = 0
     BurstFirst = 0
@@ -127,13 +129,17 @@ class Character(ABC):
         self.chargedHitHook = []
         self.damageHook = []
 
+
         self.stats = stats
         self.buffs = []
         self.artifactStats = Stats()
         self.element = element
         self.weapon = None
         weapon.equip(self)
+
         self.autoTalent = auto_talent
+        self.autoMVS = None
+        self.autoTiming = None
         if weapon_type == ConType.SkillFirst:
             self.skillTalent = skill_talent if constellation < 3 else skill_talent + 3
             self.burstTalent = burst_talent if constellation < 5 else burst_talent + 3
@@ -205,8 +211,13 @@ class Character(ABC):
         self.rotation = r
 
     @abstractmethod
-    def normal(self, stats, hit):
-        pass
+    def normal(self, stats, hits, **kwargs):
+        t = self.time
+        for i in range(hits):
+            t += self.autoTiming[0][i] / 60
+            self.rotation.do_damage(self, self.autoMVS[0][i], Element.PHYSICAL, DamageType.NORMAL, t)
+            for hook in self.rotation.normalAttackHook:
+                hook()
 
     @abstractmethod
     def charged(self, stats):
@@ -286,6 +297,9 @@ class Character(ABC):
     def time(self):
         return self.rotation.time
 
+    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None):
+        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, debug, stats_ref)
+
 
 class Fischl(Character):
     skillTurretBase = 0.888
@@ -293,7 +307,7 @@ class Fischl(Character):
     n1Base = 0.4412
     burstBase = 2.08
     aimBase = 0.4386
-
+    autoBase = [np.array([0.4412, 0.4678, 0.5814, 0.5771, 0.7207])]
     A4 = 0.8
     C6 = 0.3
 
@@ -310,11 +324,11 @@ class Fischl(Character):
 
         def on_frame(self):
             if (self.rotation.frame - math.ceil(60 * self.start)) % 60 == 0:
-                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO, debug=True,
+                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
-        def c6(self):
-            self.rotation.do_damage(self.summoner, 0.3, Element.ELECTRO,
+        def c6(self, time=None):
+            self.rotation.do_damage(self.summoner, 0.3, Element.ELECTRO, time=time,
                                     damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
         def a4(self, character):
@@ -330,12 +344,16 @@ class Fischl(Character):
             self.stats = self.statsRef()
             if self.con >= 6:
                 self.rotation.normalAttackHook.append(self.c6)
+            if self.con >= 1:
+                self.rotation.normalAttackHook.remove(self.summoner.c1)
             self.rotation.reactionHook.append(self.a4)
 
         def recall(self):
             super().recall()
             if self.con >= 6:
                 self.rotation.normalAttackHook.remove(self.c6)
+            if self.con >= 1:
+                self.rotation.normalAttackHook.append(self.summoner.c1)
             self.rotation.reactionHook.remove(self.a4)
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
@@ -353,11 +371,11 @@ class Fischl(Character):
         self.turretHits = 10 if constellation < 6 else 12
         self.skillTurret = self.skillTurretBase * scalingMultiplier[skill_talent]
         self.skillCast = self.skillCastBase * scalingMultiplier[skill_talent] + (2 if constellation > 1 else 0)
-        self.n1 = self.n1Base * autoMultiplier[auto_talent]
         self.aim = self.aimBase * autoMultiplier[auto_talent]
         # technically c4 is a separate damage instance, but it does not make a big difference
         self.burstMV = self.burstBase * scalingMultiplier[burst_talent] + (2.22 if constellation > 3 else 0)
-
+        self.autoMVS = [self.autoBase[0]*autoMultiplier[auto_talent]]
+        self.autoTiming = [[10, 18, 33, 41, 29]]
         # artifacts
         self.artifactStats[Attr.ATKP] += 0.466
         stats = self.get_stats(0)
@@ -371,10 +389,18 @@ class Fischl(Character):
         self.artifactStats[Attr.CD] += self.cdCap * substatValues[Attr.CD]
         self.artifactStats[Attr.ATKP] += 2 * substatValues[Attr.ATKP]
 
-    def normal(self, stats, hit):
+    def c1(self):
+        self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
+
+    def set_rotation(self, r):
+        super().set_rotation(r)
+        if self.constellation >= 1:
+            self.rotation.normalAttackHook.append(self.c1)
+
+    def normal(self, stats, hit, **kwargs):
         super().normal(stats, hit)
         # TODO: add c1 loser
-        self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
+        #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self, stats):
         super().charged(stats)
@@ -404,6 +430,8 @@ class Bennett(Character):
     n1Base = 0.4455
     burstBase = 2.328
     atkBuffRatio = [0, .56, .602, .644, .7, .742, .784, .84, .896, .952, 1.008, 1.064, 1.12, 1.19]
+    autoBase = [np.array([0.4455, 0.4274, 0.5461, 0.5968, 0.719]), np.array([0.559, 0.719])]
+    autoTiming = [[12, 20, 31, 55, 49]]
     buffID = uuid()
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
@@ -418,6 +446,7 @@ class Bennett(Character):
                          weapon, artifact_set, ConType.SkillFirst, 60)
         self.skillBase = self.skillBase * scalingMultiplier[skill_talent]
         self.burstBase = self.burstBase * scalingMultiplier[burst_talent]
+        self.autoMVS = [self.autoBase[0] * autoMultiplier[auto_talent], self.autoBase[1] * autoMultiplier[auto_talent]]
         self.n1 = self.n1Base * autoMultiplier[auto_talent]
         self.buffValue = (self.atkBuffRatio[self.burstTalent] + (0.2 if constellation >= 1 else 0)) \
                          * self.get_stats(0)[Attr.ATKBASE]
@@ -438,7 +467,7 @@ class Bennett(Character):
         self.artifactStats[Attr.CD] += (self.cdCap - 1) * substatValues[Attr.CD]
         self.artifactStats[Attr.ER] += 4 * substatValues[Attr.ER]
 
-    def normal(self, stats, hit):
+    def normal(self, stats, hit, **kwargs):
         super().normal(stats, hit)
         self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
@@ -469,7 +498,6 @@ class Raiden(Character):
     burstBaseBonus = 0.0389
     burstAutoBonus = 0.0073
     autoInfuseBase = np.array([0.4474, 0.4396, 0.5382, 0.3089, 0.3098, 0.7394, 0.616, 0.7436])
-    autoTimings = [[0.2, 0.35, 0.25, ], [0, 4, 0]]
 
     class NotOz(Summon):
         offset = 30
@@ -520,6 +548,10 @@ class Raiden(Character):
         self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstBonusMV = self.burstBaseBonus * scalingMultiplier[self.burstTalent]
         self.infusedBonusMV = self.burstAutoBonus * scalingMultiplier[self.burstTalent]
+        # i hate timing
+        self.autoTiming = [[12, 20, 22, 41, 44], [80]]
+        self.autoTimingBad = [[14, 17, 25, 46, 49], [44]]
+
 
         # artifacts
         if isinstance(self.weapon, weapons.Grass):
@@ -538,18 +570,40 @@ class Raiden(Character):
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
 
     # TODO: this doesn't account for multi-hits since i suck
-    def normal(self, stats, hit):
-        super().normal(stats, hit)
+    def normal(self, stats, hit, **kwargs):
+        charged = kwargs.get("character")
+        if charged is None:
+            charged = True
+        #super().normal(stats, hit)
         # TODO: refactor this
+        t = self.time
         if self.burstActive and self.time > self.burstExpiration:
             self.burstActive = False
             self.resolve = 0
-        if self.burstActive:
-            mv = self.infusedMVS[hit] + self.resolve * self.infusedBonusMV
-            self.rotation.do_damage(self, mv, self.element, DamageType.BURST)
 
+        if self.burstActive:
+            timing = self.autoTiming
+            mvs = self.infusedMVS + self.resolve * self.infusedBonusMV
+            for i in range(hit):
+                t += timing[0][i] / 60
+                self.rotation.do_damage(self, mvs[i], self.element, DamageType.BURST, time=t)
+                for hook in self.rotation.normalAttackHook:
+                    hook(t)
+            if charged:
+                t += timing[1][0] / 60
+                self.rotation.do_damage(self, mvs[-1]+mvs[-2], self.element, DamageType.BURST, time=t)
         else:
-            self.rotation.do_damage(self, self.autoMVS[hit], Element.PHYSICAL, DamageType.NORMAL)
+            timing = self.autoTimingBad
+            mvs = self.autoMVS
+            for i in range(hit):
+                t += timing[0][i] / 60
+                self.rotation.do_damage(self, mvs[i], Element.PHYSICAL, DamageType.NORMAL, time=t)
+                for hook in self.rotation.normalAttackHook:
+                    hook(t)
+            if charged:
+                t += timing[1][0] / 60
+                self.rotation.do_damage(self, mvs[-1], Element.PHYSICAL, DamageType.CHARGED, time=t)
+
 
     def charged(self, stats):
         super().charged(stats)
@@ -585,7 +639,7 @@ class Raiden(Character):
 
     def add_resolve(self, cost):
         # TODO: change multiplier to be correct for other talent levels
-        self.resolve += cost * 0.19
+        self.resolve += min(cost * 0.19, 60)
 
     def get_stats(self, time=None):
         stats = super().get_stats(time)
@@ -634,7 +688,7 @@ class Kazuha(Character):
         self.artifactStats[Attr.ER] += 10 * substatValues[Attr.ER]
         self.artifactStats[Attr.ATKP] += 6 * substatValues[Attr.ATKP]
 
-    def normal(self, stats, hit):
+    def normal(self, stats, hit, **kwargs):
         raise NotImplemented("why")
 
     def charged(self, stats):
@@ -644,7 +698,6 @@ class Kazuha(Character):
         super().skill(stats)
         # TODO: tap/hold
         infusion = kwargs["infusion"]
-        stats = self.get_stats(self.rotation)
         time = self.time + 0.23
         # chiha whatever
         self.rotation.do_damage(self, self.skillPress, self.element, DamageType.SKILL, time, True)
@@ -671,3 +724,4 @@ class Kazuha(Character):
             element = reaction.element()
             dmgBonus = Stats({attributes.elementDict[element]: self.get_stats(self.time)[Attr.EM] * 0.0004})
             self.rotation.add_event(actions.Buff(self, self.time, Buff(dmgBonus, self.time, 8, self.buffIDS[element])))
+
