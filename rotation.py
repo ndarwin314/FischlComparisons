@@ -111,6 +111,7 @@ class Rotation:
 
     def swap(self, character):
         self.onField = character
+        character.swap_off()
 
     @property
     def damage(self):

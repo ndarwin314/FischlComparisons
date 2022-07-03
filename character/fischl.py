@@ -20,7 +20,6 @@ class Fischl(Character):
             self.lastA4 = start
             self.con = con
             self.statsRef = statsRef
-            # technically this could change over the burst (sara c6) but i'm not including anything that will so idc
 
         def on_frame(self):
             if (self.rotation.frame - math.ceil(60 * self.start)) % 60 == 0:
@@ -32,14 +31,13 @@ class Fischl(Character):
                                     damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
         def a4(self, character):
-            # TODO: make only off field
             # TODO: make it only apply to electro reactions
             if self.rotation.time > self.lastA4 + 0.5 and self.rotation.onField == self.rotation.characters[character]:
                 self.rotation.do_damage(self.summoner, 0.8, Element.ELECTRO,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
                 self.lastA4 = self.time
 
-        def summon(self):
+        def summon(self, overwrite=False):
             super().summon()
             self.stats = self.statsRef()
             if self.con >= 6:
@@ -97,17 +95,17 @@ class Fischl(Character):
         if self.constellation >= 1:
             self.rotation.normalAttackHook.append(self.c1)
 
-    def normal(self, stats, hit, **kwargs):
-        super().normal(stats, hit)
+    def normal(sel, hit, **kwargs):
+        super().normal(hit)
         # TODO: add c1 loser
         #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
-    def charged(self, stats):
-        super().charged(stats)
+    def charged(self):
+        super().charged()
         self.rotation.do_damage(self, self.aim, Element.PHYSICAL, DamageType.CHARGED)
 
-    def skill(self, stats):
-        super().skill(stats)
+    def skill(self):
+        super().skill()
         self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         self.rotation.add_event(actions.Summon(self, self.time + .6,
@@ -115,8 +113,8 @@ class Fischl(Character):
                                                        self, self.time + .6, self.turretHits, self.constellation,
                                                        self.rotation)))
 
-    def burst(self, stats):
-        super().burst(stats)
+    def burst(self):
+        super().burst()
         self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + .4,

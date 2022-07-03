@@ -101,6 +101,7 @@ class Attr(Enum):
     QCD = auto()
     PLUNGEDMG = auto()
     SWIRLBONUS = auto()
+    HB = auto()
 
 
 class ArtifactSlots(Enum):
@@ -165,9 +166,17 @@ class Stats:
     def get_attack(self):
         return self[Attr.ATKBASE] * (1 + self[Attr.ATKP]) + self[Attr.ATK]
 
-    def get_DMG(self, element=Element.PHYSICAL, damageType=None, emblem=False):
+    @cache
+    def get_def(self):
+        return self[Attr.DEFBASE] * (1 + self[Attr.DEFP]) + self[Attr.DEF]
+
+    @cache
+    def get_hp(self):
+        return self[Attr.HPBASE] * (1 + self[Attr.HPP]) + self[Attr.HP]
+
+    def get_DMG(self, element=Element.PHYSICAL, damage_type=None, emblem=False):
         base = 1 + self[Attr.DMG] + self[elementDict[element]]
-        match damageType:
+        match damage_type:
             case DamageType.SKILL:
                 base += self[Attr.EDMG]
             case DamageType.BURST:

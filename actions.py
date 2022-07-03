@@ -71,10 +71,16 @@ class Damage(Action):
     def do_action(self, rotation):
         """for enemy in self.targets:
             rotation.enemies[enemy].take_damage(self.damage, self.element, rotation)"""
-        if self.damageType == DamageType.REACTION:
-            damage = self.mv * self.statsRef().transformative_multiplier(self.reaction)
+        mv = 0
+        stats = self.statsRef()
+        if isinstance(self.mv, float):
+            mv =self.mv
         else:
-            damage = self.mv * self.statsRef().get_multiplier(self.element, self.damageType, self.character.emblem)
+            mv = self.mv.get_base()
+        if self.damageType == DamageType.REACTION:
+            damage = mv * stats.transformative_multiplier(self.reaction)
+        else:
+            damage = mv * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
         if self.aoe:
             for enemy in rotation.enemies:
                 enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,
@@ -130,7 +136,7 @@ class Normal(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.normal(c.get_stats(rotation.time), self.hit, **self.kwargs)
+        c.normal( self.hit, **self.kwargs)
         """for hook in rotation.normalAttackHook:
             hook()"""
 
@@ -146,7 +152,7 @@ class Charged(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.charged(c.get_stats(rotation.time), **self.args)
+        c.charged(**self.args)
 
     def __repr__(self):
         return f"{self.character} charged attacking at {self.time}"
@@ -159,7 +165,7 @@ class Skill(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.skill(c.get_stats(rotation.time), **self.args)
+        c.skill(**self.args)
 
     def __repr__(self):
         return f"{self.character} casting skill at {self.time}"
@@ -173,7 +179,7 @@ class Burst(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.burst(c.get_stats(rotation.time), **self.args)
+        c.burst(**self.args)
 
     def __repr__(self):
         return f"{self.character} casting burst at {self.time}"
@@ -188,7 +194,7 @@ class Reaction(Action):
     def do_action(self, rotation):
         super().do_action(rotation)
         c = rotation.characters[self.character]
-        c.reaction(c.get_stats(rotation.time), self.reaction)
+        c.reaction(self.reaction)
         for delegate in rotation.reactionHook:
             delegate(self.character)
 

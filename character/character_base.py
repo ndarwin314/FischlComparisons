@@ -9,6 +9,7 @@ import numpy as np
 import actions
 from artifacts import Set, SetCount
 import buff
+import mv
 
 class ConType(Enum):
     SkillFirst = 0
@@ -205,7 +206,7 @@ class Character(ABC):
         self.rotation = r
 
     @abstractmethod
-    def normal(self, stats, hits, **kwargs):
+    def normal(self, hits, **kwargs):
         t = self.time
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
@@ -214,20 +215,20 @@ class Character(ABC):
                 hook()
 
     @abstractmethod
-    def charged(self, stats):
+    def charged(self):
         pass
 
     @abstractmethod
-    def skill(self, stats):
+    def skill(self):
         for delegate in self.skillCastHook:
             self.rotation.add_event(delegate(self))
 
     @abstractmethod
-    def burst(self, stats):
+    def burst(self):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
 
-    def reaction(self, stats, reaction):
+    def reaction(self, reaction):
         if reaction.is_swirl():
             element = reaction.element()
             self.rotation.do_damage(self, 1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
@@ -293,3 +294,6 @@ class Character(ABC):
 
     def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None):
         self.rotation.do_damage(self, mv, element, damage_type, time, aoe, debug, stats_ref)
+
+    def swap_off(self):
+        pass

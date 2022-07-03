@@ -5,6 +5,7 @@ from rotation import *
 import character
 from weapons import *
 from action_lists import RaiFish
+import actions
 
 def timer(func):
     def wrapper(*args, **kwargs):
@@ -66,6 +67,7 @@ def bad(name):
         for line in CSV2:
             writer.writerow(line)
 
+@timer
 def test():
     w = AlleyHunter()
     fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
@@ -74,6 +76,15 @@ def test():
     rot.do_rotation()
     print({k: round(v/36,2) for k,v in rot.damageDict.items()})
 
+@timer
+def test2():
+    w = AlleyHunter()
+    fish = character.Kokomi()
+    rot = Rotation([actions.Skill(0,0)], characters=[fish],
+                   length=36)
+    rot.do_rotation()
+    print({k: round(v,2) for k,v in rot.damageDict.items()})
+
 if __name__ == '__main__':
-    bad("raifish")
-    #test()
+    #bad("raifish")
+    test2()
