@@ -29,6 +29,9 @@ class Swap(Action):
 
     def do_action(self, rotation):
         rotation.swap(rotation.characters[self.character])
+        c = rotation.characters[self.character]
+        for hook in rotation.swapHooks:
+            hook(c)
 
     def __repr__(self):
         return f"Swapping to {self.character} at {self.time}"
@@ -71,16 +74,13 @@ class Damage(Action):
     def do_action(self, rotation):
         """for enemy in self.targets:
             rotation.enemies[enemy].take_damage(self.damage, self.element, rotation)"""
-        mv = 0
         stats = self.statsRef()
-        if isinstance(self.mv, float):
-            mv =self.mv
-        else:
-            mv = self.mv.get_base()
         if self.damageType == DamageType.REACTION:
-            damage = mv * stats.transformative_multiplier(self.reaction)
+            damage = self.mv * stats.transformative_multiplier(self.reaction)
+        elif isinstance(self.mv, float) or isinstance(self.mv, int):
+            damage = self.mv * stats.get_attack() * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
         else:
-            damage = mv * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
+            damage = self.mv.get_base(self.statsRef()) * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
         if self.aoe:
             for enemy in rotation.enemies:
                 enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,

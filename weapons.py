@@ -350,8 +350,20 @@ class Grass(Weapon):
         super().__init__(refinement, Stats({Attr.ATKBASE: 608}), "Engulfing Lightning")
 
 class TTDS(Weapon):
+
+    buffID = uuid()
+
     def __init__(self, refinement=5):
         # TODO: add the character switch thing
         super().__init__(refinement, Stats({Attr.ATKBASE: 401, Attr.HPP: 0.352}), "Thrilling Tales of Dragon Slayers")
-        self.lastProc = -10
+        self.lastProc = -20
         self.buff = Stats({Attr.ATKP: 0.18 + 0.06 * refinement})
+
+    def on_swap(self, char):
+        if char.time >= self.lastProc + 20:
+            char.add_buff(buff.Buff(self.buff, char.time, 10, self.buffID))
+            self.lastProc = char.time
+
+    def equip(self, character):
+        super().equip(character)
+        character.rotation.swapHooks.append(self.on_swap)

@@ -11,10 +11,10 @@ class Kokomi(Character):
 
     class Jellyfish(Summon):
 
-        def __init__(self, mv, stats_ref, who_summoned, start, con, rotation):
-            super().__init__(stats_ref, who_summoned, start, 12.05, rotation)
-            self.con = con
-            self.mv = mv
+        def __init__(self,  who_summoned, stats_ref, start):
+            super().__init__(stats_ref, who_summoned, start, 12.05)
+            self.con = who_summoned.constellation
+            self.mv = who_summoned.rippleMV
             self.statsRef = stats_ref
 
         def summon(self):
@@ -40,12 +40,12 @@ class Kokomi(Character):
                                 Attr.DEFBASE: 657,
                                 Attr.HYDRODMG: 0.288,
                                 Attr.ER: 1,
-                                Attr.CR: -95, # kleek
+                                Attr.CR: -.95, # kleek
                                 Attr.CD: 0.5,
                                 Attr.HPP: 0.25
                                 }),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 90)
+                         weapon, artifact_set, ConType.BurstFirst, 70)
         self.autoTiming = [[10, 26, 46], [45]]
 
         self.rippleMV = self.rippleBase * scalingMultiplier[self.skillTalent]
@@ -71,8 +71,8 @@ class Kokomi(Character):
 
     def skill(self):
         super().skill()
-        self.rotation.add_event(actions.Summon(self, self.time + .6, self.Jellyfish(self.rippleMV, lambda :self.get_stats(self.time),
-                                                       self, self.time + .5, self.constellation, self.rotation)))
+        self.rotation.add_event(actions.Summon(self, self.time + .6,
+                                               self.Jellyfish(self, lambda :self.get_stats(self.time),self.time + .5)))
 
     def normal(self, hits, **kwargs):
         t = self.time

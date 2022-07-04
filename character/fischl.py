@@ -14,11 +14,11 @@ class Fischl(Character):
 
     class Oz(Summon):
         # i am ignoring hitlag
-        def __init__(self, mv, statsRef, who_summoned, start, duration, con, rotation):
-            super().__init__(None, who_summoned, start, duration, rotation)
-            self.mv = mv
+        def __init__(self, statsRef, who_summoned, start, duration):
+            super().__init__(None, who_summoned, start, duration)
+            self.mv = who_summoned.skillTurret
             self.lastA4 = start
-            self.con = con
+            self.con = who_summoned.constellation
             self.statsRef = statsRef
 
         def on_frame(self):
@@ -109,15 +109,13 @@ class Fischl(Character):
         self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         self.rotation.add_event(actions.Summon(self, self.time + .6,
-                                               self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
-                                                       self, self.time + .6, self.turretHits, self.constellation,
-                                                       self.rotation)))
+                                               self.Oz(lambda :self.get_stats(self.time),
+                                                       self, self.time + .6, self.turretHits)))
 
     def burst(self):
         super().burst()
         self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + .4,
-                                               self.Oz(self.skillTurret, lambda :self.get_stats(self.time),
-                                                       self, self.time + .4, self.turretHits, self.constellation,
-                                                       self.rotation)))
+                                               self.Oz(lambda :self.get_stats(self.time),
+                                                       self, self.time + .4, self.turretHits)))

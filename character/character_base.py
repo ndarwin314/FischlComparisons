@@ -129,8 +129,7 @@ class Character(ABC):
         self.buffs = []
         self.artifactStats = Stats()
         self.element = element
-        self.weapon = None
-        weapon.equip(self)
+        self.weapon = weapon
 
         self.autoTalent = auto_talent
         self.autoMVS = None
@@ -293,7 +292,7 @@ class Character(ABC):
         return self.rotation.time
 
     def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None):
-        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, debug, stats_ref)
+        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, None, debug, stats_ref)
 
     def swap_off(self):
         pass

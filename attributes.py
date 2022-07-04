@@ -160,7 +160,7 @@ class Stats:
                 cd += self[Attr.QCD]
             case None:
                 pass
-        return 1 + cd * min(cr, 1)
+        return 1 + cd * max(min(cr, 1), 0)
 
     @cache
     def get_attack(self):
@@ -192,7 +192,7 @@ class Stats:
         return base
 
     def get_multiplier(self, element=Element.PHYSICAL, damage_type=None, emblem=False):
-        return self.get_attack() * self.get_crit_multiplier(damage_type) * self.get_DMG(element, damage_type, emblem)
+        return self.get_crit_multiplier(damage_type) * self.get_DMG(element, damage_type, emblem)
 
     # @cache
     def transformative_multiplier(self, reaction=None):

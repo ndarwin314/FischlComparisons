@@ -79,12 +79,12 @@ def test():
 @timer
 def test2():
     w = AlleyHunter()
-    fish = character.Kokomi()
-    rot = Rotation([actions.Skill(0,0)], characters=[fish],
+    rot = Rotation([actions.Burst(0,0), actions.Skill(0,1), actions.Swap(2, 1.5), actions.Burst(2, 2), actions.Swap(1, 2.5), actions.Burst(1, 3), actions.Skill(1, 3.5), actions.Swap(0, 4)],
+                   characters=[character.Kokomi(), character.Xiangling(), character.Bennett()],
                    length=36)
     rot.do_rotation()
     print({k: round(v,2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
     #bad("raifish")
-    test2()
+    test()

@@ -23,8 +23,10 @@ class Rotation:
         self.damageHooks = []
         self.normalAttackHook = []
         self.reactionHook = []
+        self.swapHooks = []
         for char in self.characters:
             char.set_rotation(self)
+            char.weapon.equip(char)
         self.onField = characters[0]
         self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
         # dont ask
@@ -110,8 +112,8 @@ class Rotation:
         self.events[math.floor(event.time * 60)].append(event)
 
     def swap(self, character):
+        self.onField.swap_off()
         self.onField = character
-        character.swap_off()
 
     @property
     def damage(self):

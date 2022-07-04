@@ -16,9 +16,9 @@ class Raiden(Character):
         buffID = uuid()
 
         # i am ignoring hitlag
-        def __init__(self, mv, stats, who_summoned, start, rotation):
-            super().__init__(stats, who_summoned, start, 25.28, rotation)
-            self.mv = mv
+        def __init__(self, stats, who_summoned, start):
+            super().__init__(stats, who_summoned, start, 25.28)
+            self.mv = who_summoned.skillTurretMV
             self.lastHit = start + 0.9
 
         def coordinated_attack(self):
@@ -119,9 +119,6 @@ class Raiden(Character):
 
     def charged(self):
         super().charged()
-        if self.burstActive and self.time > self.burstExpiration:
-            self.burstActive = False
-            self.resolve = 0
         if self.burstActive:
             # this is a hack to add both mvs together since i'm lazy and they are simultaneous
             mv = self.infusedMVS[-1] + self.infusedMVS[-2] + 2 * self.resolve * self.infusedBonusMV
@@ -134,11 +131,12 @@ class Raiden(Character):
         super().skill()
         self.rotation.do_damage(self, self.skillCastMV, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.85)
-        self.rotation.add_summon(self.NotOz(self.skillTurretMV, None, self, self.time, self.rotation))
+        self.rotation.add_summon(self.NotOz(None, self, self.time))
 
     def burst(self):
         super().burst()
         self.burstActive = True
+        print(self.time)
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add
         self.burstExpiration = self.time + 115 / 60 + 7 + 2
@@ -148,10 +146,12 @@ class Raiden(Character):
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
         self.rotation.do_damage(self, mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
+        self.rotation.add_event(actions.OtherAction(self, self.time + 11, lambda r: self.deactivate_burst()))
 
     def add_resolve(self, cost):
         # TODO: change multiplier to be correct for other talent levels
-        self.resolve += min(cost * 0.19, 60)
+        self.resolve = min(cost * 0.19 + self.resolve, 60)
+
 
     def get_stats(self, time=None):
         stats = super().get_stats(time)
@@ -160,4 +160,10 @@ class Raiden(Character):
         return stats
 
     def swap_off(self):
-        self.burstActive = False
+        self.deactivate_burst()
+
+    def deactivate_burst(self):
+        if not self.burstActive:
+            #print(self.time)
+            self.burstActive = False
+            self.resolve = 0

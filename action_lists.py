@@ -83,5 +83,9 @@ RaiFish = {"list": [Skill(0, 0),
                     Swap(0, 35.87)],
            "length": 36}
 
-Sukokomon = {"list" : [],
+Sukokomon = {"list" : [Swap(0, 2),
+                       Burst(0, 2),
+                       Swap(0.42, 3),
+                       Swap(0.65, 3),
+                       Swap(1, 1.68)],
              "length": 25}
