@@ -69,7 +69,7 @@ def bad(name):
 
 @timer
 def test():
-    w = AlleyHunter()
+    w = ElegyForTheEnd()
     fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
     rot = Rotation(RaiFish["list"], characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
                    length=36)
@@ -80,7 +80,7 @@ def test():
 def test2():
     w = AlleyHunter()
     rot = Rotation([actions.Burst(0,0), actions.Skill(0,1), actions.Swap(2, 1.5), actions.Burst(2, 2), actions.Swap(1, 2.5), actions.Burst(1, 3), actions.Skill(1, 3.5), actions.Swap(0, 4)],
-                   characters=[character.Kokomi(), character.Xiangling(), character.Bennett()],
+                   characters=[character.Kokomi(), character.Xiangling(weapon=Kitain()), character.Bennett()],
                    length=36)
     rot.do_rotation()
     print({k: round(v,2) for k,v in rot.damageDict.items()})

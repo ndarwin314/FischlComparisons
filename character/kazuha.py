@@ -27,7 +27,7 @@ class Kazuha(Character):
                                 Attr.CD: 0.5}),
                          Element.ANEMO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 90)
-        # TODO: add stuff cor cons if i care
+        # TODO: add stuff for cons if i care
         self.burstCast = self.burstCastBase * scalingMultiplier[burst_talent]
         self.burstDOT = self.burstDOTBase * scalingMultiplier[burst_talent]
         self.burstInfuseDOT = self.burstInfuseDOTBase * scalingMultiplier[burst_talent]

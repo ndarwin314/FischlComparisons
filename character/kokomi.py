@@ -83,7 +83,7 @@ class Kokomi(Character):
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
             mvs = mv.MV(atk_mv=self.autoMVS[0][i], hp_mv=burstBonus)
-            self.rotation.do_damage(self, self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
+            self.rotation.do_damage(self, mvs, self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook()
 

@@ -97,7 +97,6 @@ class Fischl(Character):
 
     def normal(sel, hit, **kwargs):
         super().normal(hit)
-        # TODO: add c1 loser
         #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self):

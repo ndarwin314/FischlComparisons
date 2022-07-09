@@ -234,8 +234,8 @@ class Character(ABC):
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv and self.rotation.onField == self:
-                for e in self.rotation.enemies:
-                    e.add_shred(ResShred(element, -0.4, self.time + 10, self.vvID))
+                shred = ResShred(element, -0.4, self.time + 10, self.vvID)
+                self.rotation.add_event(actions.ResShred(self, self.time + 1/60, shred))
             return
         match reaction:
             case Reactions.OVERLOAD:
@@ -251,8 +251,11 @@ class Character(ABC):
                     e.add_shred(ResShred(Element.PHYSICAL, -0.4, self.time + 12, self.vvID))
 
     def get_stats(self, time=None):
-        if time is None:
-            time = self.time
+        try:
+            if time is None:
+                time = self.time
+        except AttributeError:
+            time = 0
         b = Stats()
         for buff in self.buffs:
             b += buff.buff()
@@ -271,6 +274,8 @@ class Character(ABC):
             self.buffs.append(buff)
         #[other if buff!=other else other+buff for other in self.buffs]
 
+    def add_substat(self, sub, rolls):
+        self.artifactStats[sub] += rolls * substatValues[sub]
 
     def remove_buff(self, buff):
         try:

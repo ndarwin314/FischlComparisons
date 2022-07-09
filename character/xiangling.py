@@ -1,5 +1,5 @@
 from character.character_base import*
-from weapons import Catch
+from weapons import Catch, Kitain
 
 class Xiangling(Character):
 
@@ -27,6 +27,7 @@ class Xiangling(Character):
                                         stats_ref=lambda : self.stats, aoe=True)
 
     class Gooba(Summon):
+        shredID = uuid()
         def __init__(self, who_summoned, start, stats_ref):
             super().__init__(None, who_summoned, start, who_summoned.pyronadoDuration)
             self.mv = who_summoned.goobaMV
@@ -41,11 +42,13 @@ class Xiangling(Character):
             super().recall()
 
         def on_frame(self):
-            if self.time > self.lastHit + 1.5:
-                self.lastHit = self.time
-                t = DamageType.BURST
+            t = self.time
+            if t >= self.lastHit + 1.5:
+                self.lastHit = t
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.SKILL,
                                         stats_ref=lambda: self.stats, aoe=True, debug=False)
+                if self.summoner.constellation >= 1:
+                    self.rotation.add_event(actions.ResShred(self.summoner, t + 1/60, ResShred(Element.PYRO, -0.15, t+6, self.shredID)))
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
@@ -62,6 +65,31 @@ class Xiangling(Character):
         self.pyronadoDuration = 10 if constellation <= 4 else 14
         self.pyronadoMVS = self.pyronadoBase * scalingMultiplier[self.burstTalent]
         self.goobaMV = self.goobaBase * scalingMultiplier[self.skillTalent]
+
+        erReq = 2.2
+        if isinstance(weapon, Kitain):
+            erReq -= 0.04 * weapon.refinement + 0.6
+            self.artifactStats[Attr.CR] += 0.311
+            self.artifactStats[Attr.EM] += 187
+            self.crCap -= 2
+            erSubs =  int(min(erReq - self.get_stats()[Attr.ER], 0) / substatValues[Attr.ER] + 1)
+            if erSubs == 0:
+                crSubs = 8 - erSubs // 2
+                cdSubs = 20 - crSubs - erSubs
+            else:
+                crSubs = 8 - erSubs // 2 + 1
+                cdSubs = 20 - crSubs -erSubs
+            self.add_substat(Attr.CR, crSubs)
+            self.add_substat(Attr.CD, cdSubs)
+            self.add_substat(Attr.ER, erSubs)
+
+        """elif isinstance(self.weapon, Catch):
+            self.artifactStats[Attr.EM] += 187
+            # self.artifactStats[Attr.ER] += 0.518
+            self.artifactStats[Attr.CR] += 0.311
+            self.crCap -= 2
+        else:
+            raise ValueError("tell mathy they suck")"""
 
 
     def normal(self, hits, **kwargs):

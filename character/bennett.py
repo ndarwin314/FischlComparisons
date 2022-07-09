@@ -30,7 +30,6 @@ class Bennett(Character):
         self.buffStats = Stats({Attr.ATK: self.buffValue})
         if constellation >= 6:
             self.buffStats += Stats({Attr.PYRODMG: 0.15})
-        # TODO: fix this to make it more correct
         self.buffCreator = lambda t: actions.Buff(self, t, buff.Buff(self.buffStats, t, 2.1, self.buffID), True)
         self.artifactStats[Attr.ER] += 0.518
         stats = self.get_stats(0)
@@ -58,7 +57,6 @@ class Bennett(Character):
 
     def burst(self):
         super().burst()
-        # TODO maybe: bennett burst in game take several ticks to apply which isn't represented with this currently
         self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
                                 time=self.time + 0.62, stats_ref= lambda : self.get_stats())
 

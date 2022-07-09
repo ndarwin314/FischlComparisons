@@ -344,6 +344,11 @@ class Catch(Weapon):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ER: 0.459, Attr.QDMG: 0.32, Attr.QCR: 0.12}),
                          '"The Catch"')
 
+class Kitain(Weapon):
+    # passive batchest
+    def __init__(self, refinement=5):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.EM: 110}), 'Kitain Cross Spear')
+
 
 class Grass(Weapon):
     def __init__(self, refinement=1):

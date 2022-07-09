@@ -81,13 +81,11 @@ class Raiden(Character):
         self.artifactStats[Attr.CD] += self.cdCap * substatValues[Attr.CD]
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
 
-    # TODO: this doesn't account for multi-hits since i suck
     def normal(self, hit, **kwargs):
         charged = kwargs.get("character")
         if charged is None:
             charged = True
         #super().normal(stats, hit)
-        # TODO: refactor this
         t = self.time
         if self.burstActive and self.time > self.burstExpiration:
             self.burstActive = False
@@ -136,7 +134,6 @@ class Raiden(Character):
     def burst(self):
         super().burst()
         self.burstActive = True
-        print(self.time)
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add
         self.burstExpiration = self.time + 115 / 60 + 7 + 2
@@ -164,6 +161,5 @@ class Raiden(Character):
 
     def deactivate_burst(self):
         if not self.burstActive:
-            #print(self.time)
             self.burstActive = False
             self.resolve = 0
