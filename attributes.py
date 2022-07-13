@@ -45,7 +45,8 @@ class Reactions(Enum):
     OVERLOAD = auto()
     EC = auto()
     SUPERCONDUCT = auto()
-
+    WEAK = auto()
+    STRONG = auto()
     # no one cares about crystallize
 
     def is_swirl(self):
@@ -203,3 +204,6 @@ class Stats:
         if reaction is not None and reaction.is_swirl():
             emMultiplier += self[Attr.SWIRLBONUS]
         return levelMultiplier * emMultiplier
+
+    def multiplicative_multiplier(self):
+        return 1 + 2.78 * self[Attr.EM] / (1400 + self[Attr.EM])

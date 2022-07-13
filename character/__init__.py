@@ -4,3 +4,4 @@ from character.raiden import*
 from character.fischl import*
 from character.kokomi import*
 from character.xiangling import*
+from character.sucrose import*

@@ -227,10 +227,10 @@ class Character(ABC):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
 
-    def reaction(self, reaction):
+    def reaction(self, reaction, **kwargs):
         if reaction.is_swirl():
             element = reaction.element()
-            self.rotation.do_damage(self, 1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
+            self.do_damage(1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv and self.rotation.onField == self:
@@ -239,13 +239,13 @@ class Character(ABC):
             return
         match reaction:
             case Reactions.OVERLOAD:
-                self.rotation.do_damage(self, 4, Element.PYRO, DamageType.REACTION, aoe=True,
+                self.do_damage(4, Element.PYRO, DamageType.REACTION, aoe=True,
                                         reaction=Reactions.OVERLOAD)
             case Reactions.EC:
-                self.rotation.do_damage(self, 2.4, Element.ELECTRO, DamageType.REACTION,
+                self.do_damage(2.4, Element.ELECTRO, DamageType.REACTION,
                                         aoe=True,reaction=Reactions.EC)
             case Reactions.SUPERCONDUCT:
-                self.rotation.do_damage(self, 1, Element.CRYO, DamageType.REACTION,
+                self.do_damage(1, Element.CRYO, DamageType.REACTION,
                                         aoe=True, reaction=Reactions.SUPERCONDUCT)
                 for e in self.rotation.enemies:
                     e.add_shred(ResShred(Element.PHYSICAL, -0.4, self.time + 12, self.vvID))
@@ -296,8 +296,8 @@ class Character(ABC):
     def time(self):
         return self.rotation.time
 
-    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None):
-        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, None, debug, stats_ref)
+    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None, reaction=None):
+        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, reaction, debug, stats_ref)
 
     def swap_off(self):
         pass

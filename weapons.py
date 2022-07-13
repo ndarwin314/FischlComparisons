@@ -16,6 +16,7 @@ class Weapon:
         self.name = name
         self.proc_chance = 0
         self.proc_scaling = 0
+        self.holder = None
 
     def get_stats(self, time):
         return self.stats
@@ -29,6 +30,7 @@ class Weapon:
 
     def equip(self, character):
         character.weapon = self
+        self.holder = character
 
 
 class PolarStar(Weapon):
@@ -365,10 +367,14 @@ class TTDS(Weapon):
         self.buff = Stats({Attr.ATKP: 0.18 + 0.06 * refinement})
 
     def on_swap(self, char):
-        if char.time >= self.lastProc + 20:
+        if char.rotation.onField == self.holder and char.time >= self.lastProc + 20:
             char.add_buff(buff.Buff(self.buff, char.time, 10, self.buffID))
             self.lastProc = char.time
 
     def equip(self, character):
         super().equip(character)
         character.rotation.swapHooks.append(self.on_swap)
+        
+class SacFrags(Weapon):
+    def __init__(self, refinement=1):
+        super(SacFrags, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 221}), "Sacrificial Fragments")

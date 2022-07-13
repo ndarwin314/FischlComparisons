@@ -30,15 +30,16 @@ class Enemy:
         self.resistances = {element: 0.1 for element in Element}
         self.resShred = {element: list() for element in Element}
 
-    def take_damage(self, incoming, element, rotation, character, is_reaction=False, debug=False):
+    def take_damage(self, incoming, element, rotation, character, is_transformative=False, debug=False):
         self.resShred[element] = [s for s in self.resShred[element] if not s.is_expired(rotation)]
         shred = self.resShred[element]
         res = self.resistances[element] + sum([s.res for s in shred])
         multiplier = self.res_multiplier(res)
-        if not is_reaction:
+        if not is_transformative:
             multiplier *= self.defMultiplier
         if debug:
             print(round(multiplier * incoming, 2), round(rotation.time, 2))
+
         damage = multiplier * incoming
         rotation.damageDict[character] += damage
         self.damage += damage

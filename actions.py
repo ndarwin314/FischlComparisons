@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from attributes import DamageType
+from attributes import DamageType, Attr, Reactions
 
 class Action(ABC):
     __slots__ = ["character", "time", "type"]
@@ -28,10 +28,10 @@ class Swap(Action):
         super().__init__(character, time)
 
     def do_action(self, rotation):
-        rotation.swap(rotation.characters[self.character])
         c = rotation.characters[self.character]
         for hook in rotation.swapHooks:
             hook(c)
+        rotation.swap(rotation.characters[self.character])
 
     def __repr__(self):
         return f"Swapping to {self.character} at {self.time}"
@@ -61,9 +61,9 @@ class Recall(Action):
 
 
 class Damage(Action):
-    def __init__(self, character, time, statsRef, mv, element, damage_type, aoe=False, reaction=None, debug=False):
+    def __init__(self, character, time, stats_ref, mv, element, damage_type, aoe, reaction, debug):
         super().__init__(character, time)
-        self.statsRef = statsRef
+        self.statsRef = stats_ref
         self.mv = mv
         self.aoe = aoe
         self.element = element
@@ -72,22 +72,33 @@ class Damage(Action):
         self.damageType = damage_type
 
     def do_action(self, rotation):
-        """for enemy in self.targets:
-            rotation.enemies[enemy].take_damage(self.damage, self.element, rotation)"""
+
         stats = self.statsRef()
         if self.damageType == DamageType.REACTION:
-            damage = self.mv * stats.transformative_multiplier(self.reaction)
-        elif isinstance(self.mv, float) or isinstance(self.mv, int):
-            damage = self.mv * stats.get_attack() * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
+            multiplier = stats.transformative_multiplier(self.reaction)
+            transformative = True
+            mv = self.mv
         else:
-            damage = self.mv.get_base(self.statsRef()) * stats.get_multiplier(self.element, self.damageType, self.character.emblem)
+            multiplier = stats.get_multiplier(self.element, self.damageType, self.character.emblem)
+            transformative = False
+            if isinstance(self.mv, float) or isinstance(self.mv, int):
+                mv = self.mv * stats.get_attack()
+            else:
+                mv = self.mv.get_base(self.statsRef())
+
+        match self.reaction:
+            case Reactions.WEAK:
+                mv *= 1.5 * stats.multiplicative_multiplier()
+            case Reactions.STRONG:
+                mv *= 1.5 * stats.multiplicative_multiplier()
+        damage = mv * multiplier
         if self.aoe:
             for enemy in rotation.enemies:
-                enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,
+                enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
                                   debug=self.debug)
         else:
             enemy = rotation.enemies[0]
-            enemy.take_damage(damage, self.element, rotation, self.character, is_reaction=self.reaction is not None,
+            enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
                               debug=self.debug)
         for hook in rotation.damageHooks:
             hook()
@@ -187,16 +198,20 @@ class Burst(Action):
 
 class Reaction(Action):
 
-    def __init__(self, character, time, reaction):
+    def __init__(self, character, time, reaction, **kwargs):
         super().__init__(character, time)
         self.reaction = reaction
+        self.args = kwargs
 
     def do_action(self, rotation):
         super().do_action(rotation)
-        c = rotation.characters[self.character]
-        c.reaction(self.reaction)
+        if isinstance(self.character, int):
+            c = rotation.characters[self.character]
+        else:
+            c = self.character
+        c.reaction(self.reaction, **self.args)
         for delegate in rotation.reactionHook:
-            delegate(self.character)
+            delegate(self.character, self.reaction)
 
     def __repr__(self):
         return f"{self.character} doing {self.reaction} at {self.time}"

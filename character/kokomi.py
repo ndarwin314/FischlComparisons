@@ -16,20 +16,24 @@ class Kokomi(Character):
             self.con = who_summoned.constellation
             self.mv = who_summoned.rippleMV
             self.statsRef = stats_ref
+            self.lastHit = start
 
         def summon(self):
             super().summon()
             if not self.summoner.jellyfishActive:
                 self.stats = self.statsRef()
             self.summoner.jellyfishActive = True
+            self.summoner.jelly = self
 
         def recall(self):
             super().recall()
             self.summoner.jellyfishActive = False
+            self.summoner.jelly = None
 
         def on_frame(self):
-            if (self.rotation.frame - math.ceil(60 * self.start)) % 120 == 0:
-                mvs = mv.MV(atk_mv=self.mv, hp_mv=self.summoner.burstActive * self.summoner.burstBonusMVS[2])
+            if self.time >= self.lastHit + 2:
+                self.lastHit = self.time
+                mvs = mv.MV(atk_mv=self.mv, hp_mv=self.summoner.burstActive * self.summoner.burstBonusMVS[3])
                 self.rotation.do_damage(self.summoner, mvs, Element.HYDRO,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
@@ -42,7 +46,7 @@ class Kokomi(Character):
                                 Attr.ER: 1,
                                 Attr.CR: -.95, # kleek
                                 Attr.CD: 0.5,
-                                Attr.HPP: 0.25
+                                Attr.HB: 0.25
                                 }),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 70)
@@ -64,6 +68,7 @@ class Kokomi(Character):
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
         self.artifactStats[Attr.ATKP] += 8 * substatValues[Attr.ATKP]
         self.jellyfishActive = False
+        self.jelly = None
 
     def swap_off(self):
         super().swap_off()
@@ -86,6 +91,15 @@ class Kokomi(Character):
             self.rotation.do_damage(self, mvs, self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook()
+        charged = kwargs.get("charged", False)
+        if charged:
+            t += self.autoTiming[1][0] / 60
+            burstBonus = self.burstActive * (0.15 * self.get_stats()[Attr.HB] + self.burstBonusMVS[2])
+            mvs = mv.MV(atk_mv=self.autoMVS[1][0], hp_mv=burstBonus)
+            self.rotation.do_damage(self, mvs, self.element, DamageType.CHARGED, t)
+            for hook in self.rotation.chargedAttackHook:
+                hook()
+
 
     def charged(self):
         raise NotImplementedError()
@@ -93,8 +107,9 @@ class Kokomi(Character):
     def burst(self):
         self.burstActive = True
         self.do_damage(mv.MV(hp_mv=self.burstBonusMVS[0]), self.element, damage_type=DamageType.BURST)
+        self.rotation.add_event(actions.Summon(self, self.time + 1,
+                                               self.Jellyfish(self, lambda: self.get_stats(self.time), self.time + .5)))
         self.rotation.add_event(actions.OtherAction(self, self.time + 11.25, lambda r: self.deactivate_burst()))
 
     def deactivate_burst(self):
-        # TODO: make something like this for raiden
         self.burstActive = False

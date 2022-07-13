@@ -22,6 +22,7 @@ class Rotation:
         self.frame = 0
         self.damageHooks = []
         self.normalAttackHook = []
+        self.chargedAttackHook = []
         self.reactionHook = []
         self.swapHooks = []
         for char in self.characters:

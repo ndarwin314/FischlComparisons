@@ -5,6 +5,7 @@ class Xiangling(Character):
 
     pyronadoBase = np.array([0.72, 0.88, 1.096, 1.12])
     goobaBase = 1.1128
+    autoBase = [np.array([0.7726, 0.7742])]
 
     class Pyronado(Summon):
         def __init__(self, who_summoned, start, stats_ref):
@@ -21,18 +22,19 @@ class Xiangling(Character):
             super().recall()
 
         def on_frame(self):
-            if self.time > self.lastHit + 1.2:
+            if self.time >= self.lastHit + 1.2:
                 self.lastHit = self.time
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.BURST,
-                                        stats_ref=lambda : self.stats, aoe=True)
+                                        stats_ref=lambda : self.stats, aoe=True, reaction=Reactions.WEAK)
+                #self.rotation.add_event(actions.Reaction(self.summoner, self.time + 0.05, Reactions.OVERLOAD))
 
     class Gooba(Summon):
         shredID = uuid()
         def __init__(self, who_summoned, start, stats_ref):
-            super().__init__(None, who_summoned, start, who_summoned.pyronadoDuration)
+            super().__init__(None, who_summoned, start, 8)
             self.mv = who_summoned.goobaMV
             self.statsRef = stats_ref
-            self.lastHit = start + 0.5
+            self.lastHit = start + 0.45
 
         def summon(self):
             super().summon()
@@ -42,11 +44,15 @@ class Xiangling(Character):
             super().recall()
 
         def on_frame(self):
+            # TODO: chili
             t = self.time
-            if t >= self.lastHit + 1.5:
+            if t >= self.lastHit + 1.6:
                 self.lastHit = t
+                # hack because i dont want to hard code all the overloads and vapes
+                # TODO: make this not suck
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.SKILL,
-                                        stats_ref=lambda: self.stats, aoe=True, debug=False)
+                                        stats_ref=lambda: self.stats, aoe=True, reaction=Reactions.WEAK)
+                #self.rotation.add_event(actions.Reaction(self.summoner, t+0.05, Reactions.OVERLOAD))
                 if self.summoner.constellation >= 1:
                     self.rotation.add_event(actions.ResShred(self.summoner, t + 1/60, ResShred(Element.PYRO, -0.15, t+6, self.shredID)))
 
@@ -65,14 +71,16 @@ class Xiangling(Character):
         self.pyronadoDuration = 10 if constellation <= 4 else 14
         self.pyronadoMVS = self.pyronadoBase * scalingMultiplier[self.burstTalent]
         self.goobaMV = self.goobaBase * scalingMultiplier[self.skillTalent]
+        self.autoTiming = [[12, 26]]
+        self.autoMVS = [self.autoBase[0] * autoMultiplier[self.autoTalent]]
 
-        erReq = 2.2
+        erReq = 2.3
         if isinstance(weapon, Kitain):
             erReq -= 0.04 * weapon.refinement + 0.6
             self.artifactStats[Attr.CR] += 0.311
             self.artifactStats[Attr.EM] += 187
             self.crCap -= 2
-            erSubs =  int(min(erReq - self.get_stats()[Attr.ER], 0) / substatValues[Attr.ER] + 1)
+            erSubs =  int(max(erReq - self.get_stats()[Attr.ER], 0) / substatValues[Attr.ER] + 1)
             if erSubs == 0:
                 crSubs = 8 - erSubs // 2
                 cdSubs = 20 - crSubs - erSubs
@@ -93,13 +101,14 @@ class Xiangling(Character):
 
 
     def normal(self, hits, **kwargs):
-        raise NotImplementedError()
+        super(Xiangling, self).normal(hits, **kwargs)
 
     def charged(self):
         raise NotImplementedError()
 
     def skill(self):
         t = self.time
+        # TODO: chili pepper thing
         self.rotation.add_event(actions.Summon(self, t,
                                                self.Gooba(self, t, lambda: self.get_stats(self.time))))
 
@@ -107,6 +116,7 @@ class Xiangling(Character):
         t = self.time
         t += 0.3
         self.do_damage(self.pyronadoBase[0], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
+        #self.rotation.add_event(actions.Reaction(self, t + 0.05, Reactions.OVERLOAD))
         t += 0.25
         self.do_damage(self.pyronadoBase[1], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
         t += 0.38

@@ -1,4 +1,5 @@
 import actions
+import attributes
 from character.character_base import*
 from weapons import TTDS
 
@@ -9,6 +10,7 @@ class Sucrose(Character):
     skillBase = 2.212
     a1ID = uuid()
     a4ID = uuid()
+    c6ID = uuid()
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=TTDS(), artifact_set=(SetCount(Set.VV, 4),)):
@@ -29,6 +31,14 @@ class Sucrose(Character):
         self.a4Creator = lambda t: actions.Buff(self, t, buff.Buff(Stats({Attr.EM:self.get_stats()[Attr.EM] / 5}), t, 8, self.a4ID), to_self=False)
         self.a1Creator = lambda t, c: actions.BuffTarget(self, t,
                                                 buff.Buff(Stats({Attr.EM: 50}), t, 8, self.a1ID), c)
+        self.c6Creator = lambda t, e: actions.Buff(self, t, buff.Buff(Stats({elementDict[e]: 0.2}), t, 10, self.c6ID))
+        self.autoTiming = [[19, 19, 32, 31]]
+        self.artifactStats[Attr.EM] += 187*3
+        self.artifactStats[Attr.ANEMODMG] = 0
+        self.add_substat(Attr.EM, 4)
+        self.add_substat(Attr.ER, 2)
+        self.add_substat(Attr.ATKP, 10)
+        self.add_substat(Attr.CR, 4)
 
     def reaction(self, reaction, **kwargs):
         super().reaction(reaction)
@@ -48,6 +58,7 @@ class Sucrose(Character):
         t = self.time
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
+            #print(t)
             self.rotation.do_damage(self, self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook()
@@ -67,10 +78,12 @@ class Sucrose(Character):
         super(Sucrose, self).burst()
         element = kwargs["infusion"]
         t = self.time + 67 / 60
+        #self.rotation.add_event()
+        if self.constellation >= 6:
+            self.rotation.add_event(self.c6Creator(t, element))
         for i in range(self.burstHits):
             t += 1.95
             self.rotation.do_damage(self, self.burstMVS[0], self.element, DamageType.BURST, t, True)
             self.rotation.do_damage(self, self.burstMVS[1], element, DamageType.BURST, t, True)
             # standard dumb bullshit stuff if sucrose's em changes
-            self.rotation.add_event(self.a4Creator(t))
 

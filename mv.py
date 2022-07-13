@@ -1,5 +1,4 @@
 class MV:
-
     def __init__(self, atk_mv=0, def_mv=0, hp_mv=0):
         self.atkMV = atk_mv
         self.defMV = def_mv
