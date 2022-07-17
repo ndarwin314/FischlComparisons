@@ -17,7 +17,7 @@ class Kazuha(Character):
                Element.CRYO: uuid()}
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=IronSting(), artifact_set=(SetCount(Set.VV, 4),)):
+                 weapon=IronSting(refinement=5), artifact_set=(SetCount(Set.VV, 4),)):
         super().__init__(Stats({Attr.HPBASE: 13348,
                                 Attr.ATKBASE: 297,
                                 Attr.DEFBASE: 807,
@@ -26,7 +26,7 @@ class Kazuha(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
                          Element.ANEMO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 90)
+                         weapon, artifact_set, ConType.BurstFirst, 60)
         # TODO: add stuff for cons if i care
         self.burstCast = self.burstCastBase * scalingMultiplier[burst_talent]
         self.burstDOT = self.burstDOTBase * scalingMultiplier[burst_talent]
@@ -40,8 +40,8 @@ class Kazuha(Character):
         self.artifactStats[Attr.ANEMODMG] -= 0.466
         # TODO: probably make a method to add substats
         self.artifactStats[Attr.EM] += 187 * 3 + 4 * substatValues[Attr.EM]
-        self.artifactStats[Attr.ER] += 10 * substatValues[Attr.ER]
-        self.artifactStats[Attr.ATKP] += 6 * substatValues[Attr.ATKP]
+        self.add_substat(Attr.ER, 10)
+        self.add_substat(Attr.ATKP, 6)
 
     def normal(self, hit, **kwargs):
         raise NotImplemented("why")

@@ -228,6 +228,7 @@ class Character(ABC):
             self.rotation.add_event(delegate(self))
 
     def reaction(self, reaction, **kwargs):
+        # TODO: vape thing is hacked together
         if reaction.is_swirl():
             element = reaction.element()
             self.do_damage(1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)

@@ -43,7 +43,7 @@ RaiFish = {"list": [Skill(0, 0),
                     Reaction(2, 17.08, Reactions.ELECTROSWIRL),
                     Reaction(2, 17.87, Reactions.ELECTROSWIRL),
                     Reaction(2, 17.87, Reactions.OVERLOAD),
-                    Normal(3, 18, 3),  # TODO: make this not jank
+                    Normal(3, 18, 3),
                     Swap(0, 18.95),
                     Skill(0, 19.18),
                     Normal(0, 20.05, 1),

@@ -113,7 +113,7 @@ def bad2(name):
             writer.writerow(line)
 @timer
 def test():
-    w = ElegyForTheEnd()
+    w = TheStringless(refinement=1)
     fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
     rot = Rotation(RaiFish["list"], characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
                    length=36)
@@ -133,6 +133,6 @@ def test2():
     print({k: round(v / 25, 2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    bad2("sukokomon")
-    #test2()
+    #bad2("sukokomon")
+    test()
 

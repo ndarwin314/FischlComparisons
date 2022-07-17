@@ -198,10 +198,11 @@ class Burst(Action):
 
 class Reaction(Action):
 
-    def __init__(self, character, time, reaction, **kwargs):
+    def __init__(self, character, time, reaction, vape=False, **kwargs):
         super().__init__(character, time)
         self.reaction = reaction
         self.args = kwargs
+        self.vape = vape
 
     def do_action(self, rotation):
         super().do_action(rotation)

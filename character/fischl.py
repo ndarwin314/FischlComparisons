@@ -48,6 +48,7 @@ class Fischl(Character):
         def summon(self, overwrite=False):
             super().summon()
             self.stats = self.statsRef()
+            #print(self.stats)
             if self.con >= 6:
                 self.rotation.normalAttackHook.append(self.c6)
             if self.con >= 1:
@@ -55,7 +56,7 @@ class Fischl(Character):
             self.rotation.reactionHook.append(self.a4)
 
         def recall(self):
-            #print(self.a4Count, self.c6Count)
+            #drfprint(self.a4Count, self.c6Count)
             super().recall()
             if self.con >= 6:
                 self.rotation.normalAttackHook.remove(self.c6)

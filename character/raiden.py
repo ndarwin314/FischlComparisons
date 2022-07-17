@@ -80,6 +80,7 @@ class Raiden(Character):
         self.artifactStats[Attr.CR] += self.crCap * substatValues[Attr.CR]
         self.artifactStats[Attr.CD] += self.cdCap * substatValues[Attr.CD]
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
+        print(self.get_stats())
 
     def normal(self, hit, **kwargs):
         charged = kwargs.get("character")
@@ -138,8 +139,8 @@ class Raiden(Character):
         # TODO: how much does hitlag add
         self.burstExpiration = self.time + 115 / 60 + 7 + 2
         # stacks from 1
-        self.resolve += 3 * 2
-        mv = self.burstMV + self.burstBonusMV * max(self.resolve, 60)
+        self.resolve += 2 * 2
+        mv = self.burstMV + self.burstBonusMV * min(self.resolve, 60)
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
         self.rotation.do_damage(self, mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
@@ -148,7 +149,6 @@ class Raiden(Character):
     def add_resolve(self, cost):
         # TODO: change multiplier to be correct for other talent levels
         self.resolve = min(cost * 0.19 + self.resolve, 60)
-
 
     def get_stats(self, time=None):
         stats = super().get_stats(time)
