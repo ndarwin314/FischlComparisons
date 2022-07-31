@@ -378,3 +378,7 @@ class TTDS(Weapon):
 class SacFrags(Weapon):
     def __init__(self, refinement=1):
         super(SacFrags, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 221}), "Sacrificial Fragments")
+
+class FavSword(Weapon):
+    def __init(self, refinement = 1):
+        super(FavSword, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 0.613}), "Favonius Sword")

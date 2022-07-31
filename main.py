@@ -135,4 +135,5 @@ def test2():
 if __name__ == '__main__':
     #bad2("sukokomon")
     test()
+    test2()
 

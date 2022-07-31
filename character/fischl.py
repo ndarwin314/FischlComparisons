@@ -33,7 +33,7 @@ class Fischl(Character):
                 self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
 
-        def c6(self, time=None):
+        def c6(self, time, *args):
             self.c6Count += 1
             self.rotation.do_damage(self.summoner, 0.3, Element.ELECTRO, time=time,
                                     damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
@@ -107,7 +107,8 @@ class Fischl(Character):
             self.add_substat(Attr.CD, cdSubs)
 
 
-    def c1(self):
+    def c1(self, *args):
+        # TODO: figure out the delay or something, also for a4 and c6
         self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
 
     def set_rotation(self, r):
@@ -115,7 +116,7 @@ class Fischl(Character):
         if self.constellation >= 1:
             self.rotation.normalAttackHook.append(self.c1)
 
-    def normal(sel, hit, **kwargs):
+    def normal(self, hit, **kwargs):
         super().normal(hit)
         #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 

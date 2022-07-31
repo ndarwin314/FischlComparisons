@@ -211,7 +211,7 @@ class Character(ABC):
             t += self.autoTiming[0][i] / 60
             self.rotation.do_damage(self, self.autoMVS[0][i], Element.PHYSICAL, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
-                hook()
+                hook(t, self.autoTiming[0][i] / 60)
 
     @abstractmethod
     def charged(self):

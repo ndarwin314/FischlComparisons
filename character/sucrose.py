@@ -61,7 +61,7 @@ class Sucrose(Character):
             #print(t)
             self.rotation.do_damage(self, self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
-                hook()
+                hook(t, self.autoTiming[0][i] / 60)
 
     def charged(self):
         raise NotImplementedError("literally no one does this")

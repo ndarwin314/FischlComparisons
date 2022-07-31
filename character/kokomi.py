@@ -90,7 +90,7 @@ class Kokomi(Character):
             mvs = mv.MV(atk_mv=self.autoMVS[0][i], hp_mv=burstBonus)
             self.rotation.do_damage(self, mvs, self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
-                hook()
+                hook(t, self.autoTiming[0][i])
         charged = kwargs.get("charged", False)
         if charged:
             t += self.autoTiming[1][0] / 60
@@ -98,7 +98,7 @@ class Kokomi(Character):
             mvs = mv.MV(atk_mv=self.autoMVS[1][0], hp_mv=burstBonus)
             self.rotation.do_damage(self, mvs, self.element, DamageType.CHARGED, t)
             for hook in self.rotation.chargedAttackHook:
-                hook()
+                hook(t)
 
 
     def charged(self):
