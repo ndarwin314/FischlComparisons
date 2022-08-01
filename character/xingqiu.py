@@ -19,9 +19,12 @@ class Xingqiu(Character):
         def sword_wave(self, time, duration):
             if time > self.lastHit + 1:
                 # rn just multiplying mv by the number of hits which is a hack
-                self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST)
+                self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST, time=self.time + 0.1)
                 self.lastHit = min(time, max(time-duration, self.lastHit + 1))
                 self.wave = (self.wave + 1) % self.cycleLength
+                # c2
+                if self.summoner.constellation >= 2:
+                    self.rotation.add_event(actions.ResShred(self, self.time + 1 / 60, self.summoner.c2Creator(self.lastHit)))
 
         def summon(self):
             super().summon()
@@ -48,12 +51,15 @@ class Xingqiu(Character):
                                 Attr.HYDRODMG: 0.2}),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent,
                          constellation, weapon, artifact_set, ConType.BurstFirst, 80)
-        self.autoTiming = [[12, 26]]
+        self.autoTiming = [[9, 34]]
         self.autoMVS = [self.autoBase[0] * autoMultiplier[self.autoTalent]]
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]
-        self.burstBase = self.burstBase * scalingMultiplier[self.burstTalent]
+        self.burstMVS = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstDuration = 15 if self.constellation < 2 else 18
         self.burstActive = False
+        if constellation >= 2:
+            self.c2id = uuid()
+            self.c2Creator = lambda t:ResShred(Element.HYDRO, -0.15, t+4, self.c2id)
 
     def skill(self):
         t = self.time

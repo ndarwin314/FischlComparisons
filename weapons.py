@@ -382,3 +382,16 @@ class SacFrags(Weapon):
 class FavSword(Weapon):
     def __init(self, refinement = 1):
         super(FavSword, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 0.613}), "Favonius Sword")
+
+class Akuoumaru(Weapon):
+    def __init(self, refinement = 1):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413}), "Akuoumaru")
+
+    def equip(self, character):
+        super().equip(character)
+        buff = 0
+        for c in character.rotation.characters:
+            buff += c.energyCost
+        buff *= 0.0009 + 0.0003*self.refinement
+        buff = max(buff, 30+10*self.refinement)
+        self.stats += Attr({Attr.QDMG: buff})

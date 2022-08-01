@@ -6,3 +6,4 @@ from character.kokomi import*
 from character.xiangling import*
 from character.sucrose import*
 from character.xingqiu import*
+from character.beidou import*

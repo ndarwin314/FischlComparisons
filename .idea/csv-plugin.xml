@@ -17,6 +17,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results2\sukokomon.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\sukokomonTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

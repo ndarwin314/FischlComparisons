@@ -17,15 +17,15 @@ class Fischl(Character):
 
     class Oz(Summon):
         # i am ignoring hitlag
-        def __init__(self, statsRef, who_summoned, start, duration):
+        def __init__(self, stats_ref, who_summoned, start, duration):
             super().__init__(None, who_summoned, start, duration+0.01)
             self.mv = who_summoned.skillTurret
             self.lastA4 = start
             self.lastHit = start
             self.con = who_summoned.constellation
-            self.statsRef = statsRef
+            self.statsRef = stats_ref
             self.a4Count = 0
-            self.c6Count = 1
+            self.c6Count = 0
 
         def on_frame(self):
             if self.time >= 1+ self.lastHit:
