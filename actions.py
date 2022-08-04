@@ -72,19 +72,22 @@ class Damage(Action):
         self.damageType = damage_type
 
     def do_action(self, rotation):
-
+        # TODO: implement def ignore
         stats = self.statsRef()
+        if isinstance(self.mv, float) or isinstance(self.mv, int):
+            mv = self.mv * stats.get_attack()
+        else:
+            mv = self.mv.get_base(self.statsRef())
+
         if self.damageType == DamageType.REACTION:
             multiplier = stats.transformative_multiplier(self.reaction)
             transformative = True
-            mv = self.mv
+        elif self.damageType == DamageType.CLAM:
+            multiplier = 1
+            transformative = True
         else:
             multiplier = stats.get_multiplier(self.element, self.damageType, self.character.emblem)
             transformative = False
-            if isinstance(self.mv, float) or isinstance(self.mv, int):
-                mv = self.mv * stats.get_attack()
-            else:
-                mv = self.mv.get_base(self.statsRef())
 
         match self.reaction:
             case Reactions.WEAK:
@@ -255,3 +258,16 @@ class ResShred(Action):
     def do_action(self, rotation):
         for e in rotation.enemies:
             e.add_shred(self.resShred)
+
+class Healing(Action):
+    def __init__(self, character, time, percent, flat, stats_ref=None):
+        super().__init__(character, time)
+        self.percent = percent
+        self.flat = flat
+        self.statsRef = character.get_stats if stats_ref is None else stats_ref
+
+    def do_action(self, rotation):
+        stats = self.statsRef()
+        healing = (stats.get_hp() * self.percent + self.flat) * (1 + stats[Attr.HB])
+        for hook in self.character.healingHook:
+            hook(self.character, healing)

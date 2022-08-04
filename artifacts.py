@@ -9,6 +9,7 @@ class Set(Enum):
     TOM = 5
     EMBLEM = 6
     VV = 7
+    OHC = 8
 
     def __repr__(self):
         return self.name

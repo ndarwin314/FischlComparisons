@@ -14,6 +14,8 @@ class DamageType(Enum):
     BURST = auto()
     REACTION = auto()
     OTHER = auto()
+    # TODO: delete this when i get def ignore
+    CLAM = auto()
 
 
 class Element(Enum):
@@ -199,11 +201,10 @@ class Stats:
     def transformative_multiplier(self, reaction=None):
         # level = 90
         # levelMultiplier = 0.00194 * level**3-0.319*level*level+30.7*level-868
-        levelMultiplier = 725.26
         emMultiplier = 1 + 16 * self[Attr.EM] / (2000 + self[Attr.EM])
         if reaction is not None and reaction.is_swirl():
             emMultiplier += self[Attr.SWIRLBONUS]
-        return levelMultiplier * emMultiplier
+        return emMultiplier
 
     def multiplicative_multiplier(self):
         return 1 + 2.78 * self[Attr.EM] / (1400 + self[Attr.EM])

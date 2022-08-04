@@ -97,10 +97,8 @@ class Rotation:
             self.frame += 1
 
     def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None):
-        if time is None:
-            time = self.time
-        if stats_ref is None:
-            stats_ref = char.get_stats
+        time = self.time if time is None else time
+        stats_ref = char.get_stats if stats_ref is None else stats_ref
         self.add_event(Damage(char, time, stats_ref, mv, element, damage_type, aoe, reaction, debug))
 
     def add_summon(self, summon):

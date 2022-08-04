@@ -8,6 +8,8 @@ class Kokomi(Character):
     rippleBase = 1.0919
     autoBase = [np.array([0.6838, 0.6154, 0.9431]), np.array([1.4832])]
     burstBonusBase = np.array([0.1042, 0.0484, 0.0678, 0.071])
+    healingPercent = np.array([0.044, 0.0081])
+    healingFlat = np.array([423.7, 77.03])
 
     class Jellyfish(Summon):
 
@@ -36,9 +38,12 @@ class Kokomi(Character):
                 mvs = mv.MV(atk_mv=self.mv, hp_mv=self.summoner.burstActive * self.summoner.burstBonusMVS[3])
                 self.rotation.do_damage(self.summoner, mvs, Element.HYDRO,
                                         damage_type=DamageType.SKILL, stats_ref=lambda : self.stats)
+                self.rotation.add_event(actions.Healing(self.summoner, self.time, self.summoner.healingPercentMV[0],
+                                                        self.summoner.healingFlatMV[0], self.statsRef))
+
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=TTDS(), artifact_set=(SetCount(Set.TOM, 4),)):
+                 weapon=TTDS(), artifact_set=(SetCount(Set.OHC, 4),)):
         super().__init__(Stats({Attr.HPBASE: 13471,
                                 Attr.ATKBASE: 234,
                                 Attr.DEFBASE: 657,
@@ -56,6 +61,9 @@ class Kokomi(Character):
         self.autoMVS = [self.autoBase[0] * scalingMultiplier[self.autoTalent],
                         self.autoBase[1] * scalingMultiplier[self.autoTalent]]
         self.burstBonusMVS = self.burstBonusBase * scalingMultiplier[self.burstTalent]
+        # TODO: this is wrong since they both scale on different talents but no one cares about cons anyway
+        self.healingPercentMV = self.healingPercent * scalingMultiplier[self.burstTalent]
+        self.healingFlatMV = self.healingFlat * flatMultiplier[self.burstTalent]
 
 
         self.burstActive = False
@@ -91,12 +99,14 @@ class Kokomi(Character):
             self.rotation.do_damage(self, mvs, self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i])
+            self.rotation.add_event(actions.Healing(self, t, self.healingPercentMV[1], self.healingFlatMV[1]))
         charged = kwargs.get("charged", False)
         if charged:
             t += self.autoTiming[1][0] / 60
             burstBonus = self.burstActive * (0.15 * self.get_stats()[Attr.HB] + self.burstBonusMVS[2])
             mvs = mv.MV(atk_mv=self.autoMVS[1][0], hp_mv=burstBonus)
             self.rotation.do_damage(self, mvs, self.element, DamageType.CHARGED, t)
+            self.rotation.add_event(actions.Healing(self, t, self.healingPercentMV[1], self.healingFlatMV[1]))
             for hook in self.rotation.chargedAttackHook:
                 hook(t)
 

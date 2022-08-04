@@ -98,6 +98,23 @@ physhighMultiplier = [0,
                       2.513,
                       2.701,
                       2.906]
+
+flatMultiplier = [1,
+                  1.1,
+                  1.208,
+                  1.325,
+                  1.45,
+                  1.583,
+                  1.725,
+                  1.875,
+                  2.033,
+                  2.2,
+                  2.375,
+                  2.559,
+                  2.75,
+                  2.95,
+                  3.159]
+
 substatValues = {Attr.HPP: 0.0496, Attr.HP: 253.94,
                  Attr.ATKP: 0.0496, Attr.ATK: 16.54,
                  Attr.DEFP: 0.0620, Attr.DEF: 19.68,
@@ -115,6 +132,9 @@ class Character(ABC):
                  constellation, weapon, artifact_set, weapon_type, energy_cost):
         self.rotation = None
 
+        # TODO: programmatically determine this based on level
+        self.levelMultiplier = 725.26
+
         # hooks
         self.burstCastHook = []
         self.burstHitHook = []
@@ -123,6 +143,7 @@ class Character(ABC):
         self.normalHitHook = []
         self.chargedHitHook = []
         self.damageHook = []
+        self.healingHook = []
 
 
         self.stats = stats
@@ -198,8 +219,24 @@ class Character(ABC):
                             t = character.time
                             if t > character.lastTOM + 0.5:
                                 character.rotation.add_event(actions.Buff(self, t, buff.Buff(self.noblesseBuff, t, 3, self.tomID)))
-
                         self.skillHitHook.append(tom)
+                case Set.OHC:
+                    self.artifactStats[Attr.HB] += 0.15
+                    self.lastOHC = -4
+                    self.OHCMV = mv.MV(flat=0)
+                    if s.count >= 4:
+                        def ohc(character, healing):
+                            t = character.time
+                            if t <= 3 + self.lastOHC:
+                                self.OHCMV.flat = min(self.OHCMV.flat + 0.9 * healing, 27_000)
+                            elif t <= 3.5:
+                                pass
+                            else: # t > 3.5
+                                character.do_damage(self.OHCMV, Element.PHYSICAL, DamageType.CLAM, t+3)
+                                self.lastOHC = t
+                        self.healingHook.append(ohc)
+
+
 
     def set_rotation(self, r):
         self.rotation = r
@@ -231,7 +268,7 @@ class Character(ABC):
         # TODO: vape thing is hacked together
         if reaction.is_swirl():
             element = reaction.element()
-            self.do_damage(1.2, element, DamageType.REACTION, aoe=True, reaction=reaction)
+            self.do_damage(mv.MV(flat=1.2*self.levelMultiplier), element, DamageType.REACTION, aoe=True, reaction=reaction)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv and self.rotation.onField == self:
@@ -240,13 +277,13 @@ class Character(ABC):
             return
         match reaction:
             case Reactions.OVERLOAD:
-                self.do_damage(4, Element.PYRO, DamageType.REACTION, aoe=True,
+                self.do_damage(mv.MV(flat=4*self.levelMultiplier), Element.PYRO, DamageType.REACTION, aoe=True,
                                         reaction=Reactions.OVERLOAD)
             case Reactions.EC:
-                self.do_damage(2.4, Element.ELECTRO, DamageType.REACTION,
+                self.do_damage(mv.MV(flat=2.4*self.levelMultiplier), Element.ELECTRO, DamageType.REACTION,
                                         aoe=True,reaction=Reactions.EC)
             case Reactions.SUPERCONDUCT:
-                self.do_damage(1, Element.CRYO, DamageType.REACTION,
+                self.do_damage(mv.MV(flat=1*self.levelMultiplier), Element.CRYO, DamageType.REACTION,
                                         aoe=True, reaction=Reactions.SUPERCONDUCT)
                 for e in self.rotation.enemies:
                     e.add_shred(ResShred(Element.PHYSICAL, -0.4, self.time + 12, self.vvID))
