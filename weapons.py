@@ -359,7 +359,8 @@ class Grass(Weapon):
 class TTDS(Weapon):
 
     buffID = uuid()
-
+    # TODO: TTDS is passed as the default weapon to kokomi, however all kokomi get the same ttds meaning only the first rotation gets the buff
+    # workaround is to manually pass the weapon param, however this is cringe, come up with a good solution
     def __init__(self, refinement=5):
         # TODO: add the character switch thing
         super().__init__(refinement, Stats({Attr.ATKBASE: 401, Attr.HPP: 0.352}), "Thrilling Tales of Dragon Slayers")

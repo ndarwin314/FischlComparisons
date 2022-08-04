@@ -25,7 +25,7 @@ class Xiangling(Character):
             if self.time >= self.lastHit + 1.2:
                 self.lastHit = self.time
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.BURST,
-                                        stats_ref=lambda : self.stats, aoe=True, reaction=Reactions.WEAK)
+                                        stats_ref=lambda : self.stats, aoe=True, reaction=Reactions.WEAK, debug=False)
                 #self.rotation.add_event(actions.Reaction(self.summoner, self.time + 0.05, Reactions.OVERLOAD))
 
     class Gooba(Summon):

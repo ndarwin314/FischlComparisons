@@ -94,7 +94,7 @@ def bad2(name):
                     fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact, er_requirement=1.4)
                     rot = Rotation(Sukokomon["list"],
                                    characters=[character.Sucrose(weapon=SacFrags()),
-                                               character.Kokomi(),
+                                               character.Kokomi(weapon=TTDS()),
                                                fish,
                                                character.Xiangling(weapon=Kitain())],
                                    length=25.5)
@@ -124,8 +124,8 @@ def test():
 def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
-                               character.Kokomi(),
-                               character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1)),
+                               character.Kokomi(artifact_set=[SetCount(Set.OHC, 4)], weapon=TTDS()),
+                               character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1), artifact_set=[SetCount(Set.TOM, 4)]),
                                character.Xiangling(weapon=Kitain())],
                    length=25.5)
     rot.do_rotation()
@@ -133,7 +133,7 @@ def test2():
     print({k: round(v / 25, 2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    #bad2("sukokomon")
-    test()
-    test2()
+    bad2("sukokomon")
+    #test2()
+    #test()
 

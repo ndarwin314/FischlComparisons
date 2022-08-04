@@ -232,6 +232,7 @@ class Character(ABC):
                             elif t <= 3.5:
                                 pass
                             else: # t > 3.5
+                                self.OHCMV.flat = 0
                                 character.do_damage(self.OHCMV, Element.PHYSICAL, DamageType.CLAM, t+3)
                                 self.lastOHC = t
                         self.healingHook.append(ohc)

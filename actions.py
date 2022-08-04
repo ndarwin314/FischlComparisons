@@ -74,6 +74,8 @@ class Damage(Action):
     def do_action(self, rotation):
         # TODO: implement def ignore
         stats = self.statsRef()
+        """if self.debug:
+            print(stats)"""
         if isinstance(self.mv, float) or isinstance(self.mv, int):
             mv = self.mv * stats.get_attack()
         else:
