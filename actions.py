@@ -1,16 +1,20 @@
 from abc import ABC, abstractmethod
-from attributes import DamageType, Attr, Reactions
+
+import character
+from attributes import DamageType, Attr, Reactions, Element, Aura
+from icd import ICD
+from character import character_base
 
 class Action(ABC):
     __slots__ = ["character", "time", "type"]
 
     def __init__(self, character, time):
-        self.character = character
-        self.time = time
+        self.character: character_base = character
+        self.time: int = time
         # do stuff with kwargs if i decide to
 
     @abstractmethod
-    def do_action(self, rotation):
+    def do_action(self, rotation: "Rotation") -> None:
         rotation.characters[self.character].remove_expired_buffs()
 
 
@@ -48,7 +52,7 @@ class Summon(Action):
     def __repr__(self):
         return f"Summoning {self.summon} by {self.character} at {self.time}"
 
-class Recall(Action):
+"""class Recall(Action):
     def __init__(self, character, time, summon):
         super().__init__(character, time)
         self.summon = summon
@@ -57,23 +61,33 @@ class Recall(Action):
         rotation.recall_summon(self.summon)
 
     def __repr__(self):
-        return f"Recalling {self.summon} by {self.character} at {self.time}"
+        return f"Recalling {self.summon} by {self.character} at {self.time}"""
+
+class SetAura(Action):
+    def __init__(self, character: character_base, time: int, aura: Aura):
+        super().__init__(character, time)
+        self.aura : Aura = aura
+
+    def do_action(self, rotation: "Rotation") -> None:
+        rotation.aura = self.aura
 
 
 class Damage(Action):
-    def __init__(self, character, time, stats_ref, mv, element, damage_type, aoe, reaction, debug):
+    def __init__(self, character, time, stats_ref, mv, element, damage_type, aoe, reaction, debug, icd):
         super().__init__(character, time)
         self.statsRef = stats_ref
-        self.mv = mv
-        self.aoe = aoe
-        self.element = element
-        self.reaction = reaction
-        self.debug = debug
-        self.damageType = damage_type
+        self.mv: "mv.MV" = mv
+        self.aoe: bool = aoe
+        self.element: Element = element
+        self.reaction: Reactions = reaction
+        self.debug: bool = debug
+        self.damageType: DamageType = damage_type
+        self.icd: ICD = icd
 
-    def do_action(self, rotation):
+    def do_action(self, rotation: "Rotation") -> None:
         # TODO: implement def ignore
         stats = self.statsRef()
+        element_applied = self.icd.applied_element(rotation.time)
         """if self.debug:
             print(stats)"""
         if isinstance(self.mv, float) or isinstance(self.mv, int):
@@ -91,11 +105,40 @@ class Damage(Action):
             multiplier = stats.get_multiplier(self.element, self.damageType, self.character.emblem)
             transformative = False
 
-        match self.reaction:
-            case Reactions.WEAK:
-                mv *= 1.5 * stats.multiplicative_multiplier()
-            case Reactions.STRONG:
-                mv *= 1.5 * stats.multiplicative_multiplier()
+        # TODO: expand this
+        if element_applied:
+            reaction: Reactions = None
+            match rotation.aura:
+                case Aura.PYRO:
+                    pass
+                case Aura.HYDRO:
+                    pass
+                case Aura.ELECTRO:
+                    pass
+                case Aura.CRYO:
+                    pass
+                case Aura.EC:
+                    pass
+                case Aura.QUICKEN:
+                    match self.element:
+                        case Element.ELECTRO:
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
+                            reaction = Reactions.AGGRAVATE
+                        case Element.ANEMO:
+                            self.character.reaction(Reactions.ELECTROSWIRL)
+                            reaction = Reactions.ELECTROSWIRL
+                case Aura.NONE:
+                    match self.reaction:
+                        case Reactions.WEAK:
+                            mv *= 1.5 * stats.multiplicative_multiplier()
+                        case Reactions.STRONG:
+                            mv *= 1.5 * stats.multiplicative_multiplier()
+                        case Reactions.AGGRAVATE:
+                            stats = self.character.get_stats()
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))  # TODO: add tf bullshit
+            for delegate in rotation.reactionHook:
+                delegate(self.character, reaction)
+
         damage = mv * multiplier
         if self.aoe:
             for enemy in rotation.enemies:
@@ -215,7 +258,7 @@ class Reaction(Action):
             c = rotation.characters[self.character]
         else:
             c = self.character
-        c.reaction(self.reaction, **self.args)
+        c.reaction(self.reaction)
         for delegate in rotation.reactionHook:
             delegate(self.character, self.reaction)
 

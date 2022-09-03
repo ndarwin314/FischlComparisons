@@ -73,7 +73,7 @@ class Kazuha(Character):
             self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
             self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True)
 
-    def reaction(self, reaction):
+    def reaction(self, reaction, **kwargs):
         super().reaction(reaction)
         if reaction.is_swirl():
             element = reaction.element()

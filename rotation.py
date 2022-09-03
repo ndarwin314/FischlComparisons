@@ -3,7 +3,9 @@ from collections.abc import Sequence
 from abc import ABC, abstractmethod
 import enemy
 import character
+import icd
 from actions import OtherAction, Damage
+from attributes import Aura
 
 
 class AutoSequence:
@@ -11,12 +13,13 @@ class AutoSequence:
         self.normal = normal
         self.charged = charged
 
-
+icd0 = icd.ICD(0,1)
 class Rotation:
 
     def __init__(self, action_list, characters, length, enemy_count=1):
         self.length = length
         self.characters = characters
+        self.aura = Aura.NONE # TODO: fuck me
         self.summons = []
         self.damageDict = {char: 0 for char in self.characters}
         self.frame = 0
@@ -96,12 +99,20 @@ class Rotation:
                 action.do_action(self)
             self.frame += 1
 
-    def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None):
+    def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None, icd=None):
         time = self.time if time is None else time
         stats_ref = char.get_stats if stats_ref is None else stats_ref
-        self.add_event(Damage(char, time, stats_ref, mv, element, damage_type, aoe, reaction, debug))
+        icd = icd if icd is not None else icd0
+        self.add_event(Damage(char, time, stats_ref, mv, element, damage_type, aoe, reaction, debug, icd))
 
     def add_summon(self, summon):
+        for s in self.summons:
+            if type(summon) == type(s):
+                s.recall()
+        summon.summon()
+
+    # TODO: this wasn't a method before ant it was fine so idk what is going on
+    def recall_summon(self, summon):
         for s in self.summons:
             if type(summon) == type(s):
                 s.recall()

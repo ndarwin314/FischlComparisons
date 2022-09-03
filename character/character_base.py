@@ -1,3 +1,4 @@
+import character
 from attributes import Element, Reactions, Attr, Stats, DamageType
 from enemy import ResShred
 from enum import Enum
@@ -10,6 +11,8 @@ import actions
 from artifacts import Set, SetCount
 import buff
 import mv
+from uuid import uuid4 as uuid
+import icd
 
 class ConType(Enum):
     SkillFirst = 0
@@ -122,11 +125,15 @@ substatValues = {Attr.HPP: 0.0496, Attr.HP: 253.94,
                  Attr.CR: 0.0331, Attr.CD: 0.0662}
 
 
+
+
+
 class Character(ABC):
     noblesseID = uuid()
     noblesseBuff = Stats({Attr.ATKP: 0.2})
     vvID = uuid()
     tomID = uuid()
+    nope = icd.WTF()
 
     def __init__(self, stats, element, auto_talent, skill_talent, burst_talent,
                  constellation, weapon, artifact_set, weapon_type, energy_cost):
@@ -216,31 +223,33 @@ class Character(ABC):
                         self.lastTOM = -1
                         """delegate = lambda c: actions.Buff(self, c.time, Buff(self.noblesseBuff, c.time, 3, self.tomID))"""
                         def tom(character):
-                            t = character.time
+                            t = character.time + 0.1
                             if t > character.lastTOM + 0.5:
                                 character.rotation.add_event(actions.Buff(self, t, buff.Buff(self.noblesseBuff, t, 3, self.tomID)))
                         self.skillHitHook.append(tom)
                 case Set.OHC:
+                    def ohc(character, healing):
+                        t = character.time
+                        if t <= 3 + self.lastOHC:
+                            self.OHCMV.flat = min(self.OHCMV.flat + 0.9 * healing, 27_000)
+                        elif t <= 3.5:
+                            pass
+                        else:  # t > 3.5
+                            self.OHCMV.flat = 0
+                            character.do_damage(self.OHCMV, Element.PHYSICAL, DamageType.CLAM, t + 3)
+                            self.lastOHC = t
                     self.artifactStats[Attr.HB] += 0.15
                     self.lastOHC = -4
                     self.OHCMV = mv.MV(flat=0)
                     if s.count >= 4:
-                        def ohc(character, healing):
-                            t = character.time
-                            if t <= 3 + self.lastOHC:
-                                self.OHCMV.flat = min(self.OHCMV.flat + 0.9 * healing, 27_000)
-                            elif t <= 3.5:
-                                pass
-                            else: # t > 3.5
-                                self.OHCMV.flat = 0
-                                character.do_damage(self.OHCMV, Element.PHYSICAL, DamageType.CLAM, t+3)
-                                self.lastOHC = t
                         self.healingHook.append(ohc)
 
 
 
     def set_rotation(self, r):
         self.rotation = r
+
+
 
     @abstractmethod
     def normal(self, hits, **kwargs):
@@ -269,7 +278,7 @@ class Character(ABC):
         # TODO: vape thing is hacked together
         if reaction.is_swirl():
             element = reaction.element()
-            self.do_damage(mv.MV(flat=1.2*self.levelMultiplier), element, DamageType.REACTION, aoe=True, reaction=reaction)
+            self.do_damage(mv.MV(flat=1.2*self.levelMultiplier), element, DamageType.REACTION, aoe=True, reaction=reaction, icd=Character.nope)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv and self.rotation.onField == self:
@@ -335,8 +344,8 @@ class Character(ABC):
     def time(self):
         return self.rotation.time
 
-    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None, reaction=None):
-        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, reaction, debug, stats_ref)
+    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None, reaction=None, icd=None):
+        self.rotation.do_damage(self, mv, element, damage_type, time, aoe, reaction, debug, stats_ref, icd)
 
     def swap_off(self):
         pass

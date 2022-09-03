@@ -1,6 +1,37 @@
+import icd
 from character.character_base import*
 from weapons import Catch, Grass
 from buff import PermanentBuff
+
+
+class NotOz(Summon):
+    offset = 30
+    buffID = uuid()
+
+    # i am ignoring hitlag
+    def __init__(self, stats, who_summoned, start, icd):
+        super().__init__(stats, who_summoned, start, 25.28)
+        self.mv = who_summoned.skillTurretMV
+        self.lastHit = start + 0.9
+        self.icd = icd
+
+    def coordinated_attack(self):
+        if self.time > self.lastHit + 0.9:
+            self.lastHit = self.time
+            self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO, damage_type=DamageType.SKILL,
+                                    time=self.time + 0.09, stats_ref=lambda: self.summoner.get_stats(), icd=self.icd)
+
+    def summon(self):
+        super().summon()
+        self.rotation.damageHooks.append(self.coordinated_attack)
+        for char in self.rotation.characters:
+            char.add_buff(PermanentBuff(Stats({Attr.QDMG: 0.003 * char.energyCost}), self.buffID))
+
+    def recall(self):
+        super().recall()
+        self.rotation.damageHooks.remove(self.coordinated_attack)
+        for char in self.rotation.characters:
+            char.remove_buff(PermanentBuff(Stats(), self.buffID))
 
 class Raiden(Character):
     skillcastHookBase = 1.172
@@ -11,33 +42,6 @@ class Raiden(Character):
     burstAutoBonus = 0.0073
     autoInfuseBase = np.array([0.4474, 0.4396, 0.5382, 0.3089, 0.3098, 0.7394, 0.616, 0.7436])
 
-    class NotOz(Summon):
-        offset = 30
-        buffID = uuid()
-
-        # i am ignoring hitlag
-        def __init__(self, stats, who_summoned, start):
-            super().__init__(stats, who_summoned, start, 25.28)
-            self.mv = who_summoned.skillTurretMV
-            self.lastHit = start + 0.9
-
-        def coordinated_attack(self):
-            if self.time > self.lastHit + 0.9:
-                self.lastHit = self.time
-                self.rotation.do_damage(self.summoner, self.mv, Element.ELECTRO, damage_type=DamageType.SKILL,
-                                        time=self.time + 0.09, stats_ref=lambda : self.summoner.get_stats())
-
-        def summon(self):
-            super().summon()
-            self.rotation.damageHooks.append(self.coordinated_attack)
-            for char in self.rotation.characters:
-                char.add_buff(PermanentBuff(Stats({Attr.QDMG: 0.003 * char.energyCost}), self.buffID))
-
-        def recall(self):
-            super().recall()
-            self.rotation.damageHooks.remove(self.coordinated_attack)
-            for char in self.rotation.characters:
-                char.remove_buff(PermanentBuff(Stats(), self.buffID))
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
                  weapon=Catch(), artifact_set=(SetCount(Set.EMBLEM, 4),)):
@@ -50,6 +54,9 @@ class Raiden(Character):
                          Element.ELECTRO, auto_talent, skill_talent, burst_talent, constellation,
                          weapon, artifact_set, ConType.BurstFirst, 90)
         # TODO: add stuff for cons if i care
+        self.skillICD = icd.ICD(2.5, 3)
+        self.normalICD = icd.ICD(2.5, 3)
+
         self.resolve = 0
         self.burstActive = False
         self.burstExpiration = 0
@@ -96,12 +103,13 @@ class Raiden(Character):
             mvs = self.infusedMVS + self.resolve * self.infusedBonusMV
             for i in range(hit):
                 t += timing[0][i] / 60
-                self.rotation.do_damage(self, mvs[i], self.element, DamageType.BURST, time=t)
+                self.rotation.do_damage(self, mvs[i], self.element, DamageType.BURST, time=t, icd=self.normalICD)
                 for hook in self.rotation.normalAttackHook:
                     hook(t, timing[0][i] / 60)
             if charged:
                 t += timing[1][0] / 60
-                self.rotation.do_damage(self, mvs[-1]+mvs[-2], self.element, DamageType.BURST, time=t)
+                self.rotation.do_damage(self, mvs[-2], self.element, DamageType.BURST, time=t, icd=self.normalICD)
+                self.rotation.do_damage(self, mvs[-1], self.element, DamageType.BURST, time=t, icd=self.normalICD)
         else:
             timing = self.autoTimingBad
             mvs = self.autoMVS
@@ -128,8 +136,8 @@ class Raiden(Character):
     def skill(self):
         super().skill()
         self.rotation.do_damage(self, self.skillCastMV, self.element, damage_type=DamageType.SKILL,
-                                time=self.time + 0.85)
-        self.rotation.add_summon(self.NotOz(None, self, self.time))
+                                time=self.time + 0.85, icd=self.skillICD)
+        self.rotation.add_summon(NotOz(None, self, self.time, self.skillICD))
 
     def burst(self):
         super().burst()

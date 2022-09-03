@@ -17,6 +17,14 @@ class DamageType(Enum):
     # TODO: delete this when i get def ignore
     CLAM = auto()
 
+class Aura(Enum):
+    PYRO = auto()
+    HYDRO = auto()
+    ELECTRO = auto()
+    CRYO = auto()
+    EC = auto()
+    QUICKEN = auto()
+    NONE = auto()
 
 class Element(Enum):
     PYRO = auto()
@@ -49,6 +57,7 @@ class Reactions(Enum):
     SUPERCONDUCT = auto()
     WEAK = auto()
     STRONG = auto()
+    AGGRAVATE = auto()
     # no one cares about crystallize
 
     def is_swirl(self):
