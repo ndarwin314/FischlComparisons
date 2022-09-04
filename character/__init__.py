@@ -7,3 +7,5 @@ from character.xiangling import*
 from character.sucrose import*
 from character.xingqiu import*
 from character.beidou import*
+from character.collei import*
+from character.hutao import*

@@ -144,7 +144,7 @@ class Raiden(Character):
         self.burstActive = True
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add
-        self.burstExpiration = self.time + 115 / 60 + 7 + 2
+        self.burstExpiration = self.time + 115 / 60 + 7 + 3
         # stacks from 1
         self.resolve = min(self.resolve + 3 * 2, 60)
         mv = self.burstMV + self.burstBonusMV * self.resolve

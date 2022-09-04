@@ -32,6 +32,7 @@ class Swap(Action):
         super().__init__(character, time)
 
     def do_action(self, rotation):
+        #print(rotation.characters[self.character], self.time)
         c = rotation.characters[self.character]
         for hook in rotation.swapHooks:
             hook(c)
@@ -88,8 +89,9 @@ class Damage(Action):
         # TODO: implement def ignore
         stats = self.statsRef()
         element_applied = self.icd.applied_element(rotation.time)
-        """if self.debug:
-            print(stats)"""
+        if isinstance(self.character, character.Bennett):
+            #print(stats)
+            pass
         if isinstance(self.mv, float) or isinstance(self.mv, int):
             mv = self.mv * stats.get_attack()
         else:
@@ -114,7 +116,13 @@ class Damage(Action):
                 case Aura.HYDRO:
                     pass
                 case Aura.ELECTRO:
-                    pass
+                    match self.element:
+                        case Element.ANEMO:
+                            self.character.reaction(Reactions.ELECTROSWIRL)
+                            reaction = Reactions.ELECTROSWIRL
+                        case Element.PYRO:
+                            self.character.reaction(Reactions.OVERLOAD)
+                            reaction = Reactions.OVERLOAD
                 case Aura.CRYO:
                     pass
                 case Aura.EC:
@@ -124,6 +132,9 @@ class Damage(Action):
                         case Element.ELECTRO:
                             mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
                             reaction = Reactions.AGGRAVATE
+                        case Element.DENDRO:
+                            mv += 1.25 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
+                            reaction = Reactions.SPREAD
                         case Element.ANEMO:
                             self.character.reaction(Reactions.ELECTROSWIRL)
                             reaction = Reactions.ELECTROSWIRL
@@ -135,9 +146,12 @@ class Damage(Action):
                             mv *= 1.5 * stats.multiplicative_multiplier()
                         case Reactions.AGGRAVATE:
                             stats = self.character.get_stats()
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))  # TODO: add tf bullshit
-            for delegate in rotation.reactionHook:
-                delegate(self.character, reaction)
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))  # TODO: add tf bullshit\
+            if reaction is not None:
+                for delegate in rotation.reactionHook:
+                    delegate(self.character, reaction)
+                for delegate in self.character.reactionHook:
+                    delegate(self, reaction)
 
         damage = mv * multiplier
         if self.aoe:
@@ -266,7 +280,7 @@ class Reaction(Action):
         return f"{self.character} doing {self.reaction} at {self.time}"
 
 class Buff(Action):
-    def __init__(self, character, time, buff, on_field=False, to_self=False):
+    def __init__(self, character: "Character", time: int, buff: "buff.Buff", on_field=False, to_self=False):
         super().__init__(character, time)
         self.buff = buff
         self.onField = on_field

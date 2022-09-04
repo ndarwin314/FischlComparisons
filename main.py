@@ -4,7 +4,7 @@ from artifacts import Set, SetCount
 from rotation import *
 import character
 from weapons import *
-from action_lists import RaiFish, Sukokomon, aggravateFish
+from action_lists import RaiFish, Sukokomon, aggravateFish, Test
 import actions
 
 def timer(func):
@@ -113,9 +113,13 @@ def bad2(name):
             writer.writerow(line)
 @timer
 def test():
-    w = TheStringless(refinement=1)
+    w = PolarStar(refinement=1)
     fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
-    rot = Rotation(aggravateFish["list"], characters=[character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]), character.Bennett(), character.Kazuha(), fish],
+    rot = Rotation(aggravateFish["list"], characters=[
+        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
+        character.Collei(artifact_set=[SetCount(Set.INSTRUCTOR, 4)]),
+        character.Kazuha(),
+        fish],
                    length=36)
     rot.do_rotation()
     print(rot.damage / 36)
@@ -133,8 +137,38 @@ def test2():
     print(rot.damage / 25)
     print({k: round(v / 25, 2) for k,v in rot.damageDict.items()})
 
+@timer
+def test3():
+    w = AlleyHunter(refinement=1)
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
+    rot = Rotation(Test["list"], characters=[
+        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
+        character.Bennett(),
+        character.Kazuha(),
+        fish],
+                   length=36)
+    rot.do_rotation()
+    print(rot.damage / 36)
+    print({k: round(v/36,2) for k,v in rot.damageDict.items()})
+
+@timer
+def test4():
+    w = AlleyHunter(refinement=1)
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
+    rot = Rotation(RaiFish["list"], characters=[
+        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
+        character.Bennett(),
+        character.Kazuha(),
+        fish],
+                   length=36)
+    rot.do_rotation()
+    print(rot.damage / 36)
+    print({k: round(v/36,2) for k,v in rot.damageDict.items()})
+
 if __name__ == '__main__':
     #bad2("sukokomon")
     #test2()
     test()
+    #test3()
+    #test4()
 

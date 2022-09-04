@@ -34,6 +34,7 @@ class Element(Enum):
     ANEMO = auto()
     GEO = auto()
     PHYSICAL = auto()
+    DENDRO = auto()
 
     def swirl(self):
         match self:
@@ -58,6 +59,7 @@ class Reactions(Enum):
     WEAK = auto()
     STRONG = auto()
     AGGRAVATE = auto()
+    SPREAD = auto()
     # no one cares about crystallize
 
     def is_swirl(self):
@@ -107,6 +109,7 @@ class Attr(Enum):
     ANEMODMG = auto()
     GEODMG = auto()
     PHYSDMG = auto()
+    DENDRODMG = auto()
     ECR = auto()
     QCR = auto()
     ECD = auto()
@@ -130,7 +133,8 @@ elementDict = {Element.PYRO: Attr.PYRODMG,
                Element.CRYO: Attr.CRYODMG,
                Element.ANEMO: Attr.ANEMODMG,
                Element.GEO: Attr.GEODMG,
-               Element.PHYSICAL: Attr.PHYSDMG}
+               Element.PHYSICAL: Attr.PHYSDMG,
+               Element.DENDRO: Attr.DENDRODMG}
 
 class Stats:
 

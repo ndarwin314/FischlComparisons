@@ -62,4 +62,5 @@ class Bennett(Character):
 
         self.rotation.add_event(self.buffCreator(self.time))
         for i in range(13):
+            #print(self.time + 0.57 + i)
             self.rotation.add_event(self.buffCreator(self.time + 0.57 + i))

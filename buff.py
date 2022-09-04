@@ -25,7 +25,7 @@ class GenericBuff(ABC):
 
 class Buff(GenericBuff):
 
-    def __init__(self, buff, start, duration, uuid):
+    def __init__(self, buff: Stats, start: int, duration: int, uuid: int):
         super().__init__(buff, uuid)
         self.expiration = duration + start
 

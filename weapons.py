@@ -1,4 +1,6 @@
 import math
+
+import attributes
 from attributes import *
 import buff as b
 from abc import ABC
@@ -396,3 +398,13 @@ class Akuoumaru(Weapon):
         buff *= 0.0009 + 0.0003*self.refinement
         buff = max(buff, 30+10*self.refinement)
         self.stats += Attr({Attr.QDMG: buff})
+        
+class Homa(Weapon):
+    def __init__(self, refinement=1):
+        super(Homa, self).__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.HPP: 0.2}), "Staff of Homo")
+
+    def equip(self, character):
+        super(Homa, self).equip(character)
+        # always under half kekw
+        character.artifact_stats += Stats({Attr.ATK: 0.018*character.get_stats().get_hp()})
+

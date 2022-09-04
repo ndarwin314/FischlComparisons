@@ -35,7 +35,8 @@ elementDict = {Element.PYRO: Attr.PYRODMG,
                Element.CRYO: Attr.CRYODMG,
                Element.ANEMO: Attr.ANEMODMG,
                Element.GEO: Attr.GEODMG,
-               Element.PHYSICAL: Attr.PHYSDMG}
+               Element.PHYSICAL: Attr.PHYSDMG,
+               Element.DENDRO: Attr.DENDRODMG}
 scalingMultiplier = [0,
                      1,
                      1.075,
@@ -134,6 +135,8 @@ class Character(ABC):
     vvID = uuid()
     tomID = uuid()
     nope = icd.WTF()
+    instructorID = uuid()
+    shimeID = uuid()
 
     def __init__(self, stats, element, auto_talent, skill_talent, burst_talent,
                  constellation, weapon, artifact_set, weapon_type, energy_cost):
@@ -151,6 +154,7 @@ class Character(ABC):
         self.chargedHitHook = []
         self.damageHook = []
         self.healingHook = []
+        self.reactionHook = []
 
 
         self.stats = stats
@@ -243,7 +247,35 @@ class Character(ABC):
                     self.OHCMV = mv.MV(flat=0)
                     if s.count >= 4:
                         self.healingHook.append(ohc)
-
+                case Set.SHIME:
+                    self.artifactStats[Attr.ATKP] += 0.18
+                    if s.count >= 4:
+                        def shime(character: Character):
+                            self.rotation.add_event(
+                                actions.Buff(character,
+                                             character.time,
+                                             buff.Buff(
+                                                 Stats({Attr.NADMG: 0.5, Attr.CADMG: 0.5, Attr.PLUNGEDMG: 0.5}),
+                                                 character.time,
+                                                 10,
+                                                 Character.shimeID
+                                                ),
+                                             on_field=True))
+                        self.skillCastHook.append(shime)
+                case Set.INSTRUCTOR:
+                    self.artifactStats[Attr.EM] += 80
+                    if s.count >= 4:
+                        def instructor(character: Character, reaction: Reactions):
+                            self.rotation.add_event(
+                                actions.Buff(character,
+                                             character.time,
+                                             buff.Buff(
+                                                 Stats({Attr.EM: 120}),
+                                                 character.time,
+                                                 8,
+                                                 Character.shimeID
+                                             )))
+                        self.reactionHook.append(instructor)
 
 
     def set_rotation(self, r):
@@ -288,13 +320,13 @@ class Character(ABC):
         match reaction:
             case Reactions.OVERLOAD:
                 self.do_damage(mv.MV(flat=4*self.levelMultiplier), Element.PYRO, DamageType.REACTION, aoe=True,
-                                        reaction=Reactions.OVERLOAD)
+                                        reaction=Reactions.OVERLOAD, icd=Character.nope)
             case Reactions.EC:
                 self.do_damage(mv.MV(flat=2.4*self.levelMultiplier), Element.ELECTRO, DamageType.REACTION,
-                                        aoe=True,reaction=Reactions.EC)
+                                        aoe=True,reaction=Reactions.EC, icd=Character.nope)
             case Reactions.SUPERCONDUCT:
                 self.do_damage(mv.MV(flat=1*self.levelMultiplier), Element.CRYO, DamageType.REACTION,
-                                        aoe=True, reaction=Reactions.SUPERCONDUCT)
+                                        aoe=True, reaction=Reactions.SUPERCONDUCT, icd=Character.nope)
                 for e in self.rotation.enemies:
                     e.add_shred(ResShred(Element.PHYSICAL, -0.4, self.time + 12, self.vvID))
 
@@ -311,7 +343,7 @@ class Character(ABC):
         #print(self, time, self.buffs)
         return stats
 
-    def add_buff(self, buff):
+    def add_buff(self, buff: buff.Buff):
         # TODO: make this not suck
         for i in range(len(self.buffs)):
             other = self.buffs[i]
@@ -322,10 +354,10 @@ class Character(ABC):
             self.buffs.append(buff)
         #[other if buff!=other else other+buff for other in self.buffs]
 
-    def add_substat(self, sub, rolls):
+    def add_substat(self, sub: Attr, rolls: int):
         self.artifactStats[sub] += rolls * substatValues[sub]
 
-    def remove_buff(self, buff):
+    def remove_buff(self, buff: buff.Buff):
         try:
             self.buffs.remove(buff)
             return True

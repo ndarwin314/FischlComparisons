@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 class Set(Enum):
     TF = 0
@@ -10,6 +10,8 @@ class Set(Enum):
     EMBLEM = 6
     VV = 7
     OHC = 8
+    SHIME = auto()
+    INSTRUCTOR = auto()
 
     def __repr__(self):
         return self.name

@@ -64,14 +64,14 @@ class Kazuha(Character):
 
     def burst(self, **kwargs):
         super().burst()
-        element = kwargs["infusion"]
+        infusion = kwargs["infusion"]
         t = self.time + 93 / 60
         self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True)
         t += 1.08
         for i in range(4):
             t += 1.95
             self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
-            self.rotation.do_damage(self, self.burstInfuseDOT, element, DamageType.BURST, t, True)
+            self.rotation.do_damage(self, self.burstInfuseDOT, infusion, DamageType.BURST, t, True)
 
     def reaction(self, reaction, **kwargs):
         super().reaction(reaction)
