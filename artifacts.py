@@ -1,9 +1,10 @@
 from enum import Enum, auto
-from abc import ABC, abstractmethod
+from abc import ABC
 from character import Character
 from attributes import Attr, Stats, DamageType, Element
 import actions
 import buff
+from uuid import uuid4 as uuid
 
 class Set(Enum):
     TF = 0
@@ -168,6 +169,20 @@ class Instructor(SetBase):
                              )))
 
         character.reactionHook.append(instructor)
+
+class Gilded(SetBase):
+    id = uuid()
+    def two(self, character: Character):
+        character.artifactStats[Attr.EM] += 80
+
+    def four(self, character: Character):
+        def gd(char: Character, reaction):
+            char.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), char.time, 8, Gilded.id))
+            # TODO: check this works and make dynamic
+            character.reactionHook.append(gd)
+
+
+
 
 
 
