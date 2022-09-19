@@ -1,3 +1,5 @@
+import numpy as np
+
 from character.character_base import*
 from weapons import IronSting
 import attributes
@@ -11,6 +13,8 @@ class Kazuha(Character):
     skillHoldBase = 2.6080
     lowPlungeBase = 1.6363
     highPlungeBase = 2.0439
+    normalBase = np.array([0.8263,0.8311])
+
     buffIDS = {Element.PYRO: uuid(),
                Element.HYDRO: uuid(),
                Element.ELECTRO: uuid(),
@@ -35,6 +39,8 @@ class Kazuha(Character):
         self.skillPress = self.skillPressBase * scalingMultiplier[skill_talent]
         self.lowPlunge = self.lowPlungeBase * scalingMultiplier[auto_talent]
         self.highPlunge = self.highPlungeBase * scalingMultiplier[auto_talent]
+        self.autoTiming = [[14,34], []]
+        self.autoMVS = [self.normalBase * physMultiplier[self.autoTalent]]
 
         # artifacts stats
         self.artifactStats[Attr.ANEMODMG] -= 0.466
@@ -44,7 +50,7 @@ class Kazuha(Character):
         self.add_substat(Attr.ATKP, 6)
 
     def normal(self, hit, **kwargs):
-        raise NotImplemented("why")
+        super(Kazuha, self).normal(hit, **kwargs)
 
     def charged(self):
         raise NotImplemented("why")

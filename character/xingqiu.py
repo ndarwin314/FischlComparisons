@@ -52,7 +52,7 @@ class Xingqiu(Character):
                          Element.HYDRO, auto_talent, skill_talent, burst_talent,
                          constellation, weapon, artifact_set, ConType.BurstFirst, 80)
         self.autoTiming = [[9, 34]]
-        self.autoMVS = [self.autoBase[0] * autoMultiplier[self.autoTalent]]
+        self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]
         self.burstMVS = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstDuration = 15 if self.constellation < 2 else 18

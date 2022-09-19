@@ -72,7 +72,7 @@ class Xiangling(Character):
         self.pyronadoMVS = self.pyronadoBase * scalingMultiplier[self.burstTalent]
         self.goobaMV = self.goobaBase * scalingMultiplier[self.skillTalent]
         self.autoTiming = [[12, 26]]
-        self.autoMVS = [self.autoBase[0] * autoMultiplier[self.autoTalent]]
+        self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
 
         erReq = 2.3
         if isinstance(weapon, Kitain):

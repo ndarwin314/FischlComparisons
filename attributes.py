@@ -116,6 +116,7 @@ class Attr(Enum):
     QCD = auto()
     PLUNGEDMG = auto()
     SWIRLBONUS = auto()
+    AGGRAVATEBONUS = auto()
     HB = auto()
 
 

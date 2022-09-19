@@ -23,8 +23,8 @@ class Bennett(Character):
                          weapon, artifact_set, ConType.SkillFirst, 60)
         self.skillBase = self.skillBase * scalingMultiplier[skill_talent]
         self.burstBase = self.burstBase * scalingMultiplier[burst_talent]
-        self.autoMVS = [self.autoBase[0] * autoMultiplier[auto_talent], self.autoBase[1] * autoMultiplier[auto_talent]]
-        self.n1 = self.n1Base * autoMultiplier[auto_talent]
+        self.autoMVS = [self.autoBase[0] * physMultiplier[auto_talent], self.autoBase[1] * physMultiplier[auto_talent]]
+        self.n1 = self.n1Base * physMultiplier[auto_talent]
         self.buffValue = (self.atkBuffRatio[self.burstTalent] + (0.2 if constellation >= 1 else 0)) \
                          * self.get_stats(0)[Attr.ATKBASE]
         self.buffStats = Stats({Attr.ATK: self.buffValue})

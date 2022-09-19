@@ -60,7 +60,7 @@ class Raiden(Character):
         self.resolve = 0
         self.burstActive = False
         self.burstExpiration = 0
-        self.autoMVS = self.autoBase * autoMultiplier[self.autoTalent]
+        self.autoMVS = self.autoBase * physMultiplier[self.autoTalent]
         self.infusedMVS = self.autoInfuseBase * physHighMultiplier[self.burstTalent]
         self.skillCastMV = self.skillcastHookBase * scalingMultiplier[self.skillTalent]
         self.skillTurretMV = self.skillTurretBase * scalingMultiplier[self.skillTalent]
@@ -89,7 +89,7 @@ class Raiden(Character):
         self.artifactStats[Attr.ER] += 2 * substatValues[Attr.ER]
 
     def normal(self, hit, **kwargs):
-        charged = kwargs.get("character")
+        charged = kwargs.get("charged")
         if charged is None:
             charged = True
         #super().normal(stats, hit)

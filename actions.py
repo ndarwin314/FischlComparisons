@@ -130,7 +130,7 @@ class Damage(Action):
                 case Aura.QUICKEN:
                     match self.element:
                         case Element.ELECTRO:
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])
                             reaction = Reactions.AGGRAVATE
                         case Element.DENDRO:
                             mv += 1.25 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
@@ -146,7 +146,7 @@ class Damage(Action):
                             mv *= 1.5 * stats.multiplicative_multiplier()
                         case Reactions.AGGRAVATE:
                             stats = self.character.get_stats()
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))  # TODO: add tf bullshit\
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])  # TODO: add tf bullshit\
             if reaction is not None:
                 for delegate in rotation.reactionHook:
                     delegate(self.character, reaction)

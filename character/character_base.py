@@ -8,7 +8,6 @@ from summon import Summon
 import math
 import numpy as np
 import actions
-from artifacts import Set, SetCount
 import buff
 import mv
 from uuid import uuid4 as uuid
@@ -52,7 +51,7 @@ scalingMultiplier = [0,
                      2,
                      2.125]
 
-physHighMultiplier = [0,
+physLowMultiplier = [0,
                       1,
                       1.068,
                       1.136,
@@ -69,7 +68,7 @@ physHighMultiplier = [0,
                       2.193,
                       2.295]
 
-autoMultiplier = [0,
+physMultiplier = [0,
                   1,
                   1.081,
                   1.163,
@@ -86,7 +85,7 @@ autoMultiplier = [0,
                   2.535,
                   2.674]
 
-physhighMultiplier = [0,
+physHighMultiplier = [0,
                       1,
                       1.081,
                       1.163,
@@ -119,6 +118,23 @@ flatMultiplier = [1,
                   2.95,
                   3.159]
 
+lowElemMultiplier = [
+    1,
+    1.06,
+    1.12,
+    1.198,
+    1.257,
+    1.317,
+    1.395,
+    1.473,
+    1.551,
+    1.629,
+    1.707,
+    1.784,
+    1.862,
+    1.94,
+    2.018]
+
 substatValues = {Attr.HPP: 0.0496, Attr.HP: 253.94,
                  Attr.ATKP: 0.0496, Attr.ATK: 16.54,
                  Attr.DEFP: 0.0620, Attr.DEF: 19.68,
@@ -138,8 +154,8 @@ class Character(ABC):
     instructorID = uuid()
     shimeID = uuid()
 
-    def __init__(self, stats, element, auto_talent, skill_talent, burst_talent,
-                 constellation, weapon, artifact_set, weapon_type, energy_cost):
+    def __init__(self, stats: Attr, element: Element, auto_talent: int, skill_talent: int, burst_talent: int,
+                 constellation: int, weapon: "Weapon", artifact_set: ["SetBase"], weapon_type, energy_cost: int):
         self.rotation = None
 
         # TODO: programmatically determine this based on level
@@ -191,97 +207,18 @@ class Character(ABC):
         self.crCap = 10
         self.cdCap = 10
 
+
         self.emblem = False
         self.vv = False
-        if len(artifact_set)==0:
-            return
+        self.lastTOM = -1
+        self.lastOHC = -4
+        self.OHCMV = mv.MV(flat=0)
         for s in artifact_set:
-            match s.set:
-                case Set.TF:
-                    self.artifactStats[Attr.ELECTRODMG] += 0.15
-                case Set.ATK:
-                    self.artifactStats[Attr.ATKP] += 0.18
-                case Set.TS:
-                    if s.count >= 4:
-                        self.artifactStats[Attr.DMG] += 0.35
-                case Set.GAMBLER:
-                    self.artifactStats[Attr.EDMG] += 0.2
-                case Set.NO:
-                    self.artifactStats[Attr.QDMG] += 0.2
-                    if s.count >= 4:
-                        delegate = lambda c: actions.Buff(self, c.time,
-                                                          buff.Buff(self.noblesseBuff, c.time, 12, self.noblesseID))
-                        self.burstCastHook.append(delegate)
-                case Set.EMBLEM:
-                    self.artifactStats[Attr.ER] += 0.2
-                    if s.count >= 4:
-                        self.emblem = True
-                case Set.VV:
-                    self.artifactStats[Attr.ANEMODMG] += 0.15
-                    if s.count >= 4:
-                        self.vv = True
-                        self.artifactStats[Attr.SWIRLBONUS] += 0.6
-                case Set.TOM:
-                    self.artifactStats[Attr.HPP] += 0.2
-                    if s.count >= 4:
-                        self.lastTOM = -1
-                        """delegate = lambda c: actions.Buff(self, c.time, Buff(self.noblesseBuff, c.time, 3, self.tomID))"""
-                        def tom(character):
-                            t = character.time + 0.1
-                            if t > character.lastTOM + 0.5:
-                                character.rotation.add_event(actions.Buff(self, t, buff.Buff(self.noblesseBuff, t, 3, self.tomID)))
-                        self.skillHitHook.append(tom)
-                case Set.OHC:
-                    def ohc(character, healing):
-                        t = character.time
-                        if t <= 3 + self.lastOHC:
-                            self.OHCMV.flat = min(self.OHCMV.flat + 0.9 * healing, 27_000)
-                        elif t <= 3.5:
-                            pass
-                        else:  # t > 3.5
-                            self.OHCMV.flat = 0
-                            character.do_damage(self.OHCMV, Element.PHYSICAL, DamageType.CLAM, t + 3)
-                            self.lastOHC = t
-                    self.artifactStats[Attr.HB] += 0.15
-                    self.lastOHC = -4
-                    self.OHCMV = mv.MV(flat=0)
-                    if s.count >= 4:
-                        self.healingHook.append(ohc)
-                case Set.SHIME:
-                    self.artifactStats[Attr.ATKP] += 0.18
-                    if s.count >= 4:
-                        def shime(character: Character):
-                            self.rotation.add_event(
-                                actions.Buff(character,
-                                             character.time,
-                                             buff.Buff(
-                                                 Stats({Attr.NADMG: 0.5, Attr.CADMG: 0.5, Attr.PLUNGEDMG: 0.5}),
-                                                 character.time,
-                                                 10,
-                                                 Character.shimeID
-                                                ),
-                                             on_field=True))
-                        self.skillCastHook.append(shime)
-                case Set.INSTRUCTOR:
-                    self.artifactStats[Attr.EM] += 80
-                    if s.count >= 4:
-                        def instructor(character: Character, reaction: Reactions):
-                            self.rotation.add_event(
-                                actions.Buff(character,
-                                             character.time,
-                                             buff.Buff(
-                                                 Stats({Attr.EM: 120}),
-                                                 character.time,
-                                                 8,
-                                                 Character.shimeID
-                                             )))
-                        self.reactionHook.append(instructor)
+            s.add(self)
 
 
     def set_rotation(self, r):
         self.rotation = r
-
-
 
     @abstractmethod
     def normal(self, hits, **kwargs):

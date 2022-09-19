@@ -11,7 +11,7 @@ class Oz(Summon):
     def __init__(self, stats_ref, who_summoned, start, duration, icd):
         super().__init__(None, who_summoned, start, duration + 0.01)
         self.mv = who_summoned.skillTurret
-        self.lastA4 = start
+        self.lastA4 = start - 1
         self.lastHit = start-0.02
         self.con = who_summoned.constellation
         self.statsRef = stats_ref
@@ -38,6 +38,7 @@ class Oz(Summon):
         if reaction in electroReactions and self.rotation.time >= self.lastA4 + 0.5 and self.rotation.onField == \
                 self.rotation.characters[character]:
             self.a4Count += 1
+            #print(character, self.time, reaction)
             self.rotation.do_damage(self.summoner, 0.8, Element.ELECTRO,
                                     damage_type=DamageType.SKILL, stats_ref=lambda: self.stats)
             self.lastA4 = self.time
@@ -53,7 +54,7 @@ class Oz(Summon):
         self.rotation.reactionHook.append(self.a4)
 
     def recall(self):
-        print(self.a4Count, self.c6Count, self.ozCount, self.time)
+        #print(self.a4Count, self.c6Count, self.ozCount, self.time)
         super().recall()
         if self.con >= 6:
             self.rotation.normalAttackHook.remove(self.c6)
@@ -91,10 +92,10 @@ class Fischl(Character):
         self.turretHits = 10 if constellation < 6 else 12
         self.skillTurret = self.skillTurretBase * scalingMultiplier[self.skillTalent]
         self.skillCast = self.skillCastBase * scalingMultiplier[self.skillTalent] + (2 if constellation > 1 else 0)
-        self.aim = self.aimBase * autoMultiplier[self.autoTalent]
+        self.aim = self.aimBase * physMultiplier[self.autoTalent]
         # technically c4 is a separate damage instance, but it does not make a big difference
         self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent] + (2.22 if constellation > 3 else 0)
-        self.autoMVS = [self.autoBase[0]*autoMultiplier[self.autoTalent]]
+        self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.autoTiming = [[10, 18, 33, 41, 29]]
         # artifacts
         self.artifactStats[Attr.ATKP] += 0.466
@@ -129,7 +130,7 @@ class Fischl(Character):
             self.rotation.normalAttackHook.append(self.c1)
 
     def normal(self, hit, **kwargs):
-        super().normal(hit)
+        super().normal(hit, **kwargs)
         #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self):
