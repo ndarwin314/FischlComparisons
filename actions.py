@@ -1,15 +1,12 @@
 from abc import ABC, abstractmethod
-
-import character
 from attributes import DamageType, Attr, Reactions, Element, Aura
 from icd import ICD
-from character import character_base
 
 class Action(ABC):
     __slots__ = ["character", "time", "type"]
 
     def __init__(self, character, time):
-        self.character: character_base = character
+        self.character: "Character" = character
         self.time: int = time
         # do stuff with kwargs if i decide to
 
@@ -65,7 +62,7 @@ class Summon(Action):
         return f"Recalling {self.summon} by {self.character} at {self.time}"""
 
 class SetAura(Action):
-    def __init__(self, character: character_base, time: int, aura: Aura):
+    def __init__(self, character: "Character", time: int, aura: Aura):
         super().__init__(character, time)
         self.aura : Aura = aura
 
@@ -89,9 +86,6 @@ class Damage(Action):
         # TODO: implement def ignore
         stats = self.statsRef()
         element_applied = self.icd.applied_element(rotation.time)
-        if isinstance(self.character, character.Bennett):
-            #print(stats)
-            pass
         if isinstance(self.mv, float) or isinstance(self.mv, int):
             mv = self.mv * stats.get_attack()
         else:

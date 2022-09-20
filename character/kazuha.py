@@ -21,7 +21,7 @@ class Kazuha(Character):
                Element.CRYO: uuid()}
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=IronSting(refinement=5), artifact_set=(SetCount(Set.VV, 4),)):
+                 weapon=IronSting(refinement=5), artifact_set=(artifacts.VV(4),)):
         super().__init__(Stats({Attr.HPBASE: 13348,
                                 Attr.ATKBASE: 297,
                                 Attr.DEFBASE: 807,
@@ -61,23 +61,23 @@ class Kazuha(Character):
         infusion = kwargs["infusion"]
         time = self.time + 0.23
         # chiha whatever
-        self.rotation.do_damage(self, self.skillPress, self.element, DamageType.SKILL, time, True)
+        self.do_damage(self.skillPress, self.element, DamageType.SKILL, time, True)
         time += 0.8
         # a1
-        self.rotation.do_damage(self, 2, infusion, DamageType.PLUNGE, time, True)
+        self.do_damage(2, infusion, DamageType.PLUNGE, time, True)
         # plunge
-        self.rotation.do_damage(self, self.highPlunge, self.element, DamageType.PLUNGE, time, True)
+        self.do_damage(self.highPlunge, self.element, DamageType.PLUNGE, time, True)
 
     def burst(self, **kwargs):
         super().burst()
         infusion = kwargs["infusion"]
         t = self.time + 93 / 60
-        self.rotation.do_damage(self, self.burstCast, self.element, DamageType.BURST, t, True)
+        self.do_damage(self.burstCast, self.element, DamageType.BURST, t, True)
         t += 1.08
         for i in range(4):
             t += 1.95
-            self.rotation.do_damage(self, self.burstDOT, self.element, DamageType.BURST, t, True)
-            self.rotation.do_damage(self, self.burstInfuseDOT, infusion, DamageType.BURST, t, True)
+            self.do_damage(self.burstDOT, self.element, DamageType.BURST, t, True)
+            self.do_damage(self.burstInfuseDOT, infusion, DamageType.BURST, t, True)
 
     def reaction(self, reaction, **kwargs):
         super().reaction(reaction)
@@ -85,3 +85,6 @@ class Kazuha(Character):
             element = reaction.element()
             dmgBonus = Stats({attributes.elementDict[element]: self.get_stats(self.time)[Attr.EM] * 0.0004})
             self.rotation.add_event(actions.Buff(self, self.time, buff.Buff(dmgBonus, self.time, 8, self.buffIDS[element])))
+
+    def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None, reaction=None, icd=None):
+        super(Kazuha, self).do_damage(mv, element, damage_type, time, aoe, debug, stats_ref, reaction, icd)

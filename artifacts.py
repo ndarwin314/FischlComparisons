@@ -1,6 +1,5 @@
 from enum import Enum, auto
 from abc import ABC
-from character import Character
 from attributes import Attr, Stats, DamageType, Element
 import actions
 import buff
@@ -40,13 +39,13 @@ class SetBase(ABC):
     def __init__(self, count):
         self.count = count
 
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         pass
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         pass
 
-    def add(self, char: Character):
+    def add(self, char: "character.Character"):
         # add some type checking but i think there is circular import bs
         if self.count >= 2:
             self.two(char)
@@ -55,15 +54,15 @@ class SetBase(ABC):
 
 
 class Glad(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.ATKP] += 0.18
         
 class Shime(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.ATKP] += 0.18
         
-    def four(self, character: Character):
-        def shime(char: Character):
+    def four(self, character: "character.Character"):
+        def shime(char: "character.Character"):
             character.rotation.add_event(
                 actions.Buff(char,
                              char.time,
@@ -71,47 +70,47 @@ class Shime(SetBase):
                                  Stats({Attr.NADMG: 0.5, Attr.CADMG: 0.5, Attr.PLUNGEDMG: 0.5}),
                                  char.time,
                                  10,
-                                 Character.shimeID
+                                 "character.Character".shimeID
                              ),
                              on_field=True))
 
         character.skillCastHook.append(shime)
         
 class TF(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.ELECTRODMG] += 0.15
         
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         character.artifactStats[Attr.AGGRAVATEBONUS] += 0.2
         # TODO: add other bonuses
 
 
 class TS(SetBase):
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         character.artifactStats[Attr.DMG] += 0.35
         # TODO: probably a better way to do this now
 
 class Gambler(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.EDMG] += 0.2
 
 class NO(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.QDMG] += 0.2
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         delegate = lambda c: actions.Buff(self, c.time,
                                          buff.Buff(character.noblesseBuff, c.time, 12, character.noblesseID))
         character.burstCastHook.append(delegate)
 
 class TOM(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.HPP] += 0.2
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         """delegate = lambda c: actions.Buff(self, c.time, Buff(self.noblesseBuff, c.time, 3, self.tomID))"""
-        def tom(char: Character):
+        def tom(char: "character.Character"):
             t = char.time + 0.1
             if t > char.lastTOM + 0.5:
                 char.rotation.add_event(
@@ -120,25 +119,25 @@ class TOM(SetBase):
         character.skillHitHook.append(tom)
 
 class Emblem(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.ER] += 0.2
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         character.emblem = True
 
 class VV(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.ANEMODMG] += 0.15
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         character.vv = True
         character.artifactStats[Attr.SWIRLBONUS] += 0.6
 
 class OHC(SetBase):
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.HB] += 0.15
 
-    def four(self, character: Character):
+    def four(self, character: "character.Character"):
         def ohc(char, healing):
             t = char.time
             if t <= 3 + self.lastOHC:
@@ -153,11 +152,12 @@ class OHC(SetBase):
         character.healingHook.append(ohc)
 
 class Instructor(SetBase):
-    def two(self, character: Character):
+    id = uuid()
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.EM] += 80
 
-    def four(self, character: Character):
-        def instructor(char: Character, reaction):
+    def four(self, character: "character.Character"):
+        def instructor(char: "character.Character", reaction):
             character.rotation.add_event(
                 actions.Buff(char,
                              char.time,
@@ -165,18 +165,18 @@ class Instructor(SetBase):
                                  Stats({Attr.EM: 120}),
                                  char.time,
                                  8,
-                                 Character.shimeID
+                                 Instructor.id
                              )))
 
         character.reactionHook.append(instructor)
 
 class Gilded(SetBase):
     id = uuid()
-    def two(self, character: Character):
+    def two(self, character: "character.Character"):
         character.artifactStats[Attr.EM] += 80
 
-    def four(self, character: Character):
-        def gd(char: Character, reaction):
+    def four(self, character: "character.Character"):
+        def gd(char: "character.Character", reaction):
             char.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), char.time, 8, Gilded.id))
             # TODO: check this works and make dynamic
             character.reactionHook.append(gd)

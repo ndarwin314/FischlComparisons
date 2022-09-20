@@ -1,9 +1,7 @@
-import character
 from attributes import Element, Reactions, Attr, Stats, DamageType
 from enemy import ResShred
 from enum import Enum
 from abc import ABC, abstractmethod
-from uuid import uuid1 as uuid
 from summon import Summon
 import math
 import numpy as np
@@ -11,6 +9,7 @@ import actions
 import buff
 import mv
 from uuid import uuid4 as uuid
+import artifacts
 import icd
 
 class ConType(Enum):
@@ -225,7 +224,7 @@ class Character(ABC):
         t = self.time
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
-            self.rotation.do_damage(self, self.autoMVS[0][i], Element.PHYSICAL, DamageType.NORMAL, t)
+            self.do_damage(self.autoMVS[0][i], Element.PHYSICAL, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i] / 60)
 

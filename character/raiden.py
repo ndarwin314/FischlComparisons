@@ -44,7 +44,7 @@ class Raiden(Character):
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=Catch(), artifact_set=(SetCount(Set.EMBLEM, 4),)):
+                 weapon=Catch(), artifact_set=(artifacts.Emblem(4),)):
         super().__init__(Stats({Attr.HPBASE: 12907,
                                 Attr.ATKBASE: 337,
                                 Attr.DEFBASE: 789,
@@ -103,24 +103,24 @@ class Raiden(Character):
             mvs = self.infusedMVS + self.resolve * self.infusedBonusMV
             for i in range(hit):
                 t += timing[0][i] / 60
-                self.rotation.do_damage(self, mvs[i], self.element, DamageType.BURST, time=t, icd=self.normalICD)
+                self.do_damage(mvs[i], self.element, DamageType.BURST, time=t, icd=self.normalICD)
                 for hook in self.rotation.normalAttackHook:
                     hook(t, timing[0][i] / 60)
             if charged:
                 t += timing[1][0] / 60
-                self.rotation.do_damage(self, mvs[-2], self.element, DamageType.BURST, time=t, icd=self.normalICD)
-                self.rotation.do_damage(self, mvs[-1], self.element, DamageType.BURST, time=t, icd=self.normalICD)
+                self.do_damage(mvs[-2], self.element, DamageType.BURST, time=t, icd=self.normalICD)
+                self.do_damage(mvs[-1], self.element, DamageType.BURST, time=t, icd=self.normalICD)
         else:
             timing = self.autoTimingBad
             mvs = self.autoMVS
             for i in range(hit):
                 t += timing[0][i] / 60
-                self.rotation.do_damage(self, mvs[i], Element.PHYSICAL, DamageType.NORMAL, time=t)
+                self.do_damage(mvs[i], Element.PHYSICAL, DamageType.NORMAL, time=t)
                 for hook in self.rotation.normalAttackHook:
                     hook(t)
             if charged:
                 t += timing[1][0] / 60
-                self.rotation.do_damage(self, mvs[-1], Element.PHYSICAL, DamageType.CHARGED, time=t)
+                self.do_damage(mvs[-1], Element.PHYSICAL, DamageType.CHARGED, time=t)
 
 
     def charged(self):
@@ -128,14 +128,14 @@ class Raiden(Character):
         if self.burstActive:
             # this is a hack to add both mvs together since i'm lazy and they are simultaneous
             mv = self.infusedMVS[-1] + self.infusedMVS[-2] + 2 * self.resolve * self.infusedBonusMV
-            self.rotation.do_damage(self, mv, self.element, DamageType.BURST)
+            self.do_damage(mv, self.element, DamageType.BURST)
 
         else:
-            self.rotation.do_damage(self, self.autoMVS[-1], Element.PHYSICAL, DamageType.CHARGED)
+            self.do_damage(self.autoMVS[-1], Element.PHYSICAL, DamageType.CHARGED)
 
     def skill(self):
         super().skill()
-        self.rotation.do_damage(self, self.skillCastMV, self.element, damage_type=DamageType.SKILL,
+        self.do_damage(self.skillCastMV, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.85, icd=self.skillICD)
         self.rotation.add_summon(NotOz(None, self, self.time, self.skillICD))
 
@@ -150,7 +150,7 @@ class Raiden(Character):
         mv = self.burstMV + self.burstBonusMV * self.resolve
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
-        self.rotation.do_damage(self, mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
+        self.do_damage(mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
         self.rotation.add_event(actions.OtherAction(self, self.time + 11, lambda r: self.deactivate_burst()))
 
     def add_resolve(self, cost):

@@ -43,7 +43,7 @@ class Kokomi(Character):
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=TTDS(), artifact_set=(SetCount(Set.OHC, 4),)):
+                 weapon=TTDS(), artifact_set=(artifacts.OHC(4),)):
         super().__init__(Stats({Attr.HPBASE: 13471,
                                 Attr.ATKBASE: 234,
                                 Attr.DEFBASE: 657,
@@ -95,7 +95,7 @@ class Kokomi(Character):
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
             mvs = mv.MV(atk_mv=self.autoMVS[0][i], hp_mv=burstBonus)
-            self.rotation.do_damage(self, mvs, self.element, DamageType.NORMAL, t)
+            self.do_damage(mvs, self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i])
             self.rotation.add_event(actions.Healing(self, t, self.healingPercentMV[1], self.healingFlatMV[1]))
@@ -104,7 +104,7 @@ class Kokomi(Character):
             t += self.autoTiming[1][0] / 60
             burstBonus = self.burstActive * (0.15 * self.get_stats()[Attr.HB] + self.burstBonusMVS[2])
             mvs = mv.MV(atk_mv=self.autoMVS[1][0], hp_mv=burstBonus)
-            self.rotation.do_damage(self, mvs, self.element, DamageType.CHARGED, t)
+            self.do_damage(mvs, self.element, DamageType.CHARGED, t)
             self.rotation.add_event(actions.Healing(self, t, self.healingPercentMV[1], self.healingFlatMV[1]))
             for hook in self.rotation.chargedAttackHook:
                 hook(t)

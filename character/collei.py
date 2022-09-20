@@ -5,7 +5,7 @@ class Collei(Character):
     skillBase = 1.512
     burstBase = np.array([2.0182, 0.4325])
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=0,
-                 weapon=FavoniusWarbow(refinement=5), artifact_set=(SetCount(Set.NO, 4),)):
+                 weapon=FavoniusWarbow(refinement=5), artifact_set=(artifacts.Instructor(4),)):
         super().__init__(Stats({Attr.HPBASE: 9787,
                                 Attr.ATKBASE: 199,
                                 Attr.DEFBASE: 600,

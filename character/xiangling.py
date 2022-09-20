@@ -58,7 +58,7 @@ class Xiangling(Character):
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=Catch(refinement=5), artifact_set=(SetCount(Set.EMBLEM, 4),)):
+                 weapon=Catch(refinement=5), artifact_set=(artifacts.Emblem(4),)):
         super().__init__(Stats({Attr.HPBASE: 10875,
                                 Attr.ATKBASE: 225,
                                 Attr.DEFBASE: 669,

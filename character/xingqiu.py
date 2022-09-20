@@ -40,7 +40,7 @@ class Xingqiu(Character):
     autoBase = np.array([0.4661,0.4764]) # dont care about the rest
     burstBase = 0.5427
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=FavSword(refinement=5), artifact_set=(SetCount(Set.EMBLEM, 4),)):
+                 weapon=FavSword(refinement=5), artifact_set=(artifacts.Emblem(4),)):
         super().__init__(Stats({Attr.HPBASE: 10222,
                                 Attr.ATKBASE: 202,
                                 Attr.DEFBASE: 758,

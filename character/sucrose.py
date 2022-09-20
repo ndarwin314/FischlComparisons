@@ -13,7 +13,7 @@ class Sucrose(Character):
     c6ID = uuid()
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=TTDS(), artifact_set=(SetCount(Set.VV, 4),)):
+                 weapon=TTDS(), artifact_set=(artifacts.VV(4),)):
         super().__init__(Stats({Attr.HPBASE: 9243,
                                 Attr.ATKBASE: 170,
                                 Attr.DEFBASE: 703,
@@ -59,7 +59,7 @@ class Sucrose(Character):
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
             #print(t)
-            self.rotation.do_damage(self, self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
+            self.do_damage(self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i] / 60)
 
@@ -83,7 +83,7 @@ class Sucrose(Character):
             self.rotation.add_event(self.c6Creator(t, element))
         for i in range(self.burstHits):
             t += 1.95
-            self.rotation.do_damage(self, self.burstMVS[0], self.element, DamageType.BURST, t, True)
-            self.rotation.do_damage(self, self.burstMVS[1], element, DamageType.BURST, t, True)
+            self.do_damage(self.burstMVS[0], self.element, DamageType.BURST, t, True)
+            self.do_damage(self.burstMVS[1], element, DamageType.BURST, t, True)
             # standard dumb bullshit stuff if sucrose's em changes
 

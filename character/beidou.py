@@ -32,7 +32,7 @@ class Beidou(Character):
     burstBase = np.array([1.216, 0.96])
     c6ID = uuid()
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=Akuoumaru(refinement=5), artifact_set=(SetCount(Set.EMBLEM, 4),)):
+                 weapon=Akuoumaru(refinement=5), artifact_set=(artifacts.Emblem(4),)):
         super().__init__(Stats({Attr.HPBASE: 13050,
                                 Attr.ATKBASE: 225,
                                 Attr.DEFBASE: 648,

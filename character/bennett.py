@@ -12,7 +12,7 @@ class Bennett(Character):
     buffID = uuid()
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=AlleyFlash(), artifact_set=(SetCount(Set.NO, 4),)):
+                 weapon=AlleyFlash(), artifact_set=(artifacts.NO(4),)):
         super().__init__(Stats({Attr.HPBASE: 12397,
                                 Attr.ATKBASE: 191,
                                 Attr.DEFBASE: 771,
@@ -45,19 +45,19 @@ class Bennett(Character):
 
     def normal(self, hit, **kwargs):
         super().normal(hit)
-        self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
+        self.do_damage(self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self):
         raise NotImplementedError
 
     def skill(self):
         super().skill()
-        self.rotation.do_damage(self, self.skillBase, self.element, damage_type=DamageType.SKILL,
+        self.do_damage(self.skillBase, self.element, damage_type=DamageType.SKILL,
                                 time=self.time + 0.27)
 
     def burst(self):
         super().burst()
-        self.rotation.do_damage(self, self.burstBase, self.element, DamageType.BURST, aoe=True,
+        self.do_damage(self.burstBase, self.element, DamageType.BURST, aoe=True,
                                 time=self.time + 0.62, stats_ref= lambda : self.get_stats())
 
         self.rotation.add_event(self.buffCreator(self.time))

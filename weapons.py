@@ -1,15 +1,11 @@
 import math
-
-import attributes
 from attributes import *
-import buff as b
 from abc import ABC
 from actions import OtherAction, Buff
-from uuid import uuid1 as uuid
+from uuid import uuid4 as uuid
 import buff
-import random as r
 
-class Weapon:
+class Weapon(ABC):
 
     def __init__(self, refinement=1, stats=None, name=""):
         self.stats = Stats() if stats is None else stats
@@ -410,5 +406,5 @@ class Homa(Weapon):
 
 class Hunter(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441 Attr.DMG: 0.19 + 0.03 * refinement}), "Hunter's Path")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441, Attr.DMG: 0.19 + 0.03 * refinement}), "Hunter's Path")
 

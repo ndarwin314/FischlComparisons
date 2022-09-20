@@ -1,3 +1,4 @@
+import artifacts
 import attributes
 from character.character_base import*
 from weapons import AlleyHunter
@@ -76,7 +77,7 @@ class Fischl(Character):
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=AlleyHunter(refinement=1), artifact_set=(SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)),
+                 weapon=AlleyHunter(refinement=1), artifact_set=(artifacts.Glad(2), artifacts.Shime(2)),
                  er_requirement=1):
         super().__init__(Stats({Attr.HPBASE: 9189,
                                 Attr.ATKBASE: 244,
@@ -131,15 +132,15 @@ class Fischl(Character):
 
     def normal(self, hit, **kwargs):
         super().normal(hit, **kwargs)
-        #self.rotation.do_damage(self, self.n1, Element.PHYSICAL, DamageType.NORMAL)
+        #self.do_damage(self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self):
         super().charged()
-        self.rotation.do_damage(self, self.aim, Element.PHYSICAL, DamageType.CHARGED)
+        self.do_damage(self.aim, Element.PHYSICAL, DamageType.CHARGED)
 
     def skill(self):
         super().skill()
-        self.rotation.do_damage(self, self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
+        self.do_damage(self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         self.rotation.add_event(actions.Summon(self, self.time + .6,
                                                Oz(lambda :self.get_stats(self.time),
@@ -147,7 +148,7 @@ class Fischl(Character):
 
     def burst(self):
         super().burst()
-        self.rotation.do_damage(self, self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
+        self.do_damage(self.burstMV , self.element, DamageType.BURST, time=self.time + 0.24,
                                 aoe=True)
         self.rotation.add_event(actions.Summon(self, self.time + .4,
                                                Oz(lambda :self.get_stats(self.time),

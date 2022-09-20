@@ -115,10 +115,10 @@ def bad2(name):
 def test():
     w = TheStringless(refinement=1)
     # [SetCount(Set.TF, 2), SetCount(Set.ATK, 2)]
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
+    fish = character.Fischl(9, 9, 9, weapon=w)
     rot = Rotation(aggravateFish["list"], characters=[
-        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
-        character.Collei(artifact_set=[SetCount(Set.INSTRUCTOR, 4)]),
+        character.Raiden(),
+        character.Collei(),
         character.Kazuha(),
         fish],
                    length=36)
@@ -130,8 +130,8 @@ def test():
 def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
-                               character.Kokomi(artifact_set=[SetCount(Set.OHC, 4)], weapon=TTDS()),
-                               character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1), artifact_set=[SetCount(Set.TOM, 4)]),
+                               character.Kokomi(weapon=TTDS()),
+                               character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1)),
                                character.Xiangling(weapon=Kitain())],
                    length=25.5)
     rot.do_rotation()
@@ -168,9 +168,4 @@ def test4():
     print({k: round(v/36,2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    #bad2("sukokomon")
-    #test2()
     test()
-    #test3()
-    #test4()
-
