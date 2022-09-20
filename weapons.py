@@ -408,3 +408,7 @@ class Homa(Weapon):
         # always under half kekw
         character.artifact_stats += Stats({Attr.ATK: 0.018*character.get_stats().get_hp()})
 
+class Hunter(Weapon):
+    def __init__(self, refinement=1):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441 Attr.DMG: 0.19 + 0.03 * refinement}), "Hunter's Path")
+
