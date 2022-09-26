@@ -160,13 +160,13 @@ class Instructor(SetBase):
         character.artifactStats[Attr.EM] += 80
 
     def four(self, character: "character.Character"):
-        def instructor(char: "character.Character", reaction):
+        def instructor(damage, reaction):
             character.rotation.add_event(
-                actions.Buff(char,
-                             char.time,
+                actions.Buff(character,
+                             character.time,
                              buff.Buff(
                                  Stats({Attr.EM: 120}),
-                                 char.time,
+                                 character.time,
                                  8,
                                  Instructor.id
                              )))
@@ -179,8 +179,8 @@ class Gilded(SetBase):
         character.artifactStats[Attr.EM] += 80
 
     def four(self, character: "character.Character"):
-        def gd(char: "character.Character", reaction):
-            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), char.time, 8, Gilded.id))
+        def gd(damage, reaction):
+            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), damage.time, 8, Gilded.id))
         # TODO: check this works and make dynamic
         character.reactionHook.append(gd)
 

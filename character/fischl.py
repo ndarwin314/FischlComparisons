@@ -115,8 +115,8 @@ class Fischl(Character):
             if erSubs < 2:
                 self.add_substat(Attr.CR, self.crCap)
                 self.add_substat(Attr.CD, self.cdCap)
-                #self.add_substat(Attr.EM, 2 - erSubs)
-                self.add_substat(Attr.ATKP, 2 - erSubs)
+                self.add_substat(Attr.EM, 2 - erSubs)
+                #self.add_substat(Attr.ATKP, 2 - erSubs)
             else:
                 crSubs = self.crCap - erSubs // 2 + 1
                 cdSubs = 20 - crSubs - erSubs

@@ -154,7 +154,7 @@ def aggravate(name):
 def test():
     w = Hunter(refinement=3)
     # [SetCount(Set.TF, 2), SetCount(Set.ATK, 2)]
-    fish = character.Fischl(9, 9, 9, weapon=w,aggravate=True)
+    fish = character.Fischl(9, 9, 9, weapon=w,aggravate=True, artifact_set=[artifacts.Gilded(4)])
     rot = Rotation(aggravateFish["list"], characters=[
         character.Raiden(),
         character.Collei(artifact_set=[artifacts.NO(4)]),
@@ -207,6 +207,7 @@ def test4():
     print({k: round(v/36,2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    aggravate("aggravateEMATK")
+    aggravate("aggravateEMEM")
     #bad2("sukokomon")
     #bad("raifish")
+    #test()
