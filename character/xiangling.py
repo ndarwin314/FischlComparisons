@@ -67,7 +67,7 @@ class Xiangling(Character):
                                 Attr.CD: 0.5,
                                 Attr.ER: 1}),
                          Element.PYRO, auto_talent, skill_talent, burst_talent,
-                         constellation, weapon, artifact_set, ConType.BurstFirst, 80)
+                         constellation, weapon, artifact_set, ConType.BurstFirst, 80, er_req=1)
         self.pyronadoDuration = 10 if constellation <= 4 else 14
         self.pyronadoMVS = self.pyronadoBase * scalingMultiplier[self.burstTalent]
         self.goobaMV = self.goobaBase * scalingMultiplier[self.skillTalent]

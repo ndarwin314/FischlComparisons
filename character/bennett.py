@@ -20,7 +20,7 @@ class Bennett(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
                          Element.PYRO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.SkillFirst, 60)
+                         weapon, artifact_set, ConType.SkillFirst, 60, er_req=0)
         self.skillBase = self.skillBase * scalingMultiplier[skill_talent]
         self.burstBase = self.burstBase * scalingMultiplier[burst_talent]
         self.autoMVS = [self.autoBase[0] * physMultiplier[auto_talent], self.autoBase[1] * physMultiplier[auto_talent]]

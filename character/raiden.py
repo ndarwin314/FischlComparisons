@@ -52,7 +52,7 @@ class Raiden(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
                          Element.ELECTRO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 90)
+                         weapon, artifact_set, ConType.BurstFirst, 90, er_req=1)
         # TODO: add stuff for cons if i care
         self.skillICD = icd.ICD(2.5, 3)
         self.normalICD = icd.ICD(2.5, 3)

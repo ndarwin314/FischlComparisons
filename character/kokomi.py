@@ -54,7 +54,7 @@ class Kokomi(Character):
                                 Attr.HB: 0.25
                                 }),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 70)
+                         weapon, artifact_set, ConType.BurstFirst, 70, er_req=1.6)
         self.autoTiming = [[10, 26, 46], [45]]
         self.rippleMV = self.rippleBase * scalingMultiplier[self.skillTalent]
         self.autoMVS = [self.autoBase[0] * scalingMultiplier[self.autoTalent],

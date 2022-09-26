@@ -194,6 +194,7 @@ class PrototypeCrescent(Weapon):
     def equip(self, character):
         super().equip(character)
         character.chargedHitHook.append(self.charged_hit)
+        character.normalHitHook.append(self.charged_hit)
 
 class TheViridescentHunt(Weapon):
 
@@ -406,5 +407,5 @@ class Homa(Weapon):
 
 class Hunter(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441, Attr.DMG: 0.19 + 0.03 * refinement}), "Hunter's Path")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441, Attr.DMG: 0.09 + 0.03 * refinement}), "Hunter's Path")
 

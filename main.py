@@ -1,5 +1,7 @@
 import csv
 import time
+
+import artifacts
 from artifacts import Set, SetCount
 from rotation import *
 import character
@@ -21,22 +23,31 @@ def artifact_set_name(array):
     name = []
     for s in array:
         name.append(f"{str(s)}, ")
-    return "".join(name)
+    return "".join(name)[:-2]
 
+def write(name, CSV, CSV2):
+    with open('results2/' + name + '.csv', 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        for line in CSV:
+            writer.writerow(line)
+    with open('results2/' + name + 'TeamDPS.csv', 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        for line in CSV2:
+            writer.writerow(line)
 
+weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
+               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow, Hunter]
 
 @timer
 def bad(name):
-    weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
-               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow]
-    artifactSets = [[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)],
-                    [SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)],
-                    [SetCount(Set.TF, 2)],
-                    [SetCount(Set.ATK, 2)],
+    artifactSets = [[artifacts.TF(2), artifacts.Glad(2)],
+                    [artifacts.Shime(2), artifacts.Glad(2)],
+                    [artifacts.TF(2)],
+                    [artifacts.Glad(2)],
                     [],
-                    [SetCount(Set.TS, 4)],
-                    [SetCount(Set.TOM, 4)]]
-    length = 36
+                    [artifacts.TS(4)],
+                    [artifacts.TOM(4)]]
+    length = Test["length"]
     CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
     CSV2 = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
     for artifact in artifactSets:
@@ -50,7 +61,7 @@ def bad(name):
                 for r in range(1, 6):
                     w = weapon(refinement=r)
                     fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact)
-                    rot = Rotation(RaiFish["list"],
+                    rot = Rotation(Test["list"],
                                    characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
                                    length=length)
                     rot.do_rotation()
@@ -58,26 +69,17 @@ def bad(name):
                     row2.append(rot.damage / length)
             CSV.append(row)
             CSV2.append(row2)
-    with open('results2/' + name + '.csv', 'w+', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        for line in CSV:
-            writer.writerow(line)
-    with open('results2/' + name + 'TeamDPS.csv', 'w+', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        for line in CSV2:
-            writer.writerow(line)
+    write(name, CSV, CSV2)
 
 @timer
 def bad2(name):
-    weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
-               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow]
-    artifactSets = [[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)],
-                    [SetCount(Set.ATK, 2), SetCount(Set.ATK, 2)],
-                    [SetCount(Set.TF, 2)],
-                    [SetCount(Set.ATK, 2)],
+    artifactSets = [[artifacts.TF(2), artifacts.Glad(2)],
+                    [artifacts.Shime(2), artifacts.Glad(2)],
+                    [artifacts.TF(2)],
+                    [artifacts.Glad(2)],
                     [],
-                    [SetCount(Set.TS, 4)],
-                    [SetCount(Set.TOM, 4)]]
+                    [artifacts.TS(4)],
+                    [artifacts.TOM(4)]]
     length = 25
     CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
     CSV2 = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
@@ -91,7 +93,7 @@ def bad2(name):
             for constellation in range(7):
                 for r in range(1, 6):
                     w = weapon(refinement=r)
-                    fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact, er_requirement=1.4)
+                    fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact, er_requirement=1.5)
                     rot = Rotation(Sukokomon["list"],
                                    characters=[character.Sucrose(weapon=SacFrags()),
                                                character.Kokomi(weapon=TTDS()),
@@ -103,22 +105,59 @@ def bad2(name):
                     row2.append(rot.damage / length)
             CSV.append(row)
             CSV2.append(row2)
-    with open('results2/' + name + '.csv', 'w+', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        for line in CSV:
-            writer.writerow(line)
-    with open('results2/' + name + 'TeamDPS.csv', 'w+', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        for line in CSV2:
-            writer.writerow(line)
+    write(name, CSV, CSV2)
+
+@timer
+def aggravate(name):
+    weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
+               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow, Hunter]
+    artifactSets = [[artifacts.TF(2), artifacts.Glad(2)],
+                    [artifacts.Shime(2), artifacts.Glad(2)],
+                    [artifacts.TF(2), artifacts.Gilded(2)],
+                    [artifacts.Shime(2), artifacts.Gilded(2)],
+                    [artifacts.TF(2)],
+                    [artifacts.Shime(2)],
+                    [artifacts.Gilded(2)],
+                    [artifacts.TS(4)],
+                    [artifacts.TF(4)],
+                    [artifacts.Gilded(4)],
+                    []
+                    ]
+    length = 36
+    CSV = [["weapon"] + ["r1", "r2", "r3", "r4", "r5"]]
+    CSV2 = [["weapon"] + ["r1", "r2", "r3", "r4", "r5"]]
+    for artifact in artifactSets:
+        print(artifact_set_name(artifact))
+        CSV.append([f"{artifact_set_name(artifact)}"])
+        CSV2.append([f"{artifact_set_name(artifact)}"])
+        for weapon in weapons:
+            bad = weapon()
+            row = [f"{bad.name}"]
+            row2 = [f"{bad.name}"]
+            for r in range(1, 6):
+                w = weapon(refinement=r)
+                fish = character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, aggravate=1)
+                rot = Rotation(aggravateFish["list"],
+                               characters=[character.Raiden(),
+                                           character.Collei(artifact_set=[artifacts.NO(4)]),
+                                           character.Kazuha(),
+                                           fish],
+                               length=36)
+                rot.do_rotation()
+                row.append(rot.damageDict[fish] / length)
+                row2.append(rot.damage / length)
+            CSV.append(row)
+            CSV2.append(row2)
+    write(name, CSV, CSV2)
+
 @timer
 def test():
-    w = TheStringless(refinement=1)
+    w = Hunter(refinement=3)
     # [SetCount(Set.TF, 2), SetCount(Set.ATK, 2)]
-    fish = character.Fischl(9, 9, 9, weapon=w)
+    fish = character.Fischl(9, 9, 9, weapon=w,aggravate=True)
     rot = Rotation(aggravateFish["list"], characters=[
         character.Raiden(),
-        character.Collei(),
+        character.Collei(artifact_set=[artifacts.NO(4)]),
         character.Kazuha(),
         fish],
                    length=36)
@@ -168,4 +207,6 @@ def test4():
     print({k: round(v/36,2) for k,v in rot.damageDict.items()})
 
 if __name__ == '__main__':
-    test()
+    aggravate("aggravateEMATK")
+    #bad2("sukokomon")
+    #bad("raifish")

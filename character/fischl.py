@@ -65,6 +65,7 @@ class Oz(Summon):
 
 
 
+
 class Fischl(Character):
     skillTurretBase = 0.888
     skillCastBase = 1.1544
@@ -78,7 +79,7 @@ class Fischl(Character):
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=AlleyHunter(refinement=1), artifact_set=(artifacts.Glad(2), artifacts.Shime(2)),
-                 er_requirement=1):
+                 er_requirement=1, aggravate=False):
         super().__init__(Stats({Attr.HPBASE: 9189,
                                 Attr.ATKBASE: 244,
                                 Attr.DEFBASE: 594,
@@ -87,7 +88,7 @@ class Fischl(Character):
                                 Attr.CD: 0.5,
                                 Attr.ER: 1}),
                          Element.ELECTRO, auto_talent, skill_talent, burst_talent,
-                         constellation, weapon, artifact_set, ConType.SkillFirst, 60)
+                         constellation, weapon, artifact_set, ConType.SkillFirst, 60, er_requirement*(0.93 if constellation==6 else 1))
         self.ozICD = icd.ICD(5, 4)
 
         self.turretHits = 10 if constellation < 6 else 12
@@ -98,8 +99,8 @@ class Fischl(Character):
         self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent] + (2.22 if constellation > 3 else 0)
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.autoTiming = [[10, 18, 33, 41, 29]]
+
         # artifacts
-        self.artifactStats[Attr.ATKP] += 0.466
         stats = self.get_stats(0)
         if 2 * stats[Attr.CR] > stats[Attr.CD]:
             self.artifactStats[Attr.CD] += 0.622
@@ -107,18 +108,32 @@ class Fischl(Character):
         else:
             self.artifactStats[Attr.CR] += 0.311
             self.crCap -= 2
-        # TODO: change er stuff for sukokomon
-        erSubs = round(max(er_requirement - self.get_stats()[Attr.ER], 0) / substatValues[Attr.ER]+0.5)
-        self.add_substat(Attr.ER, erSubs)
-        if erSubs < 2:
-            self.add_substat(Attr.CR, self.crCap)
-            self.add_substat(Attr.CD, self.cdCap)
-            self.add_substat(Attr.ATKP, 2-erSubs)
+        if aggravate:
+            #self.artifactStats[Attr.ATKP] += 0.466
+            self.artifactStats[Attr.EM] += 187
+            erSubs = 20 - self.distributedSubs
+            if erSubs < 2:
+                self.add_substat(Attr.CR, self.crCap)
+                self.add_substat(Attr.CD, self.cdCap)
+                #self.add_substat(Attr.EM, 2 - erSubs)
+                self.add_substat(Attr.ATKP, 2 - erSubs)
+            else:
+                crSubs = self.crCap - erSubs // 2 + 1
+                cdSubs = 20 - crSubs - erSubs
+                self.add_substat(Attr.CR, crSubs)
+                self.add_substat(Attr.CD, cdSubs)
         else:
-            crSubs = self.crCap - erSubs // 2 + 1
-            cdSubs = 20 - crSubs - erSubs
-            self.add_substat(Attr.CR, crSubs)
-            self.add_substat(Attr.CD, cdSubs)
+            self.artifactStats[Attr.ATKP] += 0.466
+            erSubs = 20 - self.distributedSubs
+            if erSubs < 2:
+                self.add_substat(Attr.CR, self.crCap)
+                self.add_substat(Attr.CD, self.cdCap)
+                self.add_substat(Attr.ATKP, 2-erSubs)
+            else:
+                crSubs = self.crCap - erSubs // 2 + 1
+                cdSubs = 20 - crSubs - erSubs
+                self.add_substat(Attr.CR, crSubs)
+                self.add_substat(Attr.CD, cdSubs)
 
 
     def c1(self, *args):
@@ -153,5 +168,6 @@ class Fischl(Character):
         self.rotation.add_event(actions.Summon(self, self.time + .4,
                                                Oz(lambda :self.get_stats(self.time),
                                                        self, self.time + .4, self.turretHits, self.ozICD)))
+
 
 

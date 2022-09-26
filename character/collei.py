@@ -14,7 +14,7 @@ class Collei(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
                          Element.DENDRO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 60)
+                         weapon, artifact_set, ConType.BurstFirst, 60, er_req=1.6)
         self.skillMV = Collei.skillBase * scalingMultiplier[self.skillTalent]
         self.burstMV = Collei.burstBase * scalingMultiplier[self.burstTalent]
         self.burstICD = icd.ICD(3, 6)

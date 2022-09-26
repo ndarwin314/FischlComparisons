@@ -52,6 +52,9 @@ class SetBase(ABC):
             if self.count >= 4:
                 self.four(char)
 
+    def __str__(self):
+        return f"{self.count} {self.__class__.__name__}"
+
 
 class Glad(SetBase):
     def two(self, character: "character.Character"):
@@ -70,7 +73,7 @@ class Shime(SetBase):
                                  Stats({Attr.NADMG: 0.5, Attr.CADMG: 0.5, Attr.PLUNGEDMG: 0.5}),
                                  char.time,
                                  10,
-                                 "character.Character".shimeID
+                                 char.__class__.shimeID
                              ),
                              on_field=True))
 
@@ -140,7 +143,7 @@ class OHC(SetBase):
     def four(self, character: "character.Character"):
         def ohc(char, healing):
             t = char.time
-            if t <= 3 + self.lastOHC:
+            if t <= 3 + character.lastOHC:
                 character.OHCMV.flat = min(character.OHCMV.flat + 0.9 * healing, 27_000)
             elif t <= 3.5:
                 pass
@@ -177,9 +180,9 @@ class Gilded(SetBase):
 
     def four(self, character: "character.Character"):
         def gd(char: "character.Character", reaction):
-            char.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), char.time, 8, Gilded.id))
-            # TODO: check this works and make dynamic
-            character.reactionHook.append(gd)
+            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), char.time, 8, Gilded.id))
+        # TODO: check this works and make dynamic
+        character.reactionHook.append(gd)
 
 
 

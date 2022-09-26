@@ -41,7 +41,7 @@ class Beidou(Character):
                                 Attr.ER: 1,
                                 Attr.ELECTRODMG: 0.24}),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent,
-                         constellation, weapon, artifact_set, ConType.SkillFirst, 80)
+                         constellation, weapon, artifact_set, ConType.SkillFirst, 80, er_req=1.3)
         self.autoTiming = [[23, 66]]
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]

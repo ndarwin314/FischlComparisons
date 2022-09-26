@@ -30,7 +30,7 @@ class Kazuha(Character):
                                 Attr.CR: 0.05,
                                 Attr.CD: 0.5}),
                          Element.ANEMO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.BurstFirst, 60)
+                         weapon, artifact_set, ConType.BurstFirst, 60, er_req=1.6)
         # TODO: add stuff for cons if i care
         self.burstCast = self.burstCastBase * scalingMultiplier[burst_talent]
         self.burstDOT = self.burstDOTBase * scalingMultiplier[burst_talent]
@@ -46,7 +46,6 @@ class Kazuha(Character):
         self.artifactStats[Attr.ANEMODMG] -= 0.466
         # TODO: probably make a method to add substats
         self.artifactStats[Attr.EM] += 187 * 3 + 4 * substatValues[Attr.EM]
-        self.add_substat(Attr.ER, 10)
         self.add_substat(Attr.ATKP, 6)
 
     def normal(self, hit, **kwargs):

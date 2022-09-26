@@ -22,7 +22,7 @@ class Sucrose(Character):
                                 Attr.CD: 0.5,
                                 Attr.ANEMODMG: 0.24}),
                          Element.ANEMO, auto_talent, skill_talent, burst_talent, constellation,
-                         weapon, artifact_set, ConType.SkillFirst, 80)
+                         weapon, artifact_set, ConType.SkillFirst, 80, er_req=1)
         self.burstHits = 4 if self.constellation > 1 else 3
         self.autoMVS = [self.autoBase[0] * scalingMultiplier[self.autoTalent],
                         self.autoBase[1] * scalingMultiplier[self.autoTalent]]

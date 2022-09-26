@@ -154,7 +154,7 @@ class Character(ABC):
     shimeID = uuid()
 
     def __init__(self, stats: Attr, element: Element, auto_talent: int, skill_talent: int, burst_talent: int,
-                 constellation: int, weapon: "Weapon", artifact_set: ["SetBase"], weapon_type, energy_cost: int):
+                 constellation: int, weapon: "Weapon", artifact_set: ["SetBase"], weapon_type, energy_cost: int, er_req: float):
         self.rotation = None
 
         # TODO: programmatically determine this based on level
@@ -199,12 +199,16 @@ class Character(ABC):
 
         # add flower and feather
         self.artifactStats += Stats({Attr.ATK: 311, Attr.HP: 4780})
+
         # add goblet
         self.artifactStats += Stats({elementDict[self.element]: 0.466})
 
         # add main stats
         self.crCap = 10
         self.cdCap = 10
+        erSubs = round(max(er_req - self.get_stats(0)[Attr.ER], 0) / substatValues[Attr.ER] + 0.5)
+        self.add_substat(Attr.ER, erSubs)
+        self.distributedSubs = 20 - erSubs
 
 
         self.emblem = False
@@ -218,6 +222,9 @@ class Character(ABC):
 
     def set_rotation(self, r):
         self.rotation = r
+
+    def add_crit(self, stats: Stats):
+        pass
 
     @abstractmethod
     def normal(self, hits, **kwargs):
