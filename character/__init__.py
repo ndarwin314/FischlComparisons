@@ -9,3 +9,4 @@ from character.xingqiu import*
 from character.beidou import*
 from character.collei import*
 from character.hutao import*
+from character.yelan import*

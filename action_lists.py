@@ -308,3 +308,16 @@ Normal(0, 30.85, 3),
 Normal(0, 33, 1),
 Swap(2, 35.07),
 Skill(2, 35.47, infusion=Element.PYRO),"""
+
+taser = {"list":
+             [Normal(1, 0),
+              Burst(1, 0.75),
+              Swap(2, 1.5),
+              Skill(2, 1.85),
+              Burst(2, 2.9),
+              Normal(2, 3.5, 1),
+              Swap(0, 4.3),
+              Skill(0, 4.5),
+              Normal(0, 5.4, 1),
+              Burst(0, 5.7)],
+         "length": 21.3}

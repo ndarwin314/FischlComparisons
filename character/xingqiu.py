@@ -50,7 +50,7 @@ class Xingqiu(Character):
                                 Attr.ER: 1,
                                 Attr.HYDRODMG: 0.2}),
                          Element.HYDRO, auto_talent, skill_talent, burst_talent,
-                         constellation, weapon, artifact_set, ConType.BurstFirst, 80)
+                         constellation, weapon, artifact_set, ConType.BurstFirst, 80, er_req=2.2 if constellation<6 else 1.8)
         self.autoTiming = [[9, 34]]
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]
@@ -60,6 +60,7 @@ class Xingqiu(Character):
         if constellation >= 2:
             self.c2id = uuid()
             self.c2Creator = lambda t:ResShred(Element.HYDRO, -0.15, t+4, self.c2id)
+        # TODO: add stats
 
     def skill(self):
         t = self.time
