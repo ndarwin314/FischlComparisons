@@ -336,7 +336,7 @@ class IronSting(Weapon):
         super().equip(character)
         # character
 
-    def on_damage(self, rotaation):
+    def on_damage(self, rotation):
         pass
 
 
@@ -380,21 +380,21 @@ class SacFrags(Weapon):
         super(SacFrags, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 221}), "Sacrificial Fragments")
 
 class FavSword(Weapon):
-    def __init(self, refinement = 1):
-        super(FavSword, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.EM: 0.613}), "Favonius Sword")
+    def __init__(self, refinement=5):
+        super(FavSword, self).__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.ER: 0.613}), "Favonius Sword")
 
 class Akuoumaru(Weapon):
-    def __init(self, refinement = 1):
+    def __init__(self, refinement = 1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413}), "Akuoumaru")
 
     def equip(self, character):
-        super().equip(character)
-        buff = 0
+        super(Akuoumaru, self).equip(character)
+        b = 0
         for c in character.rotation.characters:
-            buff += c.energyCost
-        buff *= 0.0009 + 0.0003*self.refinement
-        buff = max(buff, 30+10*self.refinement)
-        self.stats += Attr({Attr.QDMG: buff})
+            b += c.energyCost
+        b *= 0.0009 + 0.0003*self.refinement
+        b = min(b, 0.3+0.1*self.refinement)
+        character.artifactStats += Stats({Attr.QDMG: b})
         
 class Homa(Weapon):
     def __init__(self, refinement=1):
@@ -403,7 +403,7 @@ class Homa(Weapon):
     def equip(self, character):
         super(Homa, self).equip(character)
         # always under half kekw
-        character.artifact_stats += Stats({Attr.ATK: 0.018*character.get_stats().get_hp()})
+        character.artifactStats += Stats({Attr.ATK: 0.018*character.get_stats().get_hp()})
 
 class Hunter(Weapon):
     def __init__(self, refinement=1):

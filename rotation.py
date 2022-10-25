@@ -34,7 +34,7 @@ class Rotation:
         self.onField = characters[0]
         self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
         # dont ask
-        self.enemyCount = enemy_count - 1
+        self.enemyCount = enemy_count
         # scuffed
         self.events = [[] for _ in range(60 * 45)]
         for action in action_list:

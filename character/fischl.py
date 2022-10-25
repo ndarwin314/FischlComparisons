@@ -55,7 +55,6 @@ class Oz(Summon):
         self.rotation.reactionHook.append(self.a4)
 
     def recall(self):
-        #print(self.a4Count, self.c6Count, self.ozCount, self.time)
         super().recall()
         if self.con >= 6:
             self.rotation.normalAttackHook.remove(self.c6)
@@ -155,7 +154,7 @@ class Fischl(Character):
 
     def skill(self):
         super().skill()
-        self.do_damage(self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6)
+        self.do_damage(self.skillCast, self.element, DamageType.SKILL, time=self.time + 0.6, aoe=True)
         # self.rotation.add_summon(self.Oz(self.skillTurret, self.get_stats(), self, self.time+1.6, self.turretHits))
         self.rotation.add_event(actions.Summon(self, self.time + .6,
                                                Oz(lambda :self.get_stats(self.time),

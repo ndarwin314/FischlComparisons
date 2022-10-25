@@ -194,10 +194,7 @@ Sukokomon = {"list" : [Swap(2, 0),
                        ],
              "length": 25}
 
-Taser = {"list" : [Burst(1, 0.5),
-                   Swap(1, 1),
-                   ],
-         "length": 25}
+
 
 aggravateFish = {"list": [
     Skill(0, 0),
@@ -309,15 +306,38 @@ Normal(0, 33, 1),
 Swap(2, 35.07),
 Skill(2, 35.47, infusion=Element.PYRO),"""
 
-taser = {"list":
+# i know this particular rotation sucks but its good enough to get a weapon comparison which is all i want rn
+# taser doesn't have a strict rot anyway :upside_down:
+Taser = {"list":
              [Normal(1, 0),
               Burst(1, 0.75),
+              SetAura(0, 0.8, Aura.ELECTRO),
               Swap(2, 1.5),
               Skill(2, 1.85),
+              SetAura(0, 1.9, Aura.EC),
               Burst(2, 2.9),
               Normal(2, 3.5, 1),
               Swap(0, 4.3),
-              Skill(0, 4.5),
+              Skill(0, 4.5, stacks=2),
               Normal(0, 5.4, 1),
-              Burst(0, 5.7)],
+              Burst(0, 5.7),
+              Normal(0, 7.2),
+              Swap(3, 7.42),
+              Normal(3, 7.6,  1),
+              Burst(3, 8.05, infusion=Element.HYDRO),
+              Normal(3, 9.567, 2),
+              Skill(3, 10.15),
+              Normal(3, 11.367, 2),
+              Normal(3, 12.633, 2),
+              Skill(3, 13.3),
+              Swap(1, 14.617),
+              Normal(1, 14.983, 1),
+              Skill(1, 15.417),
+              Swap(0, 16.35),
+              Skill(0, 16.55, stacks=2),
+              Normal(0, 17.55, 2),
+              Swap(3, 18.917),
+              Normal(3, 19.083, 2),
+              Normal(3, 20.183, 2)
+              ],
          "length": 21.3}

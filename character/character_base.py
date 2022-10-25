@@ -172,7 +172,7 @@ class Character(ABC):
         self.reactionHook = []
 
 
-        self.stats = stats
+        self.stats: Stats = stats
         self.buffs = []
         self.artifactStats = Stats()
         self.element = element
@@ -206,10 +206,6 @@ class Character(ABC):
         # add main stats
         self.crCap = 10
         self.cdCap = 10
-        erSubs = round(max(er_req - self.get_stats(0)[Attr.ER], 0) / substatValues[Attr.ER] + 0.5)
-        self.add_substat(Attr.ER, erSubs)
-        self.distributedSubs = 20 - erSubs
-
 
         self.emblem = False
         self.vv = False
@@ -219,6 +215,10 @@ class Character(ABC):
         for s in artifact_set:
             s.add(self)
 
+        erSubs = round(max(er_req - self.get_stats(0)[Attr.ER], 0) / substatValues[Attr.ER] + 0.5)
+        self.add_substat(Attr.ER, erSubs)
+        self.distributedSubs = 20 - erSubs
+
 
     def set_rotation(self, r):
         self.rotation = r
@@ -226,7 +226,6 @@ class Character(ABC):
     def add_crit(self, stats: Stats):
         pass
 
-    @abstractmethod
     def normal(self, hits, **kwargs):
         t = self.time
         for i in range(hits):
@@ -235,7 +234,6 @@ class Character(ABC):
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i] / 60)
 
-    @abstractmethod
     def charged(self):
         pass
 
@@ -253,7 +251,7 @@ class Character(ABC):
         # TODO: vape thing is hacked together
         if reaction.is_swirl():
             element = reaction.element()
-            self.do_damage(mv.MV(flat=1.2*self.levelMultiplier), element, DamageType.REACTION, aoe=True, reaction=reaction, icd=Character.nope)
+            self.do_damage(mv.MV(flat=1.2*self.levelMultiplier*(2 if self.rotation.enemyCount>1 else 1)), element, DamageType.REACTION, aoe=True, reaction=reaction, icd=Character.nope)
             # i shouldn't hard code this but i care more about being done than writing good code rn
             # TODO: this is applying to the initial reaction causing it which is wrong but probably not a big deal
             if self.vv and self.rotation.onField == self:
@@ -280,8 +278,8 @@ class Character(ABC):
         except AttributeError:
             time = 0
         b = Stats()
-        for buff in self.buffs:
-            b += buff.buff()
+        for buff_ in self.buffs:
+            b += buff_.buff()
         stats = self.stats + self.weapon.get_stats(time) + self.artifactStats + b
         #print(self, time, self.buffs)
         return stats

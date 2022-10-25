@@ -1,40 +1,49 @@
 from character.character_base import*
 from weapons import FavSword
 
+
+class Raincutter(Summon):
+    def __init__(self, who_summoned, start):
+        super().__init__(None, who_summoned, start, who_summoned.burstDuration)
+        self.mv = who_summoned.burstMVS
+        self.lastHit = start - 1
+        self.wave = -1
+        self.t = 0
+        if who_summoned.constellation == 6:
+            self.cycle = [2, 3, 5]
+            self.cycleLength = 3
+        else:
+            self.cycle = [2, 3]
+            self.cycleLength = 2
+
+    def sword_wave(self, time, duration):
+        if time > self.lastHit + 1:
+            # rn just multiplying mv by the number of hits which is a hack
+            self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST,
+                                    time=self.time + 0.1)
+            self.lastHit = min(time, max(time - duration, self.lastHit + 1))
+            self.wave = (self.wave + 1) % self.cycleLength
+            self.t += 1
+            # c2
+            if self.summoner.constellation >= 2:
+                self.rotation.add_event(
+                    actions.ResShred(self, self.time + 1 / 60, self.summoner.c2Creator(self.lastHit)))
+            self.rotation.do_damage(self.summoner, self.cycle[self.wave]*self.mv, Element.HYDRO, time=self.lastHit,
+                                    damage_type=DamageType.SKILL, stats_ref=lambda: self.summoner.get_stats())
+
+    def summon(self):
+        super().summon()
+        self.rotation.normalAttackHook.append(self.sword_wave)
+        self.summoner.BurstActive = True
+
+    def recall(self):
+        super().recall()
+        #print(self.t)
+        self.rotation.normalAttackHook.remove(self.sword_wave)
+        self.summoner.BurstActive = False
+
+
 class Xingqiu(Character):
-
-    class Raincutter(Summon):
-        def __init__(self, who_summoned, start):
-            super().__init__(None, who_summoned, start, who_summoned.burstDuration)
-            self.mv = who_summoned.burstMV
-            self.lastHit = start - 1
-            self.wave = 0
-            if who_summoned.constellation == 6:
-                self.cycle = [2,3,5]
-                self.cycleLength = 3
-            else:
-                self.cycle = [2,3]
-                self.cycleLength = 2
-
-        def sword_wave(self, time, duration):
-            if time > self.lastHit + 1:
-                # rn just multiplying mv by the number of hits which is a hack
-                self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST, time=self.time + 0.1)
-                self.lastHit = min(time, max(time-duration, self.lastHit + 1))
-                self.wave = (self.wave + 1) % self.cycleLength
-                # c2
-                if self.summoner.constellation >= 2:
-                    self.rotation.add_event(actions.ResShred(self, self.time + 1 / 60, self.summoner.c2Creator(self.lastHit)))
-
-        def summon(self):
-            super().summon()
-            self.rotation.normalAttackHook.append(self.sword_wave)
-            self.summoner.BurstActive = True
-
-        def recall(self):
-            super().recall()
-            self.rotation.normalAttackHook.remove(self.sword_wave)
-            self.summoner.BurstActive = False
 
     skillBase = np.array([1.68, 1.912])
     autoBase = np.array([0.4661,0.4764]) # dont care about the rest
@@ -52,7 +61,7 @@ class Xingqiu(Character):
                          Element.HYDRO, auto_talent, skill_talent, burst_talent,
                          constellation, weapon, artifact_set, ConType.BurstFirst, 80, er_req=2.2 if constellation<6 else 1.8)
         self.autoTiming = [[9, 34]]
-        self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
+        self.autoMVS = [self.autoBase * physMultiplier[self.autoTalent]]
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]
         self.burstMVS = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstDuration = 15 if self.constellation < 2 else 18
@@ -61,6 +70,25 @@ class Xingqiu(Character):
             self.c2id = uuid()
             self.c2Creator = lambda t:ResShred(Element.HYDRO, -0.15, t+4, self.c2id)
         # TODO: add stats
+        self.artifactStats[Attr.ATKP] += 0.466
+        erSubs = 20 - self.distributedSubs
+        stats = self.get_stats(0)
+        if 2 * stats[Attr.CR] > stats[Attr.CD]:
+            self.artifactStats[Attr.CD] += 0.622
+            self.cdCap -= 2
+        else:
+            self.artifactStats[Attr.CR] += 0.311
+            self.crCap -= 2
+        if erSubs < 2:
+            self.add_substat(Attr.CR, self.crCap)
+            self.add_substat(Attr.CD, self.cdCap)
+            self.add_substat(Attr.ATKP, 2 - erSubs)
+        else:
+            crSubs = self.crCap - erSubs // 2 + 1
+            cdSubs = 20 - crSubs - erSubs
+            self.add_substat(Attr.CR, crSubs)
+            self.add_substat(Attr.CD, cdSubs)
+
 
     def skill(self):
         t = self.time
@@ -69,6 +97,6 @@ class Xingqiu(Character):
         self.do_damage(self.skillMVS[1] * multiplier, Element.HYDRO, damage_type=DamageType.SKILL, time=t + 0.45)
 
     def burst(self):
-        self.rotation.add_event(actions.Summon(self, self.time+.2, self.Raincutter(self, self.time+.2)))
+        self.rotation.add_event(actions.Summon(self, self.time+.2, Raincutter(self, self.time+.2)))
 
 

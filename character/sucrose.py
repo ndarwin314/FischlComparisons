@@ -1,5 +1,6 @@
 import actions
 import attributes
+import icd
 from character.character_base import*
 from weapons import TTDS
 
@@ -33,6 +34,8 @@ class Sucrose(Character):
                                                 buff.Buff(Stats({Attr.EM: 50}), t, 8, self.a1ID), c)
         self.c6Creator = lambda t, e: actions.Buff(self, t, buff.Buff(Stats({elementDict[e]: 0.2}), t, 10, self.c6ID))
         self.autoTiming = [[19, 19, 32, 31]]
+        self.naICD =icd.ICD(2.5, 3)
+
         self.artifactStats[Attr.EM] += 187*3
         self.artifactStats[Attr.ANEMODMG] = 0
         self.add_substat(Attr.EM, 4)
@@ -59,7 +62,7 @@ class Sucrose(Character):
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
             #print(t)
-            self.do_damage(self.autoMVS[0][i], self.element, DamageType.NORMAL, t)
+            self.do_damage(self.autoMVS[0][i], self.element, DamageType.NORMAL, t, icd=self.naICD)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i] / 60)
 

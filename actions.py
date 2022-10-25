@@ -103,35 +103,46 @@ class Damage(Action):
 
         # TODO: expand this
         if element_applied:
-            reaction: Reactions = None
+            reactions: list[Reactions] = []
             match rotation.aura:
                 case Aura.PYRO:
                     pass
                 case Aura.HYDRO:
-                    pass
+                    match self.element:
+                        case Element.PYRO:
+                            mv *= 1.5 * (1 + 2.78 * stats[Attr.EM] / (1400 + stats[Attr.EM]))
                 case Aura.ELECTRO:
                     match self.element:
                         case Element.ANEMO:
                             self.character.reaction(Reactions.ELECTROSWIRL)
-                            reaction = Reactions.ELECTROSWIRL
+                            self.character.reaction(Reactions.HYDROSWIRL)
+                            reactions.append(Reactions.ELECTROSWIRL)
+                            reactions.append(Reactions.HYDROSWIRL)
                         case Element.PYRO:
                             self.character.reaction(Reactions.OVERLOAD)
-                            reaction = Reactions.OVERLOAD
+                            reactions.append(Reactions.OVERLOAD)
                 case Aura.CRYO:
                     pass
                 case Aura.EC:
-                    pass
+                    match self.element:
+                        case Element.ANEMO:
+                            self.character.reaction(Reactions.ELECTROSWIRL)
+                            reactions.append(Reactions.ELECTROSWIRL)
+                        case Element.PYRO:
+                            self.character.reaction(Reactions.OVERLOAD)
+                            reactions.append(Reactions.OVERLOAD)
+                            mv *= 1.5 * (1 + 2.78 * stats[Attr.EM] / (1400 + stats[Attr.EM]))
                 case Aura.QUICKEN:
                     match self.element:
                         case Element.ELECTRO:
                             mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])
-                            reaction = Reactions.AGGRAVATE
+                            reactions.append(Reactions.AGGRAVATE)
                         case Element.DENDRO:
                             mv += 1.25 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
-                            reaction = Reactions.SPREAD
+                            reactions.append(Reactions.SPREAD)
                         case Element.ANEMO:
                             self.character.reaction(Reactions.ELECTROSWIRL)
-                            reaction = Reactions.ELECTROSWIRL
+                            reactions.append(Reactions.ELECTROSWIRL)
                 case Aura.NONE:
                     match self.reaction:
                         case Reactions.WEAK:
@@ -140,12 +151,13 @@ class Damage(Action):
                             mv *= 1.5 * stats.multiplicative_multiplier()
                         case Reactions.AGGRAVATE:
                             stats = self.character.get_stats()
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])  # TODO: add tf bullshit\
-            if reaction is not None:
+                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])
+                            reactions.append(Reactions.AGGRAVATE)
+            for r in reactions:
                 for delegate in rotation.reactionHook:
-                    delegate(self.character, reaction)
+                    delegate(self.character, r)
                 for delegate in self.character.reactionHook:
-                    delegate(self, reaction)
+                    delegate(self, r)
 
         damage = mv * multiplier
         if self.aoe:

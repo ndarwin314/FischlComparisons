@@ -1,5 +1,5 @@
 class ICD:
-    def __init__(self, time: int, hits: int):
+    def __init__(self, time: float, hits: int):
         self.lastHitTime = -10
         self.hitCounter = -1
         self.icdDuration = time
