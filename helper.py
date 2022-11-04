@@ -9,6 +9,8 @@ import character
 from weapons import *
 from action_lists import RaiFish, Sukokomon, aggravateFish, Test, Taser
 
+default_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact)
+
 def timer(func):
     def wrapper(*args, **kwargs):
         start = time.time()
@@ -35,102 +37,67 @@ def write(name, CSV, CSV2):
             writer.writerow(line)
 
 @timer
-def bad(name):
+def raifish(artifact_set, weapon_list):
     length = Test["length"]
-    CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
-    CSV2 = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
-    for artifact in artifactSets:
-        CSV.append([f"{artifact_set_name(artifact)}"])
-        CSV2.append([f"{artifact_set_name(artifact)}"])
-        for weapon in weapons:
-            bad = weapon()
-            row = [f"{bad.name}"]
-            row2 = [f"{bad.name}"]
-            for constellation in range(7):
-                for r in range(1, 6):
-                    w = weapon(refinement=r)
-                    fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact)
-                    rot = Rotation(Test["list"],
+    rotation_creator = lambda fish: Rotation(Test["list"],
                                    characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
                                    length=length)
-                    rot.do_rotation()
-                    row.append(rot.damageDict[fish] / length)
-                    row2.append(rot.damage / length)
-            CSV.append(row)
-            CSV2.append(row2)
-    write(name, CSV, CSV2)
+    give_up("raifish", artifact_set, weapon_list, length, rotation_creator, default_creator)
+
 
 @timer
-def bad2(name):
-    length = 25
-    CSV = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
-    CSV2 = [["weapon"] + 7 * ["r1", "r2", "r3", "r4", "r5"]]
-    for artifact in artifactSets:
-        CSV.append([f"{artifact_set_name(artifact)}"])
-        CSV2.append([f"{artifact_set_name(artifact)}"])
-        for weapon in weapons:
-            bad = weapon()
-            row = [f"{bad.name}"]
-            row2 = [f"{bad.name}"]
-            for constellation in range(7):
-                for r in range(1, 6):
-                    w = weapon(refinement=r)
-                    fish = character.Fischl(9, 9, 9, constellation=constellation, weapon=w, artifact_set=artifact, er_requirement=1.5)
-                    rot = Rotation(Sukokomon["list"],
-                                   characters=[character.Sucrose(weapon=SacFrags()),
-                                               character.Kokomi(weapon=TTDS()),
-                                               fish,
-                                               character.Xiangling(weapon=Kitain())],
-                                   length=25.5)
-                    rot.do_rotation()
-                    row.append(rot.damageDict[fish] / length)
-                    row2.append(rot.damage / length)
-            CSV.append(row)
-            CSV2.append(row2)
-    write(name, CSV, CSV2)
+def funny_soup_team(artifact_set, weapon_list):
+    length = Sukokomon["length"]
+    fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, er_requirement=1.5)
+    rotation_creator = lambda fish: Rotation(Sukokomon["list"],
+                                             characters=[character.Sucrose(weapon=SacFrags()),
+                                                         character.Kokomi(weapon=TTDS()),
+                                                         fish,
+                                                         character.Xiangling(weapon=Kitain())],
+                                             length=25.5)
+    give_up("sukokomon", artifact_set, weapon_list, length, rotation_creator, fish_creator)
 
-@timer
-def aggravate(name):
-    weapons = [PolarStar, Water, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
-               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow, Hunter]
-    artifactSets = [[artifacts.TF(2), artifacts.Glad(2)],
-                    [artifacts.Shime(2), artifacts.Glad(2)],
-                    [artifacts.TF(2), artifacts.Gilded(2)],
-                    [artifacts.Shime(2), artifacts.Gilded(2)],
-                    [artifacts.TF(2)],
-                    [artifacts.Shime(2)],
-                    [artifacts.Gilded(2)],
-                    [artifacts.TS(4)],
-                    [artifacts.TF(4)],
-                    [artifacts.Gilded(4)],
-                    []
-                    ]
-    length = 36
-    CSV = [["weapon"] + ["r1", "r2", "r3", "r4", "r5"]]
-    CSV2 = [["weapon"] + ["r1", "r2", "r3", "r4", "r5"]]
-    for artifact in artifactSets:
-        print(artifact_set_name(artifact))
-        CSV.append([f"{artifact_set_name(artifact)}"])
-        CSV2.append([f"{artifact_set_name(artifact)}"])
-        for weapon in weapons:
-            bad = weapon()
-            row = [f"{bad.name}"]
-            row2 = [f"{bad.name}"]
+def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fishl_creator):
+    refinementList = ["r1", "r2", "r3", "r4", "r5"]
+    personalCSV = [["weapon"]]
+    teamCSV = [["weapon"]]
+    for s in artifact_sets:
+        name = artifact_set_name(s)
+        personalCSV[0].append(name)
+        personalCSV[0] += refinementList
+        teamCSV[0].append(name)
+        teamCSV[0] += refinementList
+    for weapon in weapon_list:
+        bad = weapon()
+        personal = [f"{bad.name}", ""]
+        team = [f"{bad.name}", ""]
+        for artifact in artifact_sets:
             for r in range(1, 6):
                 w = weapon(refinement=r)
-                fish = character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, aggravate=1)
-                rot = Rotation(aggravateFish["list"],
+                fish = fishl_creator(w, artifact)
+                rot = rot_creator(fish)
+                rot.do_rotation()
+                personal.append(rot.damageDict[fish] / length)
+                team.append(rot.damage / length)
+                # print(rot.damageDict)
+            personal.append(" ")
+            team.append(" ")
+        personalCSV.append(personal)
+        teamCSV.append(team)
+    write(rot_name, personalCSV, teamCSV)
+
+
+@timer
+def aggravate(artifact_sets, weapon_list):
+    rot_creator = lambda fish:  Rotation(aggravateFish["list"],
                                characters=[character.Raiden(),
-                                           character.Collei(artifact_set=[artifacts.NO(4)]),
+                                           character.Collei(artifact_set=[artifacts.Instructor(4)]),
                                            character.Kazuha(),
                                            fish],
                                length=36)
-                rot.do_rotation()
-                row.append(rot.damageDict[fish] / length)
-                row2.append(rot.damage / length)
-            CSV.append(row)
-            CSV2.append(row2)
-    write(name, CSV, CSV2)
+    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, aggravate=1)
+    give_up("aggravateFish", artifact_sets, weapon_list, 36, rot_creator, fischl_creator)
+
 
 
 @timer

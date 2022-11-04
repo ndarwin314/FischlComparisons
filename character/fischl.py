@@ -108,8 +108,8 @@ class Fischl(Character):
             self.artifactStats[Attr.CR] += 0.311
             self.crCap -= 2
         if aggravate:
-            #self.artifactStats[Attr.ATKP] += 0.466
-            self.artifactStats[Attr.EM] += 187
+            self.artifactStats[Attr.ATKP] += 0.466
+            #self.artifactStats[Attr.EM] += 187
             erSubs = 20 - self.distributedSubs
             if erSubs < 2:
                 self.add_substat(Attr.CR, self.crCap)

@@ -315,8 +315,11 @@ Taser = {"list":
               Swap(2, 1.5),
               Skill(2, 1.85),
               SetAura(0, 1.9, Aura.EC),
+              Reaction(1, 1.9, reaction=Reactions.EC),
+              Reaction(1, 2.4, reaction=Reactions.EC),#give fischl some random ecs since she gets a couple in practice before beidou ult starts
               Burst(2, 2.9),
               Normal(2, 3.5, 1),
+              Reaction(1, 4, reaction=Reactions.EC),
               Swap(0, 4.3),
               Skill(0, 4.5, stacks=2),
               Normal(0, 5.4, 1),

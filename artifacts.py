@@ -85,6 +85,7 @@ class TF(SetBase):
         
     def four(self, character: "character.Character"):
         character.artifactStats[Attr.AGGRAVATEBONUS] += 0.2
+        character.artifactStats[Attr.ELECTROREACTIONBONUS] += 0.4
         # TODO: add other bonuses
 
 

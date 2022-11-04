@@ -61,9 +61,13 @@ class Reactions(Enum):
     AGGRAVATE = auto()
     SPREAD = auto()
     # no one cares about crystallize
+    electro_reactions = {ELECTROSWIRL, OVERLOAD, EC, SUPERCONDUCT}
 
     def is_swirl(self):
         return self.value < 5
+
+    def is_electro(self):
+        return self in electro_reactions
 
     def element(self):
         match self:
@@ -82,6 +86,7 @@ class Reactions(Enum):
             case Reactions.SUPERCONDUCT:
                 return Element.CRYO
 
+electro_reactions = {Reactions.ELECTROSWIRL, Reactions.OVERLOAD, Reactions.EC, Reactions.SUPERCONDUCT}
 
 class Attr(Enum):
     HPP = 0
@@ -117,6 +122,7 @@ class Attr(Enum):
     PLUNGEDMG = auto()
     SWIRLBONUS = auto()
     AGGRAVATEBONUS = auto()
+    ELECTROREACTIONBONUS = auto()
     HB = auto()
 
 
@@ -212,12 +218,14 @@ class Stats:
         return self.get_crit_multiplier(damage_type) * self.get_DMG(element, damage_type, emblem)
 
     # @cache
-    def transformative_multiplier(self, reaction=None):
+    def transformative_multiplier(self, reaction: Reactions=None):
         # level = 90
         # levelMultiplier = 0.00194 * level**3-0.319*level*level+30.7*level-868
         emMultiplier = 1 + 16 * self[Attr.EM] / (2000 + self[Attr.EM])
         if reaction is not None and reaction.is_swirl():
             emMultiplier += self[Attr.SWIRLBONUS]
+        if reaction is not None and reaction.is_electro():
+            emMultiplier += self[Attr.ELECTROREACTIONBONUS]
         return emMultiplier
 
     def multiplicative_multiplier(self):

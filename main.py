@@ -1,15 +1,5 @@
-import csv
-import time
-from multiprocessing import Pool
 
-import artifacts
-from artifacts import Set, SetCount
-from rotation import *
-import character
-from weapons import *
 from helper import *
-from action_lists import RaiFish, Sukokomon, aggravateFish, Test
-import actions
 
 
 
@@ -17,13 +7,20 @@ import actions
 weapons = [PolarStar, Water, Hunter, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
                Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow]
 
-artifactSets = [[artifacts.TF(2), artifacts.Glad(2)],
-                    [artifacts.Shime(2), artifacts.Glad(2)],
-                    [artifacts.TF(2)],
-                    [artifacts.Glad(2)],
-                    [],
-                    [artifacts.TS(4)],
-                    [artifacts.TOM(4)]]
+artifactSets = [
+    [artifacts.TF(2), artifacts.Glad(2)],
+    [artifacts.TF(2), artifacts.Gilded(2)],
+    [artifacts.TF(2)],
+    [artifacts.TF(4)],
+    [artifacts.Shime(2), artifacts.Glad(2)],
+    [artifacts.Shime(2), artifacts.Gilded(2)],
+    [artifacts.Shime(2)],
+    [artifacts.Gilded(2), artifacts.Gilded(2)],
+    [artifacts.Gilded(2)],
+    [],
+    [artifacts.TS(4)],
+    [artifacts.TOM(4)],
+    [artifacts.Gilded(4)]]
 
 
 
@@ -55,9 +52,7 @@ def execute_rotation(weapons: list, artifact_sets: list):
 
 
 if __name__ == '__main__':
-    #taser(artifactSets, weapons)
-    test()
-    #aggravate("aggravateEMEM")
-    #bad2("sukokomon")
-    #bad("raifish")
-    #test()
+    taser(artifactSets, weapons)
+    aggravate(artifactSets, weapons)
+    raifish(artifactSets, weapons)
+    funny_soup_team(artifactSets, weapons)
