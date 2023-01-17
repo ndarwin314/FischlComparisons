@@ -1,7 +1,7 @@
 import artifacts
 import attributes
 from character.character_base import*
-from weapons import AlleyHunter
+from weapons import AlleyHunter, Twilight
 import icd
 
 electroReactions = {Reactions.ELECTROSWIRL, Reactions.EC, Reactions.SUPERCONDUCT, Reactions.OVERLOAD, Reactions.AGGRAVATE}
@@ -107,32 +107,16 @@ class Fischl(Character):
         else:
             self.artifactStats[Attr.CR] += 0.311
             self.crCap -= 2
-        if aggravate:
-            self.artifactStats[Attr.ATKP] += 0.466
-            #self.artifactStats[Attr.EM] += 187
-            erSubs = 20 - self.distributedSubs
-            if erSubs < 2:
-                self.add_substat(Attr.CR, self.crCap)
-                self.add_substat(Attr.CD, self.cdCap)
+
+        erSubs = 20 - self.distributedSubs
+        self.artifactStats[Attr.ATKP] += 0.466
+        if erSubs < 2:
+            self.add_substat(Attr.CR, self.crCap)
+            self.add_substat(Attr.CD, self.cdCap)
+            if aggravate:
                 self.add_substat(Attr.EM, 2 - erSubs)
-                #self.add_substat(Attr.ATKP, 2 - erSubs)
             else:
-                crSubs = self.crCap - erSubs // 2 + 1
-                cdSubs = 20 - crSubs - erSubs
-                self.add_substat(Attr.CR, crSubs)
-                self.add_substat(Attr.CD, cdSubs)
-        else:
-            self.artifactStats[Attr.ATKP] += 0.466
-            erSubs = 20 - self.distributedSubs
-            if erSubs < 2:
-                self.add_substat(Attr.CR, self.crCap)
-                self.add_substat(Attr.CD, self.cdCap)
-                self.add_substat(Attr.ATKP, 2-erSubs)
-            else:
-                crSubs = self.crCap - erSubs // 2 + 1
-                cdSubs = 20 - crSubs - erSubs
-                self.add_substat(Attr.CR, crSubs)
-                self.add_substat(Attr.CD, cdSubs)
+                self.add_substat(Attr.ATKP, 2 - erSubs)
 
 
     def c1(self, *args):

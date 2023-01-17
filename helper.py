@@ -58,9 +58,14 @@ def funny_soup_team(artifact_set, weapon_list):
     give_up("sukokomon", artifact_set, weapon_list, length, rotation_creator, fish_creator)
 
 def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fishl_creator):
+    personalCSV, teamCSV, temp = create_csvs(artifact_sets, weapon_list, length, rot_creator, fishl_creator)
+    write(rot_name, personalCSV, teamCSV)
+
+def create_csvs(artifact_sets, weapon_list, length, rot_creator, fishl_creator):
     refinementList = ["r1", "r2", "r3", "r4", "r5"]
     personalCSV = [["weapon"]]
     teamCSV = [["weapon"]]
+    damage = 0
     for s in artifact_sets:
         name = artifact_set_name(s)
         personalCSV[0].append(name)
@@ -78,13 +83,14 @@ def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fishl_cre
                 rot = rot_creator(fish)
                 rot.do_rotation()
                 personal.append(rot.damageDict[fish] / length)
+                damage += rot.damageDict[fish] / length
                 team.append(rot.damage / length)
                 # print(rot.damageDict)
             personal.append(" ")
             team.append(" ")
         personalCSV.append(personal)
         teamCSV.append(team)
-    write(rot_name, personalCSV, teamCSV)
+    return personalCSV, teamCSV, damage/(len(weapon_list)*len(artifact_sets))
 
 
 @timer
@@ -103,36 +109,12 @@ def aggravate(artifact_sets, weapon_list):
 @timer
 def taser(artifact_sets, weapon_list):
     length = Taser["length"]
-    refinementList = ["r1", "r2", "r3", "r4", "r5"]
-    personalCSV = [["weapon"]]
-    teamCSV = [["weapon"]]
-    for s in artifact_sets:
-        name = artifact_set_name(s)
-        personalCSV[0].append(name)
-        personalCSV[0] += refinementList
-        teamCSV[0].append(name)
-        teamCSV[0] += refinementList
-    for weapon in weapon_list:
-        bad = weapon()
-        personal = [f"{bad.name}", ""]
-        team = [f"{bad.name}", ""]
-        for artifact in artifact_sets:
-            for r in range(1, 6):
-                w = weapon(refinement=r)
-                fish = character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact)
-                rot = Rotation(Taser["list"],
-                               characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(weapon=FavoniusWarbow()), character.Sucrose(weapon=SacFrags())],
+    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, er_requirement=1.3)
+    rot_creator = lambda fish: Rotation(Taser["list"],
+                               characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(), character.Sucrose(weapon=SacFrags())],
                                length=length,
                                enemy_count=2)
-                rot.do_rotation()
-                personal.append(rot.damageDict[fish] / length)
-                team.append(rot.damage / length)
-                #print(rot.damageDict)
-            personal.append(" ")
-            team.append(" ")
-        personalCSV.append(personal)
-        teamCSV.append(team)
-    write("taser", personalCSV, teamCSV)
+    give_up("taser", artifact_sets, weapon_list, length, rot_creator, fischl_creator)
 
 @timer
 def test():
@@ -178,14 +160,29 @@ def test3():
 
 @timer
 def test4():
-    w = AlleyHunter(refinement=1)
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
-    rot = Rotation(RaiFish["list"], characters=[
-        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
-        character.Bennett(),
+    w = TheStringless(refinement=3)
+    length = aggravateFish["length"]
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TS(4)])
+    rot = Rotation(aggravateFish["list"], characters=[
+        character.Raiden(),
+        character.Collei(artifact_set=[artifacts.NO(4)]),
         character.Kazuha(),
         fish],
-                   length=36)
+        length=length)
     rot.do_rotation()
-    print(rot.damage / 36)
-    print({k: round(v/36,2) for k,v in rot.damageDict.items()})
+    print(rot.damage / length)
+    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+
+@timer
+def con_comparison(artifact_sets, weapon_list):
+    for i in range(7):
+        length = Taser["length"]
+        fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=i, weapon=w, artifact_set=artifact,
+                                                          er_requirement=1.3)
+        rot_creator = lambda fish: Rotation(Taser["list"],
+                                            characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
+                                                        character.Sucrose(weapon=SacFrags())],
+                                            length=length,
+                                            enemy_count=2)
+        a, b, c = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator)
+        print(c)

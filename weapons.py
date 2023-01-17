@@ -246,10 +246,10 @@ class MouunsMoon(Weapon):
         super().equip(character)
         cost = 270
         # TODO: make this work
-        """rot = character.rotation
+        rot = character.rotation
         cost = 0
         for char in rot.characters:
-            cost += char.energyCost"""
+            cost += char.energyCost
         self.stats += Stats({Attr.QDMG: cost * (0.0009 + 0.0003 * self.refinement)})
 
 
