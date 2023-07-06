@@ -17,6 +17,41 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\log\raidenTest.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\log\raifish.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\raifish.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateATKATK.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateATKATKTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results2\aggravateATKEM.csv">
           <value>
             <Attribute>
@@ -24,7 +59,35 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results2\aggravateATKEMTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateEMATK.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateEMATKTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results2\aggravateEMEM.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateEMEMTeamDPS.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -45,6 +108,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results2\aggravateFish2TeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\aggravateFishTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results2\constellation.csv">
           <value>
             <Attribute>
@@ -59,7 +136,21 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results2\raifishTeamDPS.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results2\sukokomon.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results2\sukokomonTeamDPS.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

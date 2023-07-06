@@ -1,7 +1,7 @@
 import icd
 from character.character_base import*
 from weapons import Catch, Grass
-from buff import PermanentBuff
+from buff import DirectPermanentBuff
 
 
 class NotOz(Summon):
@@ -25,13 +25,14 @@ class NotOz(Summon):
         super().summon()
         self.rotation.damageHooks.append(self.coordinated_attack)
         for char in self.rotation.characters:
-            char.add_buff(PermanentBuff(Stats({Attr.QDMG: 0.003 * char.energyCost}), self.buffID))
+            test = DirectPermanentBuff(Stats({Attr.QDMG: 0.003 * char.energyCost}), self.buffID)
+            char.add_buff(test)
 
     def recall(self):
         super().recall()
         self.rotation.damageHooks.remove(self.coordinated_attack)
         for char in self.rotation.characters:
-            char.remove_buff(PermanentBuff(Stats(), self.buffID))
+            char.remove_buff(DirectPermanentBuff(Stats(), self.buffID))
 
 class Raiden(Character):
     skillcastHookBase = 1.172
@@ -151,7 +152,7 @@ class Raiden(Character):
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
         self.do_damage(mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
-        self.rotation.add_event(actions.OtherAction(self, self.time + 11, lambda r: self.deactivate_burst()))
+        self.rotation.add_event(actions.OtherAction(self, self.burstExpiration, lambda r: self.deactivate_burst()))
 
     def add_resolve(self, cost):
         # TODO: change multiplier to be correct for other talent levels

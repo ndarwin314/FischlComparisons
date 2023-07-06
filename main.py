@@ -49,6 +49,7 @@ def execute_rotation(weapons: list, artifact_sets: list):
 if __name__ == '__main__':
     #aggravate(artifactSets, weapons)
     #taser(artifactSets, weapons)
-    raifish(artifactSets, weapons)
+    #raifish(artifactSets, weapons)
     #funny_soup_team(artifactSets, weapons)
     #con_comparison(artifactSets, weapons)
+    RaidenTest()

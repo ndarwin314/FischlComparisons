@@ -23,7 +23,7 @@ class Rotation:
             self.file = None
         else:
             self.logging = True
-            self.file = logging
+            self.file = "log/" + logging
         self.characters = characters
         self.aura = Aura.NONE # TODO: fuck me
         self.summons = []

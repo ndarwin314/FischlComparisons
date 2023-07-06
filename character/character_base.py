@@ -210,7 +210,7 @@ class Character(StatObject):
         self.lastOHC = -4
         self.OHCMV = mv.MV(flat=0)
         for s in artifact_set:
-            s.add(self)
+              s.add(self)
 
         erSubs = round(max(er_req - self.get_stats(0)[Attr.ER], 0) / substatValues[Attr.ER] + 0.5)
         self.add_substat(Attr.ER, erSubs)
@@ -281,15 +281,25 @@ class Character(StatObject):
         #print(self, time, self.buffs)
         return stats
 
-    def add_buff(self, buff: buff.Buff):
+    def add_buff(self, b: buff.Buff):
         # TODO: make this not suck
-        for i in range(len(self.buffs)):
-            other = self.buffs[i]
-            if buff == other:
-                self.buffs[i] = buff + other
-                return
+        # probably refactor this so the logic for adding buffs is handled by the buff and not the character
+        if isinstance(b, buff.DirectGenericBuff):
+            for i in range(len(self.buffs)):
+                other = self.buffs[i]
+                if b == other:
+                    self.directBuffs[i] = b + other
+                    return
+            else:
+                self.directBuffs.append(b)
         else:
-            self.buffs.append(buff)
+            for i in range(len(self.buffs)):
+                other = self.buffs[i]
+                if b == other:
+                    self.buffs[i] = b + other
+                    return
+            else:
+                self.buffs.append(b)
         #[other if buff!=other else other+buff for other in self.buffs]
 
     def add_substat(self, sub: Attr, rolls: int):

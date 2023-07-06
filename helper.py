@@ -9,7 +9,7 @@ from artifacts import Set, SetCount
 from rotation import *
 import character
 from weapons import *
-from action_lists import RaiFish, Sukokomon, aggravateFish, Test, Taser
+from action_lists import RaiFish, Sukokomon, aggravateFish, Test, Taser, raidenTest
 
 default_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact)
 
@@ -156,11 +156,21 @@ def test3():
         character.Bennett(),
         character.Kazuha(),
         fish],
-                   length=length, logging=True)
+                   length=length, logging="raifish.csv")
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
     return rot.damageDict[fish]
+
+@timer
+def RaidenTest():
+    rot = Rotation(raidenTest["list"], characters=[
+        character.Xiangling(artifact_set=[artifacts.Emblem(4)], suko_hack=False),
+        character.Raiden(artifact_set=[artifacts.Emblem(4)], constellation=0),
+        character.Bennett()],
+                   length=5, logging="raidenTest.csv")
+    rot.do_rotation()
+
 
 @timer
 def test4():

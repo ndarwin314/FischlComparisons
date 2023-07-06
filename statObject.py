@@ -6,6 +6,7 @@ class StatObject(ABC):
     def __init__(self, stats, rotation):
         self.stats = stats
         self.buffs = []
+        self.directBuffs = []
         self.rotation = rotation
 
     @property

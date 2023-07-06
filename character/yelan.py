@@ -48,7 +48,7 @@ class Yelan(Character):
         self.burstMVS = self.burstBase * scalingMultiplier[self.burstTalent]
         self.burstDuration = 15
         self.burstActive = False
-        self.buffCreator = lambda t, i: actions.Buff(self, t, buff.Buff(Stats({Attr.DMG: 0.01+0.035*i}), t, 1.1, self.buffID), on_field=False)
+        self.buffCreator = lambda t, i: actions.Buff(self, t, buff.DirectBuff(Stats({Attr.DMG: 0.01+0.035*i}), t, 1.1, self.buffID), on_field=False)
 
     def skill(self):
         t = self.time
@@ -62,5 +62,7 @@ class Yelan(Character):
         self.rotation.add_event(actions.Summon(self, self.time+.2, self.Dice(self, t)))
         for i in range(13):
             self.rotation.add_event(self.buffCreator(self.time + i, i))
+
+
 
 

@@ -344,3 +344,9 @@ Taser = {"list":
               Normal(3, 20.183, 2)
               ],
          "length": 21.3}
+
+raidenTest = {"list":
+              [Burst(0, 0),
+               Swap(1, 0.5),
+               Skill(1, 2),
+               Swap(0, 3),]}

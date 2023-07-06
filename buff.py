@@ -74,3 +74,12 @@ class StackableBuff(GenericBuff):
 
     def buff(self):
         return sum([_[0] for _ in self.stacks], start=Stats())
+
+class DirectGenericBuff(GenericBuff, ABC):
+    pass
+
+class DirectBuff(DirectGenericBuff, Buff):
+    pass
+
+class DirectPermanentBuff(DirectGenericBuff, PermanentBuff):
+    pass

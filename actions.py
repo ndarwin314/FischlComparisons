@@ -90,6 +90,8 @@ class Damage(Action):
     def do_action(self, rotation: "Rotation") -> None:
         # TODO: implement def ignore
         stats = self.statsRef()
+        for b in self.character.directBuffs:
+            stats += b.buff()
         element_applied = self.icd.applied_element(rotation.time)
         atk = stats.get_attack()
         em = stats[Attr.EM]
@@ -167,7 +169,7 @@ class Damage(Action):
                             reaction = Reactions.REVERSEVAPE
                         case Reactions.STRONG:
                             mv *= 2 * stats.multiplicative_multiplier()
-                            reaction = Reactions.REVERSEMELT
+                            reaction = Reactions.FORWARDVAPE
                         case Reactions.AGGRAVATE:
                             # TODO: i think this is bugged because this looks like it calculates using the snapshot em
                             # when it should be current em

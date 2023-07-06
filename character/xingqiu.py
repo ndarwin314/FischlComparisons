@@ -7,7 +7,7 @@ class Raincutter(Summon):
         super().__init__(None, who_summoned, start, who_summoned.burstDuration)
         self.mv = who_summoned.burstMVS
         self.lastHit = start - 1
-        self.wave = -1
+        self.wave = 0
         self.t = 0
         if who_summoned.constellation == 6:
             self.cycle = [2, 3, 5]
@@ -17,10 +17,10 @@ class Raincutter(Summon):
             self.cycleLength = 2
 
     def sword_wave(self, time, duration):
-        if time > self.lastHit + 1:
+        if time + duration > self.lastHit + 1:
             # rn just multiplying mv by the number of hits which is a hack
             self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST,
-                                    time=self.time + 0.1)
+                                    time=self.time + 0.1, stats_ref=lambda: self.summoner.get_stats())
             self.lastHit = min(time, max(time - duration, self.lastHit + 1))
             self.wave = (self.wave + 1) % self.cycleLength
             self.t += 1
@@ -28,8 +28,6 @@ class Raincutter(Summon):
             if self.summoner.constellation >= 2:
                 self.rotation.add_event(
                     actions.ResShred(self, self.time + 1 / 60, self.summoner.c2Creator(self.lastHit)))
-            self.rotation.do_damage(self.summoner, self.cycle[self.wave]*self.mv, Element.HYDRO, time=self.lastHit,
-                                    damage_type=DamageType.SKILL, stats_ref=lambda: self.summoner.get_stats())
 
     def summon(self):
         super().summon()

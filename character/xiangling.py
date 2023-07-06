@@ -8,11 +8,12 @@ class Xiangling(Character):
     autoBase = [np.array([0.7726, 0.7742])]
 
     class Pyronado(Summon):
-        def __init__(self, who_summoned, start, stats_ref):
+        def __init__(self, who_summoned, start, stats_ref, hack):
             super().__init__(None, who_summoned, start,  who_summoned.pyronadoDuration)
             self.mv = who_summoned.pyronadoMVS[3]
             self.statsRef = stats_ref
             self.lastHit = start
+            self.reaction = Reactions.REVERSEVAPE if hack else None
 
         def summon(self):
             super().summon()
@@ -25,16 +26,17 @@ class Xiangling(Character):
             if self.time >= self.lastHit + 1.2:
                 self.lastHit = self.time
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.BURST,
-                                        stats_ref=lambda : self.stats, aoe=True, reaction=Reactions.WEAK, debug=False)
+                                        stats_ref=lambda : self.stats, aoe=True, debug=False, reaction=self.reaction)
                 #self.rotation.add_event(actions.Reaction(self.summoner, self.time + 0.05, Reactions.OVERLOAD))
 
     class Gooba(Summon):
         shredID = uuid()
-        def __init__(self, who_summoned, start, stats_ref):
+        def __init__(self, who_summoned, start, stats_ref, hack):
             super().__init__(None, who_summoned, start, 8)
             self.mv = who_summoned.goobaMV
             self.statsRef = stats_ref
             self.lastHit = start + 0.45
+            self.reaction = Reactions.REVERSEVAPE if hack else None
 
         def summon(self):
             super().summon()
@@ -51,14 +53,14 @@ class Xiangling(Character):
                 # hack because i dont want to hard code all the overloads and vapes
                 # TODO: make this not suck
                 self.summoner.do_damage(self.mv, Element.PYRO, damage_type=DamageType.SKILL,
-                                        stats_ref=lambda: self.stats, aoe=True, reaction=Reactions.WEAK)
+                                        stats_ref=lambda: self.stats, aoe=True, reaction=self.reaction)
                 #self.rotation.add_event(actions.Reaction(self.summoner, t+0.05, Reactions.OVERLOAD))
                 if self.summoner.constellation >= 1:
                     self.rotation.add_event(actions.ResShred(self.summoner, t + 1/60, ResShred(Element.PYRO, -0.15, t+6, self.shredID)))
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=Catch(refinement=5), artifact_set=(artifacts.Emblem(4),)):
+                 weapon=Catch(refinement=5), artifact_set=(artifacts.Emblem(4),), suko_hack=True):
         super().__init__(Stats({Attr.HPBASE: 10875,
                                 Attr.ATKBASE: 225,
                                 Attr.DEFBASE: 669,
@@ -73,6 +75,7 @@ class Xiangling(Character):
         self.goobaMV = self.goobaBase * scalingMultiplier[self.skillTalent]
         self.autoTiming = [[12, 26]]
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
+        self.hack = suko_hack
 
         erReq = 2.3
         if isinstance(weapon, Kitain):
@@ -110,16 +113,16 @@ class Xiangling(Character):
         t = self.time
         # TODO: chili pepper thing
         self.rotation.add_event(actions.Summon(self, t,
-                                               self.Gooba(self, t, lambda: self.get_stats(self.time))))
+                                               self.Gooba(self, t, lambda: self.get_stats(self.time), hack=self.hack)))
 
     def burst(self):
         t = self.time
         t += 0.3
-        self.do_damage(self.pyronadoBase[0], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
+        self.do_damage(self.pyronadoMVS[0], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
         #self.rotation.add_event(actions.Reaction(self, t + 0.05, Reactions.OVERLOAD))
         t += 0.25
-        self.do_damage(self.pyronadoBase[1], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
+        self.do_damage(self.pyronadoMVS[1], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
         t += 0.38
-        self.do_damage(self.pyronadoBase[2], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
+        self.do_damage(self.pyronadoMVS[2], self.element, damage_type=DamageType.BURST, time=t, aoe=True)
         self.rotation.add_event(actions.Summon(self, t,
-                                               self.Pyronado(self, t, lambda :self.get_stats(self.time))))
+                                               self.Pyronado(self, t, lambda :self.get_stats(self.time), hack=self.hack)))
