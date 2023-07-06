@@ -140,6 +140,8 @@ class Damage(Action):
                 case Aura.EC:
                     match self.element:
                         case Element.ANEMO:
+                            #self.character.reaction(Reactions.HYDROSWIRL)
+                            #reactions.append(Reactions.HYDROSWIRL)
                             self.character.reaction(Reactions.ELECTROSWIRL)
                             reactions.append(Reactions.ELECTROSWIRL)
                         case Element.PYRO:

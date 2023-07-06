@@ -440,5 +440,13 @@ class Magic(Weapon):
                          "Magic")
         self.stats += Stats({Attr.ATKP: 0.12 + 0.04 * refinement})
 
+class LionsRoar(Weapon):
+    def __init__(self, refinement=5):
+        # TODO make the buff thing dynamic you lazy cunt
+        super().__init__(refinement,
+                         Stats({Attr.ATKBASE: 510, Attr.DMG: .15 + 0.05*refinement, Attr.ATKP: .413}),
+                         "Lion's Roar")
+        self.stats += Stats({Attr.ATKP: 0.12 + 0.04 * refinement})
+
 
 

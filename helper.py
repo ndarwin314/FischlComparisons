@@ -139,7 +139,7 @@ def test_gt(con=6):
     length = 21.3
     fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.GT(4)], constellation=con)
     rot = Rotation(Taser["list"],
-                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
+                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(weapon=LionsRoar()),
                                character.Sucrose(weapon=SacFrags())],
                    length=length,
                    enemy_count=2, logging="logTaser.csv")

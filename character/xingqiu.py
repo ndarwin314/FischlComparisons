@@ -9,6 +9,7 @@ class Raincutter(Summon):
         self.lastHit = start - 1
         self.wave = 0
         self.t = 0
+        self.total = 0
         if who_summoned.constellation == 6:
             self.cycle = [2, 3, 5]
             self.cycleLength = 3
@@ -19,6 +20,7 @@ class Raincutter(Summon):
     def sword_wave(self, time, duration):
         if time + duration > self.lastHit + 1:
             # rn just multiplying mv by the number of hits which is a hack
+            self.total += self.cycle[self.wave]
             self.summoner.do_damage(self.mv * self.cycle[self.wave], Element.HYDRO, damage_type=DamageType.BURST,
                                     time=self.time + 0.1, stats_ref=lambda: self.summoner.get_stats())
             self.lastHit = min(time, max(time - duration, self.lastHit + 1))
@@ -67,10 +69,13 @@ class Xingqiu(Character):
         if constellation >= 2:
             self.c2id = uuid()
             self.c2Creator = lambda t:ResShred(Element.HYDRO, -0.15, t+4, self.c2id)
-        # TODO: add stats
-        self.artifactStats[Attr.ATKP] += 0.466
-        erSubs = 20 - self.distributedSubs
         stats = self.get_stats(0)
+        if stats[Attr.ER] < 1.5:
+            self.artifactStats[Attr.ER] += 0.518
+        else:
+            self.artifactStats[Attr.ATKP] += 0.466
+        stats = self.get_stats(0)
+        erSubs = 20 - self.distributedSubs
         if 2 * stats[Attr.CR] > stats[Attr.CD]:
             self.artifactStats[Attr.CD] += 0.622
             self.cdCap -= 2
