@@ -77,7 +77,7 @@ class Fischl(Character):
 
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
-                 weapon=AlleyHunter(refinement=1), artifact_set=(artifacts.Glad(2), artifacts.Shime(2)),
+                 weapon=AlleyHunter(refinement=1), artifact_set=(artifacts.Glad(2), artifacts.TF(2)),
                  er_requirement=1, aggravate=False):
         super().__init__(Stats({Attr.HPBASE: 9189,
                                 Attr.ATKBASE: 244,
@@ -92,10 +92,10 @@ class Fischl(Character):
 
         self.turretHits = 10 if constellation < 6 else 12
         self.skillTurret = self.skillTurretBase * scalingMultiplier[self.skillTalent]
-        self.skillCast = self.skillCastBase * scalingMultiplier[self.skillTalent] + (2 if constellation > 1 else 0)
+        self.skillCast = self.skillCastBase * scalingMultiplier[self.skillTalent] + (2 if constellation >= 2 else 0)
         self.aim = self.aimBase * physMultiplier[self.autoTalent]
         # technically c4 is a separate damage instance, but it does not make a big difference
-        self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent] + (2.22 if constellation > 3 else 0)
+        self.burstMV = self.burstBase * scalingMultiplier[self.burstTalent] + (2.22 if constellation >= 4 else 0)
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.autoTiming = [[10, 18, 33, 41, 29]]
 
@@ -117,11 +117,17 @@ class Fischl(Character):
                 self.add_substat(Attr.EM, 2 - erSubs)
             else:
                 self.add_substat(Attr.ATKP, 2 - erSubs)
+        else:
+            crSubs = self.crCap - erSubs // 2 + 1
+            cdSubs = 20 - crSubs - erSubs
+            self.add_substat(Attr.CR, crSubs)
+            self.add_substat(Attr.CD, cdSubs)
 
 
-    def c1(self, *args):
+    def c1(self, character, *args):
         # TODO: figure out the delay or something, also for a4 and c6
-        self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
+        if character == self:
+            self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
 
     def set_rotation(self, r):
         super().set_rotation(r)
@@ -130,7 +136,6 @@ class Fischl(Character):
 
     def normal(self, hit, **kwargs):
         super().normal(hit, **kwargs)
-        #self.do_damage(self.n1, Element.PHYSICAL, DamageType.NORMAL)
 
     def charged(self):
         super().charged()

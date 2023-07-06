@@ -60,6 +60,10 @@ class Reactions(Enum):
     STRONG = auto()
     AGGRAVATE = auto()
     SPREAD = auto()
+    FORWARDVAPE = auto()
+    REVERSEVAPE = auto()
+    FORWARDMELT = auto()
+    REVERSEMELT = auto()
     # no one cares about crystallize
     electro_reactions = {ELECTROSWIRL, OVERLOAD, EC, SUPERCONDUCT}
 

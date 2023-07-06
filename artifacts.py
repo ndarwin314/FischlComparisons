@@ -185,6 +185,15 @@ class Gilded(SetBase):
         # TODO: check this works and make dynamic
         character.reactionHook.append(gd)
 
+class GT(SetBase):
+    def two(self, character: "character.Character"):
+        character.artifactStats[Attr.EDMG] += .2
+
+    def four(self, character: "character.Character"):
+        #TODO make buff work properly
+        character.artifactStats[Attr.EDMG] += .4
+
+
 
 
 

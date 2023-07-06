@@ -2,6 +2,8 @@ import csv
 import time
 from multiprocessing import Pool
 
+import numpy as np
+
 import artifacts
 from artifacts import Set, SetCount
 from rotation import *
@@ -102,7 +104,7 @@ def aggravate(artifact_sets, weapon_list):
                                            fish],
                                length=36)
     fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, aggravate=1)
-    give_up("aggravateFish", artifact_sets, weapon_list, 36, rot_creator, fischl_creator)
+    give_up("aggravateFish2", artifact_sets, weapon_list, 36, rot_creator, fischl_creator)
 
 
 
@@ -117,65 +119,75 @@ def taser(artifact_sets, weapon_list):
     give_up("taser", artifact_sets, weapon_list, length, rot_creator, fischl_creator)
 
 @timer
-def test():
+def test(con=6):
     w = PrototypeCrescent(refinement=5)
-    # [SetCount(Set.TF, 2), SetCount(Set.ATK, 2)]
     length = 21.3
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)])
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)], constellation=con)
     rot = Rotation(Taser["list"],
-                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(weapon=FavoniusWarbow()),
+                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
                                character.Sucrose(weapon=SacFrags())],
                    length=length,
-                   enemy_count=2)
+                   enemy_count=2, logging="logTaser.csv")
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 
 @timer
 def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
                                character.Kokomi(weapon=TTDS()),
-                               character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1)),
+                               fish:=character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1)),
                                character.Xiangling(weapon=Kitain())],
                    length=25.5)
     rot.do_rotation()
     print(rot.damage / 25)
     print({k: round(v / 25, 2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 
 @timer
 def test3():
     w = AlleyHunter(refinement=1)
     length = Test["length"]
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[SetCount(Set.TF, 2), SetCount(Set.ATK, 2)])
+    fish = character.Fischl(9, 9, 9, weapon=w)
     rot = Rotation(Test["list"], characters=[
-        character.Raiden(artifact_set=[SetCount(Set.EMBLEM, 4)]),
+        character.Raiden(artifact_set=[artifacts.Emblem(4)]),
         character.Bennett(),
         character.Kazuha(),
         fish],
-                   length=length)
+                   length=length, logging=True)
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 
 @timer
 def test4():
+
     w = TheStringless(refinement=3)
     length = aggravateFish["length"]
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TS(4)])
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)])
     rot = Rotation(aggravateFish["list"], characters=[
         character.Raiden(),
-        character.Collei(artifact_set=[artifacts.NO(4)]),
+        character.Collei(artifact_set=[artifacts.Instructor(4)]),
         character.Kazuha(),
         fish],
-        length=length)
+        length=length, logging=True)
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 
 @timer
 def con_comparison(artifact_sets, weapon_list):
+    bad_array = np.zeros((7, 4))
+    percent_array = np.zeros((7, 4))
+    average_array = np.ones(7)
+    percent_array[0] = 1
+    csv_array = [[] for _ in range(4)]
     for i in range(7):
+        bad = []
         length = Taser["length"]
         fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=i, weapon=w, artifact_set=artifact,
                                                           er_requirement=1.3)
@@ -183,6 +195,55 @@ def con_comparison(artifact_sets, weapon_list):
                                             characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
                                                         character.Sucrose(weapon=SacFrags())],
                                             length=length,
-                                            enemy_count=2)
-        a, b, c = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator)
-        print(c)
+                                            enemy_count=1)
+        a, b, current = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator)
+        csv_array[0] += a
+        bad.append(current)
+        length = Test["length"]
+        rot_creator = lambda fish: Rotation(Test["list"],
+                                                 characters=[character.Raiden(), character.Bennett(),
+                                                             character.Kazuha(), fish],
+                                                 length=length)
+        fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=i, weapon=w,
+                                                               artifact_set=artifact)
+        a, b, current = create_csvs(artifact_sets, weapon_list, length, rot_creator, fish_creator)
+        csv_array[1] += a
+        bad.append(current)
+        rot_creator = lambda fish: Rotation(aggravateFish["list"],
+                                            characters=[character.Raiden(),
+                                                        character.Collei(artifact_set=[artifacts.Instructor(4)]),
+                                                        character.Kazuha(),
+                                                        fish],
+                                            length=36)
+        fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=i, weapon=w, artifact_set=artifact,
+                                                              aggravate=1)
+        a, b, current = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator)
+        csv_array[2] += a
+        bad.append(current)
+        fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=i, weapon=w, artifact_set=artifact,
+                                                           er_requirement=1.5)
+        rot_creator = lambda fish: Rotation(Sukokomon["list"],
+                                                 characters=[character.Sucrose(weapon=SacFrags()),
+                                                             character.Kokomi(weapon=TTDS()),
+                                                             fish,
+                                                             character.Xiangling(weapon=Kitain())],
+                                                 length=25.5)
+        a, b, current = create_csvs(artifact_sets, weapon_list, length, rot_creator, fish_creator)
+        csv_array[3] += a
+        bad.append(current)
+        bad_array[i] = bad
+        if i == 0:
+            print(f"increase over previous {i}: 1")
+            print(f"increase over c0 {i}: 1")
+        else:
+            percent_array[i] = bad_array[i] / bad_array[i-1]
+            average_array[i] = np.mean(percent_array[i])
+            print(f"increase over previous {i}: {average_array[i]}")
+            print(f"increase over c0 {i}: {np.prod(average_array)}")
+    print(np.prod(average_array))
+    with open('results2/constellation.csv', 'w+', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        for i in range(len(csv_array[0])):
+            writer.writerow(sum([csv_array[j][i] for j in range(4)], start=[]))
+
+

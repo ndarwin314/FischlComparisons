@@ -16,8 +16,14 @@ class AutoSequence:
 icd0 = icd.ICD(0,1)
 class Rotation:
 
-    def __init__(self, action_list, characters, length, enemy_count=1):
+    def __init__(self, action_list, characters, length, enemy_count=1, logging=None):
         self.length = length
+        if logging is None:
+            self.logging = False
+            self.file = None
+        else:
+            self.logging = True
+            self.file = logging
         self.characters = characters
         self.aura = Aura.NONE # TODO: fuck me
         self.summons = []
@@ -87,6 +93,9 @@ class Rotation:
         return self.frame / 60
 
     def do_rotation(self):
+        if self.logging:
+            with open(self.file, "w+") as f:
+                f.write("time, damage, mv, attack, em, cr, cd, damage bonus, character, element, reaction, damage type, aoe\n")
         frameEnd = self.length * 60
         for frame in self.events:
             if self.frame >= frameEnd:

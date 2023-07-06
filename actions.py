@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from attributes import DamageType, Attr, Reactions, Element, Aura
 from icd import ICD
+import logging
 
 class Action(ABC):
     __slots__ = ["character", "time", "type"]
@@ -8,6 +9,10 @@ class Action(ABC):
     def __init__(self, character, time):
         self.character: "Character" = character
         self.time: int = time
+        try:
+            self.logging = character.rotation.logging
+        except AttributeError:
+            self.logging = False
         # do stuff with kwargs if i decide to
 
     @abstractmethod
@@ -86,10 +91,14 @@ class Damage(Action):
         # TODO: implement def ignore
         stats = self.statsRef()
         element_applied = self.icd.applied_element(rotation.time)
+        atk = stats.get_attack()
+        em = stats[Attr.EM]
         if isinstance(self.mv, float) or isinstance(self.mv, int):
-            mv = self.mv * stats.get_attack()
+            mv_log = self.mv
+            mv = self.mv * atk
         else:
             mv = self.mv.get_base(self.statsRef())
+            mv_log = mv
 
         if self.damageType == DamageType.REACTION:
             multiplier = stats.transformative_multiplier(self.reaction)
@@ -101,7 +110,10 @@ class Damage(Action):
             multiplier = stats.get_multiplier(self.element, self.damageType, self.character.emblem)
             transformative = False
 
+
         # TODO: expand this
+        # TODO: this code is so fucking ugly
+        reaction: Reactions = self.reaction
         if element_applied:
             reactions: list[Reactions] = []
             match rotation.aura:
@@ -110,14 +122,14 @@ class Damage(Action):
                 case Aura.HYDRO:
                     match self.element:
                         case Element.PYRO:
-                            mv *= 1.5 * (1 + 2.78 * stats[Attr.EM] / (1400 + stats[Attr.EM]))
+                            mv *= 1.5 * stats.multiplicative_multiplier()
+                            reaction = Reactions.REVERSEVAPE
                 case Aura.ELECTRO:
+                    # TODO: add some quicken bs
                     match self.element:
                         case Element.ANEMO:
                             self.character.reaction(Reactions.ELECTROSWIRL)
-                            self.character.reaction(Reactions.HYDROSWIRL)
                             reactions.append(Reactions.ELECTROSWIRL)
-                            reactions.append(Reactions.HYDROSWIRL)
                         case Element.PYRO:
                             self.character.reaction(Reactions.OVERLOAD)
                             reactions.append(Reactions.OVERLOAD)
@@ -131,15 +143,20 @@ class Damage(Action):
                         case Element.PYRO:
                             self.character.reaction(Reactions.OVERLOAD)
                             reactions.append(Reactions.OVERLOAD)
-                            mv *= 1.5 * (1 + 2.78 * stats[Attr.EM] / (1400 + stats[Attr.EM]))
+                            mv *= 1.5 * stats.multiplicative_multiplier()
+                            reaction = Reactions.REVERSEVAPE
                 case Aura.QUICKEN:
                     match self.element:
                         case Element.ELECTRO:
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])
+                            m = self.character.get_stats()[Attr.EM]
+                            mv += 1.15 * 1447 * (1 + 5 * em / (1200 + em) + stats[Attr.AGGRAVATEBONUS])
                             reactions.append(Reactions.AGGRAVATE)
+                            reaction = Reactions.AGGRAVATE
                         case Element.DENDRO:
-                            mv += 1.25 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]))
+                            em = self.character.get_stats()[Attr.EM]
+                            mv += 1.25 * 1447 * (1 + 5 * em / (1200 + em))
                             reactions.append(Reactions.SPREAD)
+                            reaction = Reactions.SPREAD
                         case Element.ANEMO:
                             self.character.reaction(Reactions.ELECTROSWIRL)
                             reactions.append(Reactions.ELECTROSWIRL)
@@ -147,11 +164,16 @@ class Damage(Action):
                     match self.reaction:
                         case Reactions.WEAK:
                             mv *= 1.5 * stats.multiplicative_multiplier()
+                            reaction = Reactions.REVERSEVAPE
                         case Reactions.STRONG:
-                            mv *= 1.5 * stats.multiplicative_multiplier()
+                            mv *= 2 * stats.multiplicative_multiplier()
+                            reaction = Reactions.REVERSEMELT
                         case Reactions.AGGRAVATE:
-                            stats = self.character.get_stats()
-                            mv += 1.15 * 1447 * (1 + 5 * stats[Attr.EM] / (1200 + stats[Attr.EM]) + stats[Attr.AGGRAVATEBONUS])
+                            # TODO: i think this is bugged because this looks like it calculates using the snapshot em
+                            # when it should be current em
+                            # actually i think the line directly below this is for that but its scuffed
+                            em = self.character.get_stats()
+                            mv += 1.15 * 1447 * (1 + 5 * em / (1200 + em) + stats[Attr.AGGRAVATEBONUS])
                             reactions.append(Reactions.AGGRAVATE)
             for r in reactions:
                 for delegate in rotation.reactionHook:
@@ -162,11 +184,11 @@ class Damage(Action):
         damage = mv * multiplier
         if self.aoe:
             for enemy in rotation.enemies:
-                enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
+                damage = enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
                                   debug=self.debug)
         else:
             enemy = rotation.enemies[0]
-            enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
+            damage = enemy.take_damage(damage, self.element, rotation, self.character, is_transformative=transformative,
                               debug=self.debug)
         for hook in rotation.damageHooks:
             hook()
@@ -185,6 +207,11 @@ class Damage(Action):
             case DamageType.BURST:
                 for hook in self.character.burstHitHook:
                     hook(self.character)
+        if self.logging:
+            with open(rotation.file, "a") as f:
+                f.write(f"{self.time:.3f}, {damage:.3f}, {mv_log:.3f}, {atk:.3f}, {em:.3f}, {stats[Attr.CR]:.3f}, {stats[Attr.CD]:.3f}," \
+                        f"{stats.get_DMG(self.element, self.damageType, self.character.emblem):.3f}," \
+                        f"{self.character}, {self.element}, {reaction}, {self.damageType}, {self.aoe}\n")
 
     def __repr__(self):
         return f"{self.character} with mv {round(self.mv,2)} at {self.time}"

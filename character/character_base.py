@@ -2,6 +2,7 @@ from attributes import Element, Reactions, Attr, Stats, DamageType
 from enemy import ResShred
 from enum import Enum
 from abc import ABC, abstractmethod
+from statObject import StatObject
 from summon import Summon
 import math
 import numpy as np
@@ -144,7 +145,7 @@ substatValues = {Attr.HPP: 0.0496, Attr.HP: 253.94,
 
 
 
-class Character(ABC):
+class Character(StatObject):
     noblesseID = uuid()
     noblesseBuff = Stats({Attr.ATKP: 0.2})
     vvID = uuid()
@@ -155,8 +156,7 @@ class Character(ABC):
 
     def __init__(self, stats: Attr, element: Element, auto_talent: int, skill_talent: int, burst_talent: int,
                  constellation: int, weapon: "Weapon", artifact_set: ["SetBase"], weapon_type, energy_cost: int, er_req: float):
-        self.rotation = None
-
+        super().__init__(stats, None)
         # TODO: programmatically determine this based on level
         self.levelMultiplier = 725.26
 
@@ -171,9 +171,6 @@ class Character(ABC):
         self.healingHook = []
         self.reactionHook = []
 
-
-        self.stats: Stats = stats
-        self.buffs = []
         self.artifactStats = Stats()
         self.element = element
         self.weapon = weapon
@@ -322,3 +319,6 @@ class Character(ABC):
 
     def swap_off(self):
         pass
+
+    def get_parent_stats(self, time):
+        return self.get_stats(time)

@@ -1,11 +1,7 @@
-
 from helper import *
 
-
-
-
 weapons = [PolarStar, Water, Hunter, SkywardHarp, ThunderingPulse, TheViridescentHunt, AmosBow, AlleyHunter, PrototypeCrescent,
-               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow]
+               Twilight, MouunsMoon, ElegyForTheEnd, Rust, TheStringless, Hamayumi, WindblumeOde, SacrificialBow, FavoniusWarbow, Ibis]
 
 artifactSets = [
     [artifacts.TF(2), artifacts.Glad(2)],
@@ -20,9 +16,8 @@ artifactSets = [
     [],
     [artifacts.TS(4)],
     [artifacts.TOM(4)],
-    [artifacts.Gilded(4)]]
-
-
+    [artifacts.Gilded(4)],
+    [artifacts.GT(4)]]
 
 def calc_weapon(rotation, weapon, artifact_sets: list, character_creators: list):
     bad = weapon()
@@ -52,8 +47,8 @@ def execute_rotation(weapons: list, artifact_sets: list):
 
 
 if __name__ == '__main__':
-    #taser(artifactSets, weapons)
-    con_comparison(artifactSets, weapons)
     #aggravate(artifactSets, weapons)
-    #raifish(artifactSets, weapons)
+    #taser(artifactSets, weapons)
+    raifish(artifactSets, weapons)
     #funny_soup_team(artifactSets, weapons)
+    #con_comparison(artifactSets, weapons)

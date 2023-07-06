@@ -194,7 +194,7 @@ class PrototypeCrescent(Weapon):
     def equip(self, character):
         super().equip(character)
         character.chargedHitHook.append(self.charged_hit)
-        character.normalHitHook.append(self.charged_hit)
+        #character.normalHitHook.append(self.charged_hit)
 
 class TheViridescentHunt(Weapon):
 
@@ -398,7 +398,7 @@ class Akuoumaru(Weapon):
         
 class Homa(Weapon):
     def __init__(self, refinement=1):
-        super(Homa, self).__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.HPP: 0.2}), "Staff of Homo")
+        super(Homa, self).__init__(refinement, Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.HPP: 0.2}), "Staff of Homa")
 
     def equip(self, character):
         super(Homa, self).equip(character)
@@ -408,4 +408,27 @@ class Homa(Weapon):
 class Hunter(Weapon):
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 542, Attr.CR: 0.441, Attr.DMG: 0.09 + 0.03 * refinement}), "Hunter's Path")
+
+class Ibis(Weapon):
+    def __init__(self, refinement=5):
+        super(Ibis, self).__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}),
+                                   "Ibis Piercer")
+        self.emBuff = 30 + 10 * refinement
+        self.stackExpirations = [-math.inf, -math.inf]
+
+    def hook(self, char):
+        self.stackExpirations[0] = self.stackExpirations[1]
+        self.stackExpirations[1] = char.time + 6
+
+    def equip(self, character):
+        character.chargedHitHook.append(self.hook)
+
+    def get_stats(self, time):
+        if time <= self.stackExpirations[0]:
+            stacks = 2
+        elif time <= self.stackExpirations[1]:
+            stacks = 1
+        else:
+            stacks = 0
+        return self.stats + Stats({Attr.EM: stacks * self.emBuff})
 

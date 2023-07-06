@@ -3,7 +3,14 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\results2\aggravateATKATK.csv">
+        <entry key="\log.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\log2.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -17,21 +24,7 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\results2\aggravateEMATK.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\results2\aggravateEMEM.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\results2\aggravateEMEMTeamDPS.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -52,6 +45,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results2\constellation.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results2\raifish.csv">
           <value>
             <Attribute>
@@ -59,21 +59,7 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\results2\raifishTeamDPS.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\results2\sukokomon.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\results2\sukokomonTeamDPS.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

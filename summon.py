@@ -1,20 +1,18 @@
 from abc import ABC, abstractmethod
+from statObject import StatObject
 import math
 
-class Summon(ABC):
+class Summon(StatObject):
 
     def __init__(self, stats, who_summoned, start, duration):
-        self.stats = stats
+        super().__init__(stats, who_summoned.rotation)
         self.summoner = who_summoned
         self.endTime = math.ceil(60*(start + duration))
         self.start = start
         self.duration = duration
-        self.buffs = []
-        self.rotation = who_summoned.rotation
 
     def on_frame(self):
         pass
-
 
     @abstractmethod
     def summon(self):
@@ -27,7 +25,8 @@ class Summon(ABC):
     def recall(self):
         self.rotation.summons.remove(self)
 
-    @property
-    def time(self):
-        return self.rotation.time
+    def get_stats(self):
+        return self.stats
 
+    def get_parent_stats(self):
+        return self.get_parent_stats()

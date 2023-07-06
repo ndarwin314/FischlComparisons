@@ -1,4 +1,4 @@
-import attributes
+import logging
 from attributes import Element
 from functools import cache
 
@@ -43,6 +43,7 @@ class Enemy:
         damage = multiplier * incoming
         rotation.damageDict[character] += damage
         self.damage += damage
+        return damage
 
     def reset(self):
         self.damage = 0
