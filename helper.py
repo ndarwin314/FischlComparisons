@@ -134,6 +134,21 @@ def test(con=6):
     return rot.damageDict[fish]
 
 @timer
+def test_gt(con=6):
+    w = PrototypeCrescent(refinement=5)
+    length = 21.3
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.GT(4)], constellation=con)
+    rot = Rotation(Taser["list"],
+                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
+                               character.Sucrose(weapon=SacFrags())],
+                   length=length,
+                   enemy_count=2, logging="logTaser.csv")
+    rot.do_rotation()
+    print(rot.damage / length)
+    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
+
+@timer
 def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
@@ -161,6 +176,21 @@ def test3():
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
     return rot.damageDict[fish]
+@timer
+def gt_test():
+    w = AlleyHunter(refinement=1)
+    length = Test["length"]
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.GT(4)])
+    rot = Rotation(Test["list"], characters=[
+        character.Raiden(artifact_set=[artifacts.Emblem(4)]),
+        character.Bennett(),
+        character.Kazuha(),
+        fish],
+                   length=length, logging="gt.csv")
+    rot.do_rotation()
+    print(rot.damage / length)
+    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 
 @timer
 def RaidenTest():
@@ -170,7 +200,6 @@ def RaidenTest():
         character.Bennett()],
                    length=5, logging="raidenTest.csv")
     rot.do_rotation()
-
 
 @timer
 def test4():

@@ -432,3 +432,13 @@ class Ibis(Weapon):
             stacks = 0
         return self.stats + Stats({Attr.EM: stacks * self.emBuff})
 
+class Magic(Weapon):
+    def __init__(self, refinement=1):
+        # TODO make the buff thing dynamic you lazy cunt
+        super().__init__(refinement,
+                         Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.ATKP: 0.09 + 0.03 * refinement}),
+                         "Magic")
+        self.stats += Stats({Attr.ATKP: 0.12 + 0.04 * refinement})
+
+
+

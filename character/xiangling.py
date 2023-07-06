@@ -13,7 +13,7 @@ class Xiangling(Character):
             self.mv = who_summoned.pyronadoMVS[3]
             self.statsRef = stats_ref
             self.lastHit = start
-            self.reaction = Reactions.REVERSEVAPE if hack else None
+            self.reaction = Reactions.WEAK if hack else None
 
         def summon(self):
             super().summon()
@@ -36,7 +36,7 @@ class Xiangling(Character):
             self.mv = who_summoned.goobaMV
             self.statsRef = stats_ref
             self.lastHit = start + 0.45
-            self.reaction = Reactions.REVERSEVAPE if hack else None
+            self.reaction = Reactions.WEAK if hack else None
 
         def summon(self):
             super().summon()

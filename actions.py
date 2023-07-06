@@ -181,7 +181,7 @@ class Damage(Action):
                 for delegate in rotation.reactionHook:
                     delegate(self.character, r)
                 for delegate in self.character.reactionHook:
-                    delegate(self, r)
+                    delegate(self.character, r)
 
         damage = mv * multiplier
         if self.aoe:

@@ -170,6 +170,8 @@ class Character(StatObject):
         self.damageHook = []
         self.healingHook = []
         self.reactionHook = []
+        self.swapOnHook = []
+        self.swapOffHook = []
 
         self.artifactStats = Stats()
         self.element = element
@@ -278,29 +280,31 @@ class Character(StatObject):
         for buff_ in self.buffs:
             b += buff_.buff()
         stats = self.stats + self.weapon.get_stats(time) + self.artifactStats + b
-        #print(self, time, self.buffs)
         return stats
+
+    def is_on_field(self):
+        return self == self.rotation.onField
 
     def add_buff(self, b: buff.Buff):
         # TODO: make this not suck
         # probably refactor this so the logic for adding buffs is handled by the buff and not the character
-        if isinstance(b, buff.DirectGenericBuff):
-            for i in range(len(self.buffs)):
-                other = self.buffs[i]
-                if b == other:
-                    self.directBuffs[i] = b + other
-                    return
-            else:
-                self.directBuffs.append(b)
+        buffList = self.directBuffs if isinstance(b, buff.DirectGenericBuff) else self.buffs
+        for i in range(len(buffList)):
+            other = buffList[i]
+            if b == other:
+                buffList[i] = b + other
+                return
         else:
-            for i in range(len(self.buffs)):
-                other = self.buffs[i]
-                if b == other:
-                    self.buffs[i] = b + other
-                    return
-            else:
-                self.buffs.append(b)
+            buffList.append(b)
         #[other if buff!=other else other+buff for other in self.buffs]
+
+    def remove_buff(self, b: buff.Buff):
+        buffList = self.directBuffs if isinstance(b, buff.DirectGenericBuff) else self.buffs
+        try:
+            buffList.remove(buff)
+            return True
+        except ValueError:
+            return False
 
     def add_substat(self, sub: Attr, rolls: int):
         self.artifactStats[sub] += rolls * substatValues[sub]
@@ -328,7 +332,12 @@ class Character(StatObject):
         self.rotation.do_damage(self, mv, element, damage_type, time, aoe, reaction, debug, stats_ref, icd)
 
     def swap_off(self):
-        pass
+        for delegate in self.swapOffHook:
+            delegate(self)
+
+    def swap_on(self):
+        for delegate in self.swapOnHook:
+            delegate(self)
 
     def get_parent_stats(self, time):
         return self.get_stats(time)

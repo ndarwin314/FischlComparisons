@@ -4,6 +4,7 @@ from attributes import Attr, Stats, DamageType, Element
 import actions
 import buff
 from uuid import uuid4 as uuid
+from functools import partial
 
 class Set(Enum):
     TF = 0
@@ -161,16 +162,17 @@ class Instructor(SetBase):
         character.artifactStats[Attr.EM] += 80
 
     def four(self, character: "character.Character"):
-        def instructor(damage, reaction):
-            character.rotation.add_event(
-                actions.Buff(character,
-                             character.time,
-                             buff.Buff(
-                                 Stats({Attr.EM: 120}),
+        def instructor(character, reaction):
+            if character.is_on_field():
+                character.rotation.add_event(
+                    actions.Buff(character,
                                  character.time,
-                                 8,
-                                 Instructor.id
-                             )))
+                                 buff.Buff(
+                                     Stats({Attr.EM: 120}),
+                                     character.time,
+                                     8,
+                                     Instructor.id
+                                 )))
 
         character.reactionHook.append(instructor)
 
@@ -180,19 +182,25 @@ class Gilded(SetBase):
         character.artifactStats[Attr.EM] += 80
 
     def four(self, character: "character.Character"):
-        def gd(damage, reaction):
-            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), damage.time, 8, Gilded.id))
+        def gd(character, reaction):
+            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), character.time, 8, Gilded.id))
         # TODO: check this works and make dynamic
         character.reactionHook.append(gd)
 
 class GT(SetBase):
+    id = uuid()
+    buff = buff.DirectPermanentBuff(Stats({Attr.EDMG: 0.2}), id)
     def two(self, character: "character.Character"):
         character.artifactStats[Attr.EDMG] += .2
 
     def four(self, character: "character.Character"):
-        #TODO make buff work properly
-        character.artifactStats[Attr.EDMG] += .4
-
+        character.artifactStats[Attr.EDMG] += .2
+        def add(character):
+            character.add_buff(self.buff)
+        def remove(character):
+            actions.OtherAction(character, character.time+2, partial(character.remove_buff, self.buff))
+        character.swapOffHook.append(add)
+        character.swapOnHook.append(remove)
 
 
 
