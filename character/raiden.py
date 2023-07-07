@@ -59,7 +59,6 @@ class Raiden(Character):
         self.normalICD = icd.ICD(2.5, 3)
 
         self.resolve = 0
-        self.burstActive = False
         self.burstExpiration = 0
         self.autoMVS = self.autoBase * physMultiplier[self.autoTalent]
         self.infusedMVS = self.autoInfuseBase * physHighMultiplier[self.burstTalent]
@@ -95,11 +94,11 @@ class Raiden(Character):
             charged = True
         #super().normal(stats, hit)
         t = self.time
-        if self.burstActive and self.time > self.burstExpiration:
-            self.burstActive = False
+        if self.infusion and self.time > self.burstExpiration:
+            self.infusion = False
             self.resolve = 0
 
-        if self.burstActive:
+        if self.infusion:
             timing = self.autoTiming
             mvs = self.infusedMVS + self.resolve * self.infusedBonusMV
             for i in range(hit):
@@ -111,6 +110,8 @@ class Raiden(Character):
                 t += timing[1][0] / 60
                 self.do_damage(mvs[-2], self.element, DamageType.BURST, time=t, icd=self.normalICD)
                 self.do_damage(mvs[-1], self.element, DamageType.BURST, time=t, icd=self.normalICD)
+                for hook in self.rotation.chargedAttackHook:
+                    hook(t, self.autoTiming[0][i] / 60)
         else:
             timing = self.autoTimingBad
             mvs = self.autoMVS
@@ -122,11 +123,13 @@ class Raiden(Character):
             if charged:
                 t += timing[1][0] / 60
                 self.do_damage(mvs[-1], Element.PHYSICAL, DamageType.CHARGED, time=t)
+                for hook in self.rotation.chargedAttackHook:
+                    hook(t, self.autoTiming[0][i] / 60)
 
 
     def charged(self):
         super().charged()
-        if self.burstActive:
+        if self.infusion:
             # this is a hack to add both mvs together since i'm lazy and they are simultaneous
             mv = self.infusedMVS[-1] + self.infusedMVS[-2] + 2 * self.resolve * self.infusedBonusMV
             self.do_damage(mv, self.element, DamageType.BURST)
@@ -142,7 +145,7 @@ class Raiden(Character):
 
     def burst(self):
         super().burst()
-        self.burstActive = True
+        self.infusion = True
         # 115 frames of startup plus 7 seconds of burst plus hitlag
         # TODO: how much does hitlag add
         self.burstExpiration = self.time + 115 / 60 + 7 + 3
@@ -168,6 +171,6 @@ class Raiden(Character):
         self.deactivate_burst()
 
     def deactivate_burst(self):
-        if not self.burstActive:
-            self.burstActive = False
+        if not self.infusion:
+            self.infusion = False
             self.resolve = 0

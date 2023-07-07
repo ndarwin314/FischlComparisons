@@ -192,14 +192,6 @@ def gt_test():
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
     return rot.damageDict[fish]
 
-@timer
-def RaidenTest():
-    rot = Rotation(raidenTest["list"], characters=[
-        character.Xiangling(artifact_set=[artifacts.Emblem(4)], suko_hack=False),
-        character.Raiden(artifact_set=[artifacts.Emblem(4)], constellation=0),
-        character.Bennett()],
-                   length=5, logging="raidenTest.csv")
-    rot.do_rotation()
 
 @timer
 def test4():
@@ -212,7 +204,7 @@ def test4():
         character.Collei(artifact_set=[artifacts.Instructor(4)]),
         character.Kazuha(),
         fish],
-        length=length, logging=True)
+        length=length, logging="raifish.csv")
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})

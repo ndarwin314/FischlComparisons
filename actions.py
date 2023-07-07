@@ -92,7 +92,7 @@ class Damage(Action):
         stats = self.statsRef()
         for b in self.character.directBuffs:
             stats += b.buff()
-        element_applied = self.icd.applied_element(rotation.time)
+        element_applied = self.icd.applied_element(rotation.time) and self.element != Element.PHYSICAL
         atk = stats.get_attack()
         em = stats[Attr.EM]
         if isinstance(self.mv, float) or isinstance(self.mv, int):
@@ -109,6 +109,8 @@ class Damage(Action):
             multiplier = 1
             transformative = True
         else:
+            if self.debug:
+               t = 1
             multiplier = stats.get_multiplier(self.element, self.damageType, self.character.emblem)
             transformative = False
 
@@ -173,9 +175,6 @@ class Damage(Action):
                             mv *= 2 * stats.multiplicative_multiplier()
                             reaction = Reactions.FORWARDVAPE
                         case Reactions.AGGRAVATE:
-                            # TODO: i think this is bugged because this looks like it calculates using the snapshot em
-                            # when it should be current em
-                            # actually i think the line directly below this is for that but its scuffed
                             em = self.character.get_stats()
                             mv += 1.15 * 1447 * (1 + 5 * em / (1200 + em) + stats[Attr.AGGRAVATEBONUS])
                             reactions.append(Reactions.AGGRAVATE)

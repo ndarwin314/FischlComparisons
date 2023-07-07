@@ -245,7 +245,6 @@ class MouunsMoon(Weapon):
     def equip(self, character):
         super().equip(character)
         cost = 270
-        # TODO: make this work
         rot = character.rotation
         cost = 0
         for char in rot.characters:
@@ -332,6 +331,12 @@ class IronSting(Weapon):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.EM: 165, Attr.DMG: 0.09 + 0.03 * refinement}),
                          "Iron Sting")
 
+class Xiphos(Weapon):
+
+    def __init__(self, refinement=5):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.EM: 165, Attr.DMG: 0.09 + 0.03 * refinement}),
+                         "Xiphos' Moonlight")
+
     def equip(self, character):
         super().equip(character)
         # character
@@ -361,7 +366,6 @@ class TTDS(Weapon):
     # TODO: TTDS is passed as the default weapon to kokomi, however all kokomi get the same ttds meaning only the first rotation gets the buff
     # workaround is to manually pass the weapon param, however this is cringe, come up with a good solution
     def __init__(self, refinement=5):
-        # TODO: add the character switch thing
         super().__init__(refinement, Stats({Attr.ATKBASE: 401, Attr.HPP: 0.352}), "Thrilling Tales of Dragon Slayers")
         self.lastProc = -20
         self.buff = Stats({Attr.ATKP: 0.18 + 0.06 * refinement})
@@ -442,11 +446,30 @@ class Magic(Weapon):
 
 class LionsRoar(Weapon):
     def __init__(self, refinement=5):
-        # TODO make the buff thing dynamic you lazy cunt
         super().__init__(refinement,
                          Stats({Attr.ATKBASE: 510, Attr.DMG: .15 + 0.05*refinement, Attr.ATKP: .413}),
                          "Lion's Roar")
         self.stats += Stats({Attr.ATKP: 0.12 + 0.04 * refinement})
+
+
+class Scion(Weapon):
+    def __init__(self, refinement=1):
+        super().__init__(refinement,
+                         Stats({Attr.ATKBASE: 565, Attr.CR: 0.184}), "Scion of Blazing Sun")
+
+    def equip(self, character):
+        super().equip()
+        # TODO add some ca trigger
+
+class Song(Weapon):
+    def __init__(self, refinement=1):
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461}, "Song"))
+
+    def equip(self, character):
+        super().equip()
+        # TODO add some healing trigger
+
+
 
 
 

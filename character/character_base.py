@@ -160,6 +160,10 @@ class Character(StatObject):
         # TODO: programmatically determine this based on level
         self.levelMultiplier = 725.26
 
+        self.infusion = False
+
+        self.normalICD = icd.ICD(2.5, 3)
+
         # hooks
         self.burstCastHook = []
         self.burstHitHook = []
@@ -226,12 +230,24 @@ class Character(StatObject):
         pass
 
     def normal(self, hits, **kwargs):
+        # TODO ACTUAL SERIOUS THING, with current implementation multi hit things are fucked and i need to figure out
+        # a good way to handle it that doesnt suck
         t = self.time
+        charged = kwargs.get("charged")
+        if charged is None:
+            charged = False
+        element = self.element if self.infusion else Element.PHYSICAL
         for i in range(hits):
             t += self.autoTiming[0][i] / 60
-            self.do_damage(self.autoMVS[0][i], Element.PHYSICAL, DamageType.NORMAL, t)
+            self.do_damage(self.autoMVS[0][i], element, DamageType.NORMAL, t, icd=self.normalICD)
             for hook in self.rotation.normalAttackHook:
                 hook(t, self.autoTiming[0][i] / 60)
+        if charged:
+            for i in range(len(self.autoTiming[1])):
+                t += self.autoTiming[1][i] / 60
+                self.do_damage(self.autoMVS[1][i], element, DamageType.CHARGED, t, icd=self.normalICD)
+                for hook in self.rotation.chargedAttackHook:
+                    hook(t, self.autoTiming[0][i] / 60)
 
     def charged(self):
         pass
@@ -246,8 +262,10 @@ class Character(StatObject):
         for delegate in self.burstCastHook:
             self.rotation.add_event(delegate(self))
 
+    def end_infusion(self):
+        self.infusion = False
+
     def reaction(self, reaction, **kwargs):
-        # TODO: vape thing is hacked together
         if reaction.is_swirl():
             element = reaction.element()
             self.do_damage(mv.MV(flat=1.2*self.levelMultiplier*(2 if self.rotation.enemyCount>1 else 1)), element, DamageType.REACTION, aoe=True, reaction=reaction, icd=Character.nope)
@@ -286,7 +304,6 @@ class Character(StatObject):
         return self == self.rotation.onField
 
     def add_buff(self, b: buff.Buff):
-        # TODO: make this not suck
         # probably refactor this so the logic for adding buffs is handled by the buff and not the character
         buffList = self.directBuffs if isinstance(b, buff.DirectGenericBuff) else self.buffs
         for i in range(len(buffList)):
