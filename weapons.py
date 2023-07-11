@@ -442,8 +442,15 @@ class Magic(Weapon):
         super().__init__(refinement,
                          Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.ATKP: 0.09 + 0.03 * refinement}),
                          "Magic")
-        self.stats += Stats({Attr.ATKP: 0.12 + 0.04 * refinement})
 
+    def equip(self, character):
+        super().equip(character)
+        stacks = -1
+        value = [0.06, 0.12, 0.3, 0.3]
+        for other in character.rotation.characters:
+            if other.element == character.element:
+                stacks += 1
+        self.stats += Stats({Attr.ATKP: value[stacks] + value[stacks] / 3 * self.refinement})
 class LionsRoar(Weapon):
     def __init__(self, refinement=5):
         super().__init__(refinement,

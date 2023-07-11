@@ -180,6 +180,8 @@ class Character(StatObject):
         self.artifactStats = Stats()
         self.element = element
         self.weapon = weapon
+        self.er_req = er_req
+        self.artifact_set = artifact_set
 
         self.autoTalent = auto_talent
         self.autoMVS = None
@@ -225,6 +227,10 @@ class Character(StatObject):
 
     def set_rotation(self, r):
         self.rotation = r
+        # TODO so i want to move artifact equipping to here but then that creates an issue with er requirements
+        # not counting emblem er so i need to refactor that, but then i need to refactor character code
+        # and its a whole deal
+
 
     def add_crit(self, stats: Stats):
         pass

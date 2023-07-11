@@ -36,6 +36,12 @@ class Keqing(Character):
 
         self.a4id = uuid()
 
+        self.artifactStats += 0.311
+        self.crCap -= 2
+        self.add_substat(Attr.CR, self.crCap)
+        self.add_substat(Attr.CD, self.cdCap)
+        self.add_substat(Attr.ATKP, 2)
+
     def normal(self, hits, **kwargs):
         if hits >= 3:
             hits += 1

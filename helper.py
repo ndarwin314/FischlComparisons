@@ -153,7 +153,7 @@ def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
                                character.Kokomi(weapon=TTDS()),
-                               fish:=character.Fischl(er_requirement=1.4, weapon=ElegyForTheEnd(refinement=1)),
+                               fish:=character.Fischl(er_requirement=1.4, weapon=Magic(refinement=1)),
                                character.Xiangling(weapon=Kitain())],
                    length=25.5)
     rot.do_rotation()

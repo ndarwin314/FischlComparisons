@@ -183,7 +183,12 @@ class Gilded(SetBase):
 
     def four(self, character: "character.Character"):
         def gd(character, reaction):
-            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14, Attr.EM: 100}), character.time, 8, Gilded.id))
+            # TODO: i'm either incredibly stupid or incredibly smart
+            sameElement = 0
+            for other in character.rotation.characters:
+                if other is not character and other.element == character.element:
+                    sameElement += 1
+            character.add_buff(buff.Buff(Stats({Attr.ATKP: 0.14 * sameElement, Attr.EM: 50 * (3-sameElement)}), character.time, 8, Gilded.id))
         character.reactionHook.append(gd)
 
 class GT(SetBase):
