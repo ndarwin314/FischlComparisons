@@ -1,0 +1,9 @@
+time, damage, mv, attack, em, cr, cd, damage bonus, character, element, reaction, damage type, aoe
+0.300, 1861.137, 1.440, 1151.992, 135.640, 0.116, 0.632,2.226,Xiangling, Element.PYRO, None, DamageType.BURST, True
+0.550, 2274.723, 1.760, 1151.992, 135.640, 0.116, 0.632,2.226,Xiangling, Element.PYRO, None, DamageType.BURST, True
+0.930, 2833.064, 2.192, 1151.992, 135.640, 0.116, 0.632,2.226,Xiangling, Element.PYRO, None, DamageType.BURST, True
+2.133, 3207.207, 2.240, 1151.992, 135.640, 0.116, 0.632,2.466,Xiangling, Element.PYRO, None, DamageType.BURST, True
+2.850, 5362.552, 1.992, 1669.804, 39.640, 0.692, 1.294,1.939,Raiden, Element.ELECTRO, None, DamageType.SKILL, False
+3.333, 3207.207, 2.240, 1151.992, 135.640, 0.116, 0.632,2.466,Xiangling, Element.PYRO, None, DamageType.BURST, True
+4.533, 3207.207, 2.240, 1151.992, 135.640, 0.116, 0.632,2.466,Xiangling, Element.PYRO, None, DamageType.BURST, True
+4.623, 1921.734, 0.714, 1669.804, 39.640, 0.692, 1.294,1.939,Raiden, Element.ELECTRO, None, DamageType.SKILL, False

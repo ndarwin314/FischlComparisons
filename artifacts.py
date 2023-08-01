@@ -193,12 +193,12 @@ class Gilded(SetBase):
 
 class GT(SetBase):
     id = uuid()
-    buff = buff.DirectPermanentBuff(Stats({Attr.EDMG: 0.2}), id)
+    buff = buff.DirectPermanentBuff(Stats({Attr.EDMG: 0.25}), id)
     def two(self, character: "character.Character"):
         character.artifactStats[Attr.EDMG] += .2
 
     def four(self, character: "character.Character"):
-        character.artifactStats[Attr.EDMG] += .2
+        character.artifactStats[Attr.EDMG] += .25
         def add(character):
             character.add_buff(self.buff)
         def remove(character):

@@ -440,13 +440,13 @@ class Magic(Weapon):
     def __init__(self, refinement=1):
         # TODO make the buff thing dynamic you lazy cunt
         super().__init__(refinement,
-                         Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.ATKP: 0.09 + 0.03 * refinement}),
+                         Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.CADMG: 0.12 + 0.04 * refinement}),
                          "Magic")
 
     def equip(self, character):
         super().equip(character)
         stacks = -1
-        value = [0.06, 0.12, 0.3, 0.3]
+        value = [0.12, 0.24, 0.36, 0.36]
         for other in character.rotation.characters:
             if other.element == character.element:
                 stacks += 1

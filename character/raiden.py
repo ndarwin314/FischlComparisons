@@ -95,8 +95,7 @@ class Raiden(Character):
         #super().normal(stats, hit)
         t = self.time
         if self.infusion and self.time > self.burstExpiration:
-            self.infusion = False
-            self.resolve = 0
+            self.deactivate_burst()
 
         if self.infusion:
             timing = self.autoTiming
@@ -151,6 +150,7 @@ class Raiden(Character):
         self.burstExpiration = self.time + 115 / 60 + 7 + 3
         # stacks from 1
         self.resolve = min(self.resolve + 3 * 2, 60)
+        print(self.resolve)
         mv = self.burstMV + self.burstBonusMV * self.resolve
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
@@ -159,6 +159,9 @@ class Raiden(Character):
 
     def add_resolve(self, cost):
         # TODO: change multiplier to be correct for other talent levels
+        if self.constellation > 0:
+            if 1:
+                pass
         self.resolve = min(cost * 0.19 + self.resolve, 60)
 
     def get_stats(self, time=None):
@@ -171,6 +174,5 @@ class Raiden(Character):
         self.deactivate_burst()
 
     def deactivate_burst(self):
-        if not self.infusion:
-            self.infusion = False
-            self.resolve = 0
+        self.infusion = False
+        self.resolve = 0
