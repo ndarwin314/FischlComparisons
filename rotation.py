@@ -34,12 +34,12 @@ class Rotation:
         self.chargedAttackHook = []
         self.reactionHook = []
         self.swapHooks = []
+        self.actionList= action_list
         for char in self.characters:
             char.set_rotation(self)
             char.weapon.equip(char)
         self.onField = characters[0]
         self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
-        # dont ask
         self.enemyCount = enemy_count
         # scuffed
         self.events = [[] for _ in range(60 * 45)]
@@ -108,6 +108,31 @@ class Rotation:
                 action.do_action(self)
             self.frame += 1
 
+    def reset(self):
+        self.frame = 0
+        self.aura = Aura.NONE
+        self.summons = []
+        self.damageDict = {char: 0 for char in self.characters}
+        self.frame = 0
+        self.damageHooks = []
+        self.normalAttackHook = []
+        self.chargedAttackHook = []
+        self.reactionHook = []
+        self.swapHooks = []
+        self.onField = self.characters[0]
+        self.enemies = [enemy.Enemy() for _ in range(self.enemyCount)]
+        self.events = [[] for _ in range(60 * 45)]
+        for action in self.actionList:
+            self.add_event(action)
+        for char in self.characters:
+            char.reset()
+
+    def char_damage(self, char):
+        self.do_rotation()
+        damage = self.damageDict[char]
+        self.reset()
+        return damage
+
     def do_damage(self, char, mv, element, damage_type, time=None, aoe=False, reaction=None, debug=False, stats_ref=None, icd=None):
         time = self.time if time is None else time
         stats_ref = char.get_stats if stats_ref is None else stats_ref
@@ -120,11 +145,12 @@ class Rotation:
                 s.recall()
         summon.summon()
 
-    # TODO: this wasn't a method before ant it was fine so idk what is going on
+    # TODO: this wasn't a method before and it was fine so idk what is going on
     def recall_summon(self, summon):
         for s in self.summons:
             if type(summon) == type(s):
                 s.recall()
+        # why is recall summoning?
         summon.summon()
 
     def add_event(self, event):

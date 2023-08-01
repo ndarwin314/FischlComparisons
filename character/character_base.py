@@ -225,6 +225,9 @@ class Character(StatObject):
         self.distributedSubs = 20 - erSubs
 
 
+    def reset(self):
+        pass
+
     def set_rotation(self, r):
         self.rotation = r
         # TODO so i want to move artifact equipping to here but then that creates an issue with er requirements
@@ -329,8 +332,12 @@ class Character(StatObject):
         except ValueError:
             return False
 
-    def add_substat(self, sub: Attr, rolls: int):
+    def add_substat(self, sub: Attr, rolls: int=1):
         self.artifactStats[sub] += rolls * substatValues[sub]
+
+
+    def remove_substat(self, sub: Attr, rolls: int=1):
+        self.artifactStats[sub] -= rolls * substatValues[sub]
 
     def remove_buff(self, buff: buff.Buff):
         try:

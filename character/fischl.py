@@ -3,6 +3,17 @@ import attributes
 from character.character_base import*
 from weapons import AlleyHunter, Twilight
 import icd
+from collections import Counter
+
+class RemovingCounter(Counter):
+
+    def __setitem__(self, key, value):
+        if value == 0:
+            del key
+        else:
+            super().__setitem__(key, value)
+
+
 
 electroReactions = {Reactions.ELECTROSWIRL, Reactions.EC, Reactions.SUPERCONDUCT, Reactions.OVERLOAD, Reactions.AGGRAVATE}
 
@@ -78,7 +89,7 @@ class Fischl(Character):
 
     def __init__(self, auto_talent=9, skill_talent=9, burst_talent=9, constellation=6,
                  weapon=AlleyHunter(refinement=1), artifact_set=(artifacts.Glad(2), artifacts.TF(2)),
-                 er_requirement=1, aggravate=False):
+                 er_requirement=1, aggravate=False, auto_artis=True):
         super().__init__(Stats({Attr.HPBASE: 9189,
                                 Attr.ATKBASE: 244,
                                 Attr.DEFBASE: 594,
@@ -99,6 +110,8 @@ class Fischl(Character):
         self.autoMVS = [self.autoBase[0] * physMultiplier[self.autoTalent]]
         self.autoTiming = [[10, 18, 33, 41, 29]]
 
+        self.aggravate = aggravate
+
         # artifacts
         stats = self.get_stats(0)
         if 2 * stats[Attr.CR] > stats[Attr.CD]:
@@ -107,27 +120,60 @@ class Fischl(Character):
         else:
             self.artifactStats[Attr.CR] += 0.311
             self.crCap -= 2
-
-        erSubs = 20 - self.distributedSubs
-        self.artifactStats[Attr.ATKP] += 0.466
-        if erSubs < 2:
-            self.add_substat(Attr.CR, self.crCap)
-            self.add_substat(Attr.CD, self.cdCap)
-            if aggravate:
-                self.add_substat(Attr.EM, 2 - erSubs)
+        if auto_artis:
+            erSubs = 20 - self.distributedSubs
+            self.artifactStats[Attr.ATKP] += 0.466
+            if erSubs < 2:
+                self.add_substat(Attr.CR, self.crCap)
+                self.add_substat(Attr.CD, self.cdCap)
+                if aggravate:
+                    self.add_substat(Attr.EM, 2 - erSubs)
+                else:
+                    self.add_substat(Attr.ATKP, 2 - erSubs)
             else:
-                self.add_substat(Attr.ATKP, 2 - erSubs)
-        else:
-            crSubs = self.crCap - erSubs // 2 + 1
-            cdSubs = 20 - crSubs - erSubs
-            self.add_substat(Attr.CR, crSubs)
-            self.add_substat(Attr.CD, cdSubs)
+                crSubs = self.crCap - erSubs // 2 + 1
+                cdSubs = 20 - crSubs - erSubs
+                self.add_substat(Attr.CR, crSubs)
+                self.add_substat(Attr.CD, cdSubs)
 
 
     def c1(self, character, *args):
         # TODO: figure out the delay or something, also for a4 and c6
         if character == self:
             self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
+
+    def greedy_optim(self):
+        # goblet and circlet realistically cant be anything other than electro and crit so thats still automatic
+        rot = self.rotation
+        # choose sands
+        self.artifactStats[Attr.ATKP] += 0.466
+        if self.aggravate:
+            atk_damage = rot.char_damage(self)
+            self.artifactStats[Attr.ATKP] -= 0.466
+            self.artifactStats[Attr.EM] += 187
+            em_damage = rot.char_damage(self)
+            if atk_damage > em_damage:
+                self.artifactStats[Attr.ATKP] += 0.466
+                self.artifactStats[Attr.EM] -= 187
+
+        # greedy substat optimization
+        substat_limits = RemovingCounter({Attr.CR: self.crCap, Attr.CD: self.cdCap, Attr.ATKP: 10, Attr.EM: 10})
+        for i in range(self.distributedSubs):
+            bestSub = None
+            bestDamage = 0
+            for sub in substat_limits.values():
+                self.add_substat(sub)
+                damage = rot.char_damage(self)
+                self.remove_substat(sub)
+                if damage > bestDamage:
+                    bestDamage = damage
+                    bestSub = sub
+            self.add_substat(bestSub)
+            RemovingCounter[bestSub] -= 1
+
+
+
+
 
     def set_rotation(self, r):
         super().set_rotation(r)
