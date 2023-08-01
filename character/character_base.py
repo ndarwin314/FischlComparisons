@@ -226,7 +226,22 @@ class Character(StatObject):
 
 
     def reset(self):
-        pass
+        """self.infusion = False
+        self.normalICD = icd.ICD(2.5, 3)
+        # hooks
+        self.burstCastHook = []
+        self.burstHitHook = []
+        self.skillCastHook = []
+        self.skillHitHook = []
+        self.normalHitHook = []
+        self.chargedHitHook = []
+        self.damageHook = []
+        self.healingHook = []
+        self.reactionHook = []
+        self.swapOnHook = []
+        self.swapOffHook = []"""
+        self.buffs = []
+        self.directBuffs = []
 
     def set_rotation(self, r):
         self.rotation = r

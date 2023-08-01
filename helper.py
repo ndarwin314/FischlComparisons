@@ -161,6 +161,23 @@ def test3():
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
     return rot.damageDict[fish]
+
+@timer
+def test_greedy():
+    w = AlleyHunter(refinement=1)
+    length = Test["length"]
+    fish = character.Fischl(9, 9, 9, weapon=w, auto_artis=False)
+    rot = Rotation(Test["list"], characters=[
+        character.Raiden(artifact_set=[artifacts.Emblem(4)]),
+        character.Bennett(),
+        character.Kazuha(),
+        fish],
+                   length=length, logging="logRaifish.csv")
+    fish.greedy_optim()
+    rot.do_rotation()
+    print(rot.damage / length)
+    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
 @timer
 def gt_test():
     w = AlleyHunter(refinement=1)

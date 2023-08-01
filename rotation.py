@@ -126,6 +126,7 @@ class Rotation:
             self.add_event(action)
         for char in self.characters:
             char.reset()
+            char.set_rotation(self)
 
     def char_damage(self, char):
         self.do_rotation()

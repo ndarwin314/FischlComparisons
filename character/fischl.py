@@ -9,7 +9,7 @@ class RemovingCounter(Counter):
 
     def __setitem__(self, key, value):
         if value == 0:
-            del key
+            del self[key]
         else:
             super().__setitem__(key, value)
 
@@ -135,6 +135,7 @@ class Fischl(Character):
                 cdSubs = 20 - crSubs - erSubs
                 self.add_substat(Attr.CR, crSubs)
                 self.add_substat(Attr.CD, cdSubs)
+            print(self.get_stats())
 
 
     def c1(self, character, *args):
@@ -161,7 +162,7 @@ class Fischl(Character):
         for i in range(self.distributedSubs):
             bestSub = None
             bestDamage = 0
-            for sub in substat_limits.values():
+            for sub in substat_limits.keys():
                 self.add_substat(sub)
                 damage = rot.char_damage(self)
                 self.remove_substat(sub)
@@ -169,7 +170,9 @@ class Fischl(Character):
                     bestDamage = damage
                     bestSub = sub
             self.add_substat(bestSub)
-            RemovingCounter[bestSub] -= 1
+            substat_limits[bestSub] -= 1
+        print(self.crCap - substat_limits[Attr.CR], self.cdCap - substat_limits[Attr.CD], 10 - substat_limits[Attr.ATKP], 10 - substat_limits[Attr.EM])
+        print(self.get_stats())
 
 
 
