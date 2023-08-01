@@ -134,28 +134,13 @@ def test(con=6):
     return rot.damageDict[fish]
 
 @timer
-def test_gt(con=6):
-    w = PrototypeCrescent(refinement=5)
-    length = 21.3
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.GT(4)], constellation=con)
-    rot = Rotation(Taser["list"],
-                   characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(weapon=LionsRoar()),
-                               character.Sucrose(weapon=SacFrags())],
-                   length=length,
-                   enemy_count=2, logging="logTaser.csv")
-    rot.do_rotation()
-    print(rot.damage / length)
-    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
-    return rot.damageDict[fish]
-
-@timer
 def test2():
     rot = Rotation(Sukokomon["list"],
                    characters=[character.Sucrose(weapon=SacFrags()),
                                character.Kokomi(weapon=TTDS()),
                                fish:=character.Fischl(er_requirement=1.4, weapon=Magic(refinement=1)),
                                character.Xiangling(weapon=Kitain())],
-                   length=25.5)
+                   length=25.5, logging="logSuko.csv")
     rot.do_rotation()
     print(rot.damage / 25)
     print({k: round(v / 25, 2) for k,v in rot.damageDict.items()})
@@ -171,7 +156,7 @@ def test3():
         character.Bennett(),
         character.Kazuha(),
         fish],
-                   length=length, logging="raifish.csv")
+                   length=length, logging="logRaifish.csv")
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
@@ -204,7 +189,7 @@ def test4():
         character.Collei(artifact_set=[artifacts.Instructor(4)]),
         character.Kazuha(),
         fish],
-        length=length, logging="raifish.csv")
+        length=length, logging="logAggravate.csv")
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})

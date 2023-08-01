@@ -150,7 +150,6 @@ class Raiden(Character):
         self.burstExpiration = self.time + 115 / 60 + 7 + 3
         # stacks from 1
         self.resolve = min(self.resolve + 3 * 2, 60)
-        print(self.resolve)
         mv = self.burstMV + self.burstBonusMV * self.resolve
         # there is a problem wherein if a burst is used between this being called and the burst hit the resolve won't count
         # but that is impossible in game anyway so idc
