@@ -1,5 +1,6 @@
 import icd
 from character.character_base import*
+from actions import OtherAction
 from weapons import Catch, Grass
 from buff import DirectPermanentBuff
 
@@ -156,7 +157,7 @@ class Raiden(Character):
         self.do_damage(mv, self.element, DamageType.BURST, self.time + 1.63, aoe=True)
         self.rotation.add_event(actions.OtherAction(self, self.burstExpiration, lambda r: self.deactivate_burst()))
 
-    def add_resolve(self, cost):
+    def add_resolve(self, cost, *args):
         # TODO: change multiplier to be correct for other talent levels
         if self.constellation > 0:
             if 1:
@@ -174,4 +175,14 @@ class Raiden(Character):
 
     def deactivate_burst(self):
         self.infusion = False
+        self.resolve = 0
+
+    def set_rotation(self, r):
+        super().set_rotation(r)
+        for char in r.characters:
+            f = partial(self.add_resolve, char.energyCost)
+            char.burstCastHook.append(lambda c: OtherAction(self, self.time, f))
+
+    def reset(self):
+        super().reset()
         self.resolve = 0

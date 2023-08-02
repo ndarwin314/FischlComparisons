@@ -10,6 +10,27 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\log\logAggravate.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\log\logRaifish.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\log\logSuko.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\log\logTaser.csv">
           <value>
             <Attribute>

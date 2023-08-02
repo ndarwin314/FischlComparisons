@@ -12,6 +12,8 @@ import mv
 from uuid import uuid4 as uuid
 import artifacts
 import icd
+from functools import partial
+
 
 class ConType(Enum):
     SkillFirst = 0
