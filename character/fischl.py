@@ -158,9 +158,9 @@ class Fischl(Character):
 
         # greedy substat optimization
         substat_limits = RemovingCounter({Attr.CR: self.crCap, Attr.CD: self.cdCap, Attr.ATKP: 10, Attr.EM: 10})
+        bestSub = None
+        bestDamage = 0
         for i in range(self.distributedSubs):
-            bestSub = None
-            bestDamage = 0
             for sub in substat_limits.keys():
                 self.add_substat(sub)
                 damage = rot.char_damage(self)
@@ -175,6 +175,8 @@ class Fischl(Character):
               f"CD subs: {self.cdCap - substat_limits[Attr.CD]}",
               f"Atk% subs: {10 - substat_limits[Attr.ATKP]}",
               f"EM subs: {10 - substat_limits[Attr.EM]}", self.weapon, self.artifact_set, sep=", ")
+            print(self.get_stats())
+            print(bestDamage)
 
 
     def set_rotation(self, r):

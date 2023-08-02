@@ -244,16 +244,18 @@ class TheStringless(Weapon):
 class MouunsMoon(Weapon):
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}), "Moon Moon")
+        self.buff = Stats()
 
     def equip(self, character):
         super().equip(character)
-        cost = 270
         rot = character.rotation
         cost = 0
         for char in rot.characters:
             cost += char.energyCost
-        self.stats += Stats({Attr.QDMG: cost * (0.0009 + 0.0003 * self.refinement)})
+        self.buff = Stats({Attr.QDMG: cost * (0.0009 + 0.0003 * self.refinement)})
 
+    def get_stats(self, time):
+        return self.stats + self.buff
 
 class WindblumeOde(Weapon):
     def __init__(self, refinement=5):
@@ -445,6 +447,8 @@ class Magic(Weapon):
         super().__init__(refinement,
                          Stats({Attr.ATKBASE: 608, Attr.CD: 0.662, Attr.CADMG: 0.12 + 0.04 * refinement}),
                          "Magic")
+        self.stackValue = [0.12, 0.24, 0.36, 0.36]
+        self.buff = Stats()
 
     def equip(self, character):
         super().equip(character)
@@ -453,7 +457,11 @@ class Magic(Weapon):
         for other in character.rotation.characters:
             if other.element == character.element:
                 stacks += 1
-        self.stats += Stats({Attr.ATKP: value[stacks] + value[stacks] / 3 * self.refinement})
+        self.buff = Stats({Attr.ATKP: self.stackValue[stacks] +  self.stackValue[stacks] / 3 * self.refinement})
+
+
+    def get_stats(self, time):
+        return self.stats + self.buff
 class LionsRoar(Weapon):
     def __init__(self, refinement=5):
         super().__init__(refinement,

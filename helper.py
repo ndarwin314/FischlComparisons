@@ -28,7 +28,8 @@ def artifact_set_name(array):
         name.append(f"{str(s)}, ")
     return "".join(name)[:-2]
 
-def write(name, CSV, CSV2):
+def write(name, CSV, CSV2, auto):
+    name = name if auto else name + "Greedy"
     with open('results2/' + name + '.csv', 'w+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         for line in CSV:
@@ -40,7 +41,7 @@ def write(name, CSV, CSV2):
 
 def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto):
     personalCSV, teamCSV, temp = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto)
-    write(rot_name, personalCSV, teamCSV)
+    write(rot_name, personalCSV, teamCSV, auto)
 
 def create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto):
     refinementList = ["r1", "r2", "r3", "r4", "r5"]
@@ -74,14 +75,13 @@ def create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator,
                 del w
             personal.append(" ")
             team.append(" ")
-        print(weapon)
         personalCSV.append(personal)
         teamCSV.append(team)
     return personalCSV, teamCSV, damage/(len(weapon_list)*len(artifact_sets))
 
 
 @timer
-def aggravate(artifact_sets, weapon_list, auto=False):
+def aggravate(artifact_sets, weapon_list, auto=True):
     rot_creator = lambda fish:  Rotation(aggravateFish["list"],
                                characters=[character.Raiden(),
                                            character.Collei(artifact_set=[artifacts.Instructor(4)]),
@@ -95,7 +95,7 @@ def aggravate(artifact_sets, weapon_list, auto=False):
 
 
 @timer
-def taser(artifact_sets, weapon_list, auto=False):
+def taser(artifact_sets, weapon_list, auto=True):
     length = Taser["length"]
     fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
                                                           er_requirement=1.3, auto_artis=auto)
@@ -106,7 +106,7 @@ def taser(artifact_sets, weapon_list, auto=False):
     give_up("taser", artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto)
 
 timer
-def raifish(artifact_set, weapon_list, auto):
+def raifish(artifact_set, weapon_list, auto=True):
     length = Test["length"]
     rotation_creator = lambda fish: Rotation(Test["list"],
                                    characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
@@ -117,7 +117,7 @@ def raifish(artifact_set, weapon_list, auto):
 
 
 @timer
-def funny_soup_team(artifact_set, weapon_list, auto):
+def funny_soup_team(artifact_set, weapon_list, auto=True):
     length = Sukokomon["length"]
     fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
                                                         er_requirement=1.5, auto_artis=auto)

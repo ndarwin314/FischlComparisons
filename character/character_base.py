@@ -252,9 +252,6 @@ class Character(StatObject):
         # and its a whole deal
 
 
-    def add_crit(self, stats: Stats):
-        pass
-
     def normal(self, hits, **kwargs):
         # TODO ACTUAL SERIOUS THING, with current implementation multi hit things are fucked and i need to figure out
         # a good way to handle it that doesnt suck

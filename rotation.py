@@ -69,6 +69,7 @@ class Rotation:
         for char in self.characters:
             char.reset()
             char.set_rotation(self)
+            char.weapon.equip(char)
 
     def char_damage(self, char):
         self.do_rotation()
