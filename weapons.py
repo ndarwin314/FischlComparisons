@@ -22,6 +22,9 @@ class Weapon(ABC):
     def __repr__(self):
         return f"{self.name} Refinement {self.refinement}"
 
+    def __str__(self):
+        return self.__repr__()
+
     def damage_proc(self, stats, chances=1):
         return self.proc_scaling * stats.get_attack() * stats.get_crit_multiplier() * \
                (1 + stats[Attr.PHYSDMG] + stats[Attr.DMG]) * (1 - (1 - self.proc_chance) ** chances)

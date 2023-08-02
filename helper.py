@@ -38,32 +38,11 @@ def write(name, CSV, CSV2):
         for line in CSV2:
             writer.writerow(line)
 
-@timer
-def raifish(artifact_set, weapon_list):
-    length = Test["length"]
-    rotation_creator = lambda fish: Rotation(Test["list"],
-                                   characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
-                                   length=length)
-    give_up("raifish", artifact_set, weapon_list, length, rotation_creator, default_creator)
-
-
-@timer
-def funny_soup_team(artifact_set, weapon_list):
-    length = Sukokomon["length"]
-    fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, er_requirement=1.5)
-    rotation_creator = lambda fish: Rotation(Sukokomon["list"],
-                                             characters=[character.Sucrose(weapon=SacFrags()),
-                                                         character.Kokomi(weapon=TTDS()),
-                                                         fish,
-                                                         character.Xiangling(weapon=Kitain())],
-                                             length=25.5)
-    give_up("sukokomon", artifact_set, weapon_list, length, rotation_creator, fish_creator)
-
-def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fishl_creator):
-    personalCSV, teamCSV, temp = create_csvs(artifact_sets, weapon_list, length, rot_creator, fishl_creator)
+def give_up(rot_name, artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto):
+    personalCSV, teamCSV, temp = create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto)
     write(rot_name, personalCSV, teamCSV)
 
-def create_csvs(artifact_sets, weapon_list, length, rot_creator, fishl_creator):
+def create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto):
     refinementList = ["r1", "r2", "r3", "r4", "r5"]
     personalCSV = [["weapon"]]
     teamCSV = [["weapon"]]
@@ -81,42 +60,74 @@ def create_csvs(artifact_sets, weapon_list, length, rot_creator, fishl_creator):
         for artifact in artifact_sets:
             for r in range(1, 6):
                 w = weapon(refinement=r)
-                fish = fishl_creator(w, artifact)
+                fish = fischl_creator(w, artifact)
                 rot = rot_creator(fish)
+                if not auto:
+                    fish.greedy_optim(output=(r==1) and (artifact==[artifacts.TF(2), artifacts.Glad(2)]))
                 rot.do_rotation()
                 personal.append(rot.damageDict[fish] / length)
                 damage += rot.damageDict[fish] / length
                 team.append(rot.damage / length)
                 # print(rot.damageDict)
+                del rot
+                del fish
+                del w
             personal.append(" ")
             team.append(" ")
+        print(weapon)
         personalCSV.append(personal)
         teamCSV.append(team)
     return personalCSV, teamCSV, damage/(len(weapon_list)*len(artifact_sets))
 
 
 @timer
-def aggravate(artifact_sets, weapon_list):
+def aggravate(artifact_sets, weapon_list, auto=False):
     rot_creator = lambda fish:  Rotation(aggravateFish["list"],
                                characters=[character.Raiden(),
                                            character.Collei(artifact_set=[artifacts.Instructor(4)]),
                                            character.Kazuha(),
                                            fish],
                                length=36)
-    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, aggravate=1)
-    give_up("aggravateFish2", artifact_sets, weapon_list, 36, rot_creator, fischl_creator)
+    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
+                                                          aggravate=1, auto_artis=auto)
+    give_up("aggravateFish2", artifact_sets, weapon_list, 36, rot_creator, fischl_creator, auto)
 
 
 
 @timer
-def taser(artifact_sets, weapon_list):
+def taser(artifact_sets, weapon_list, auto=False):
     length = Taser["length"]
-    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact, er_requirement=1.3)
+    fischl_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
+                                                          er_requirement=1.3, auto_artis=auto)
     rot_creator = lambda fish: Rotation(Taser["list"],
                                characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(), character.Sucrose(weapon=SacFrags())],
                                length=length,
                                enemy_count=2)
-    give_up("taser", artifact_sets, weapon_list, length, rot_creator, fischl_creator)
+    give_up("taser", artifact_sets, weapon_list, length, rot_creator, fischl_creator, auto)
+
+timer
+def raifish(artifact_set, weapon_list, auto):
+    length = Test["length"]
+    rotation_creator = lambda fish: Rotation(Test["list"],
+                                   characters=[character.Raiden(), character.Bennett(), character.Kazuha(), fish],
+                                   length=length)
+    fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
+                                                         auto_artis=auto)
+    give_up("raifish", artifact_set, weapon_list, length, rotation_creator, fish_creator, auto)
+
+
+@timer
+def funny_soup_team(artifact_set, weapon_list, auto):
+    length = Sukokomon["length"]
+    fish_creator = lambda w, artifact: character.Fischl(9, 9, 9, constellation=6, weapon=w, artifact_set=artifact,
+                                                        er_requirement=1.5, auto_artis=auto)
+    rotation_creator = lambda fish: Rotation(Sukokomon["list"],
+                                             characters=[character.Sucrose(weapon=SacFrags()),
+                                                         character.Kokomi(weapon=TTDS()),
+                                                         fish,
+                                                         character.Xiangling(weapon=Kitain())],
+                                             length=25.5)
+    give_up("sukokomon", artifact_set, weapon_list, length, rotation_creator, fish_creator, auto)
 
 @timer
 def test(con=6):
@@ -163,22 +174,6 @@ def test3():
     return rot.damageDict[fish]
 
 @timer
-def test_greedy():
-    w = AlleyHunter(refinement=1)
-    length = Test["length"]
-    fish = character.Fischl(9, 9, 9, weapon=w, auto_artis=False)
-    rot = Rotation(Test["list"], characters=[
-        character.Raiden(artifact_set=[artifacts.Emblem(4)]),
-        character.Bennett(),
-        character.Kazuha(),
-        fish],
-                   length=length, logging="logRaifish.csv")
-    fish.greedy_optim()
-    rot.do_rotation()
-    print(rot.damage / length)
-    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
-    return rot.damageDict[fish]
-@timer
 def gt_test():
     w = AlleyHunter(refinement=1)
     length = Test["length"]
@@ -211,6 +206,24 @@ def test4():
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})
     return rot.damageDict[fish]
+
+@timer
+def test4():
+    w = TheStringless(refinement=3)
+    length = aggravateFish["length"]
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)])
+    rot = Rotation(aggravateFish["list"], characters=[
+        character.Raiden(),
+        character.Collei(artifact_set=[artifacts.Instructor(4)]),
+        character.Kazuha(),
+        fish],
+        length=length, logging="logAggravate.csv")
+    fish.greedy_optim()
+    rot.do_rotation()
+    print(rot.damage / length)
+    print({k: round(v/length,2) for k,v in rot.damageDict.items()})
+    return rot.damageDict[fish]
+
 
 @timer
 def con_comparison(artifact_sets, weapon_list):

@@ -25,27 +25,10 @@ class Rotation:
         else:
             self.logging = True
             self.file = "log/" + logging
+        self.actionList = action_list
         self.characters = characters
-        self.aura = Aura.NONE # TODO: fuck me
-        self.summons = []
-        self.damageDict = {char: 0 for char in self.characters}
-        self.frame = 0
-        self.damageHooks = []
-        self.normalAttackHook = []
-        self.chargedAttackHook = []
-        self.reactionHook = []
-        self.swapHooks = []
-        self.actionList= action_list
-        for char in self.characters:
-            char.set_rotation(self)
-            char.weapon.equip(char)
-        self.onField = characters[0]
-        self.enemies = [enemy.Enemy() for _ in range(enemy_count)]
         self.enemyCount = enemy_count
-        # scuffed
-        self.events = [[] for _ in range(60 * 45)]
-        for action in action_list:
-            self.add_event(action)
+        self.reset()
 
     @property
     def time(self):

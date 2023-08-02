@@ -54,7 +54,13 @@ class SetBase(ABC):
                 self.four(char)
 
     def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
         return f"{self.count} {self.__class__.__name__}"
+
+    def __eq__(self, other):
+        return self.count == other.count and type(self)==type(other)
 
 
 class Glad(SetBase):

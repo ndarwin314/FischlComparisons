@@ -142,7 +142,7 @@ class Fischl(Character):
         if character == self:
             self.do_damage(0.22, Element.PHYSICAL, damage_type=DamageType.NORMAL)
 
-    def greedy_optim(self):
+    def greedy_optim(self, output=False):
         # goblet and circlet realistically cant be anything other than electro and crit so thats still automatic
         rot = self.rotation
         # choose sands
@@ -170,10 +170,11 @@ class Fischl(Character):
                     bestSub = sub
             self.add_substat(bestSub)
             substat_limits[bestSub] -= 1
-        print(f"CR subs: {self.crCap - substat_limits[Attr.CR]}",
+        if output:
+            print(f"CR subs: {self.crCap - substat_limits[Attr.CR]}",
               f"CD subs: {self.cdCap - substat_limits[Attr.CD]}",
               f"Atk% subs: {10 - substat_limits[Attr.ATKP]}",
-              f"EM subs: {10 - substat_limits[Attr.EM]}", self.weapon)
+              f"EM subs: {10 - substat_limits[Attr.EM]}", self.weapon, self.artifact_set, sep=", ")
 
 
     def set_rotation(self, r):
