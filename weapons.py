@@ -44,7 +44,7 @@ class PolarStar(Weapon):
         stack = 0.075 + 0.025 * refinement
         self.stackValue = [i * stack for i in range(5)]
         self.stackValue[4] += stack * 0.8
-        self.stacks = None
+        self.stacks = {"normal": None, "charged": None, "skill": None, "burst": None}
 
     """def set_stacks(self, stacks):
         self._polarStacks = stacks
@@ -82,7 +82,7 @@ class ThunderingPulse(Weapon):
                          "Pulse")
         # assume
         self.stackValue = [0, 0.09 + 0.03 * refinement, 0.18 + 0.06 * refinement, 0.3 + 0.1 * refinement]
-        self.stacks = None
+        self.stacks = {"normal": None, "skill": None, "energy": math.inf}
 
     def normal_hit(self, rot):
         self.stacks["normal"] = rot.time + 5
@@ -380,6 +380,7 @@ class TTDS(Weapon):
     buffID = uuid()
     # TODO: TTDS is passed as the default weapon to kokomi, however all kokomi get the same ttds meaning only the first rotation gets the buff
     # workaround is to manually pass the weapon param, however this is cringe, come up with a good solution
+    # i think the change to equip fixes this
     def __init__(self, refinement=5):
         super().__init__(refinement, Stats({Attr.ATKBASE: 401, Attr.HPP: 0.352}), "Thrilling Tales of Dragon Slayers")
         self.lastProc = -20
