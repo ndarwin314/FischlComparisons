@@ -439,7 +439,7 @@ class Ibis(Weapon):
         super(Ibis, self).__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}),
                                    "Ibis Piercer")
         self.emBuff = 30 + 10 * refinement
-        self.stackExpirations = None
+        self.stackExpirations = [-math.inf, -math.inf]
 
     def hook(self, char):
         self.stackExpirations[0] = self.stackExpirations[1]

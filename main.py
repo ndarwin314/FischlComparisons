@@ -26,9 +26,9 @@ artifactSets = [
 
 if __name__ == '__main__':
     #test_greedy()
-    aggravate(artifactSets, weapons, False)
+    #aggravate(artifactSets, weapons, False)
     #raifish(artifactSets, weapons, False)
-    #funny_soup_team(artifactSets, weapons, False)
+    funny_soup_team(artifactSets, weapons, False)
     #taser(artifactSets, weapons, False)
     """t = True
     if t:
