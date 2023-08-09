@@ -33,6 +33,7 @@ class Keqing(Character):
         self.stiletto = False
 
         self.burstICD = icd.ICD(2.5, 3)
+        self.icdList.append(self.burstICD)
 
         self.a4id = uuid()
 

@@ -18,6 +18,7 @@ class Collei(Character):
         self.skillMV = Collei.skillBase * scalingMultiplier[self.skillTalent]
         self.burstMV = Collei.burstBase * scalingMultiplier[self.burstTalent]
         self.burstICD = icd.ICD(3, 6)
+        self.icdList.append(self.burstICD)
         self.artifactStats[Attr.ATKP] += 0.466
         self.artifactStats[Attr.CR] += 0.311
         self.add_substat(Attr.CR, self.crCap)

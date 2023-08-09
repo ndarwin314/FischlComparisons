@@ -85,5 +85,6 @@ class Kazuha(Character):
             dmgBonus = Stats({attributes.elementDict[element]: self.get_stats(self.time)[Attr.EM] * 0.0004})
             self.rotation.add_event(actions.Buff(self, self.time, buff.Buff(dmgBonus, self.time, 8, self.buffIDS[element])))
 
+    # why?
     def do_damage(self, mv, element, damage_type, time=None, aoe=False, debug=False, stats_ref=None, reaction=None, icd=None):
         super(Kazuha, self).do_damage(mv, element, damage_type, time, aoe, debug, stats_ref, reaction, icd)

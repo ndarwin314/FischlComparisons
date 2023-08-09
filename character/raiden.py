@@ -29,8 +29,8 @@ class NotOz(Summon):
             test = DirectPermanentBuff(Stats({Attr.QDMG: 0.003 * char.energyCost}), self.buffID)
             char.add_buff(test)
 
-    def recall(self):
-        super().recall()
+    def recall(self, *args):
+        super().recall(args)
         self.rotation.damageHooks.remove(self.coordinated_attack)
         for char in self.rotation.characters:
             char.remove_buff(DirectPermanentBuff(Stats(), self.buffID))
@@ -57,7 +57,7 @@ class Raiden(Character):
                          weapon, artifact_set, ConType.BurstFirst, 90, er_req=1)
         # TODO: add stuff for cons if i care
         self.skillICD = icd.ICD(2.5, 3)
-        self.normalICD = icd.ICD(2.5, 3)
+        self.icdList.append(self.skillICD)
 
         self.resolve = 0
         self.burstExpiration = 0

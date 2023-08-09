@@ -35,6 +35,9 @@ class SetCount:
     def __repr__(self):
         return f"{self.count} {self.set}"
 
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and self.count == other.count
+
 class SetBase(ABC):
     __slots__ = ["count"]
     def __init__(self, count):

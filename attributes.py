@@ -185,8 +185,7 @@ class Stats:
             case DamageType.BURST:
                 cr += self[Attr.QCR]
                 cd += self[Attr.QCD]
-            case None:
-                pass
+
         return 1 + cd * max(min(cr, 1), 0)
 
     @cache

@@ -19,8 +19,8 @@ class Xiangling(Character):
             super().summon()
             self.stats = self.statsRef()
 
-        def recall(self):
-            super().recall()
+        def recall(self, *args):
+            super().recall(args)
 
         def on_frame(self):
             if self.time >= self.lastHit + 1.2:
@@ -42,8 +42,8 @@ class Xiangling(Character):
             super().summon()
             self.stats = self.statsRef()
 
-        def recall(self):
-            super().recall()
+        def recall(self, *args):
+            super().recall(args)
 
         def on_frame(self):
             # TODO: chili

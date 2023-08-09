@@ -65,8 +65,8 @@ class Oz(Summon):
             self.rotation.normalAttackHook.remove(self.summoner.c1)
         self.rotation.reactionHook.append(self.a4)
 
-    def recall(self):
-        super().recall()
+    def recall(self, *args):
+        super().recall(args)
         if self.con >= 6:
             self.rotation.normalAttackHook.remove(self.c6)
         if self.con >= 1:
@@ -100,6 +100,7 @@ class Fischl(Character):
                          Element.ELECTRO, auto_talent, skill_talent, burst_talent,
                          constellation, weapon, artifact_set, ConType.SkillFirst, 60, er_requirement*(0.93 if constellation==6 else 1))
         self.ozICD = icd.ICD(5, 4)
+        self.icdList.append(self.ozICD)
 
         self.turretHits = 10 if constellation < 6 else 12
         self.skillTurret = self.skillTurretBase * scalingMultiplier[self.skillTalent]
@@ -155,6 +156,16 @@ class Fischl(Character):
             if atk_damage > em_damage:
                 self.artifactStats[Attr.ATKP] += 0.466
                 self.artifactStats[Attr.EM] -= 187
+        if self.artifact_set == [artifacts.GT(4)]:
+            electro_damage =  rot.char_damage(self)
+            self.artifactStats[Attr.ELECTRODMG] -= 0.466
+            self.artifactStats[Attr.ATKP] += 0.466
+            atk_damage = rot.char_damage(self)
+            if electro_damage > atk_damage:
+                self.artifactStats[Attr.ELECTRODMG] += 0.466
+                self.artifactStats[Attr.ATKP] -= 0.466
+            else:
+                print("cringe")
 
         # greedy substat optimization
         substat_limits = RemovingCounter({Attr.CR: self.crCap, Attr.CD: self.cdCap, Attr.ATKP: 10, Attr.EM: 10})

@@ -12,6 +12,10 @@ class ICD:
             return True
         return False
 
+    def reset(self):
+        self.lastHitTime = -10
+        self.hitCounter = -1
+
 class WTF(ICD):
     def __init__(self):
         super(WTF, self).__init__(0,0)

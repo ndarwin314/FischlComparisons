@@ -27,8 +27,8 @@ class Kokomi(Character):
             self.summoner.jellyfishActive = True
             self.summoner.jelly = self
 
-        def recall(self):
-            super().recall()
+        def recall(self, *args):
+            super().recall(args)
             self.summoner.jellyfishActive = False
             self.summoner.jelly = None
 

@@ -22,8 +22,8 @@ class Yelan(Character):
             self.rotation.normalAttackHook.append(self.sword_wave)
             self.summoner.BurstActive = True
 
-        def recall(self):
-            super().recall()
+        def recall(self, *args):
+            super().recall(args)
             self.rotation.normalAttackHook.remove(self.sword_wave)
             self.summoner.BurstActive = False
 

@@ -64,7 +64,7 @@ def create_csvs(artifact_sets, weapon_list, length, rot_creator, fischl_creator,
                 fish = fischl_creator(w, artifact)
                 rot = rot_creator(fish)
                 if not auto:
-                    fish.greedy_optim(output=(r==1) and (artifact==[artifacts.TF(2), artifacts.Glad(2)]))
+                    fish.greedy_optim(output=(r==1) and (artifact==[artifacts.GT(4)]))
                 rot.do_rotation()
                 personal.append(rot.damageDict[fish] / length)
                 damage += rot.damageDict[fish] / length
@@ -130,15 +130,18 @@ def funny_soup_team(artifact_set, weapon_list, auto=True):
     give_up("sukokomon", artifact_set, weapon_list, length, rotation_creator, fish_creator, auto)
 
 @timer
-def test(con=6):
+def test(con=6, auto=False):
     w = PrototypeCrescent(refinement=5)
     length = 21.3
-    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)], constellation=con)
+    fish = character.Fischl(9, 9, 9, weapon=w, artifact_set=[artifacts.TF(2), artifacts.Glad(2)], constellation=con, auto_artis=auto)
+    name = "logTaser" + ("Greedy" if not auto else "") + ".csv"
     rot = Rotation(Taser["list"],
                    characters=[character.Beidou(weapon=Akuoumaru()), fish, character.Xingqiu(),
                                character.Sucrose(weapon=SacFrags())],
                    length=length,
-                   enemy_count=2, logging="logTaser.csv")
+                   enemy_count=2, logging=name)
+    if not auto:
+        fish.greedy_optim(True)
     rot.do_rotation()
     print(rot.damage / length)
     print({k: round(v/length,2) for k,v in rot.damageDict.items()})

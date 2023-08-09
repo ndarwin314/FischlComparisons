@@ -165,6 +165,7 @@ class Character(StatObject):
         self.infusion = False
 
         self.normalICD = icd.ICD(2.5, 3)
+        self.icdList = [self.normalICD]
 
         # hooks
         self.burstCastHook = []
@@ -244,6 +245,8 @@ class Character(StatObject):
         self.swapOffHook = []"""
         self.buffs = []
         self.directBuffs = []
+        for icd in self.icdList:
+            icd.reset()
 
     def set_rotation(self, r):
         self.rotation = r

@@ -44,7 +44,7 @@ class PolarStar(Weapon):
         stack = 0.075 + 0.025 * refinement
         self.stackValue = [i * stack for i in range(5)]
         self.stackValue[4] += stack * 0.8
-        self.stacks = {"normal": None, "charged": None, "skill": None, "burst": None}
+        self.stacks = None
 
     """def set_stacks(self, stacks):
         self._polarStacks = stacks
@@ -67,6 +67,7 @@ class PolarStar(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.stacks = {"normal": None, "charged": None, "skill": None, "burst": None}
         character.normalHitHook.append(lambda t: self.stack(t, "normal"))
         character.chargedHitHook.append(lambda t: self.stack(t, "charged"))
         character.skillHitHook.append(lambda t: self.stack(t, "skill"))
@@ -81,7 +82,7 @@ class ThunderingPulse(Weapon):
                          "Pulse")
         # assume
         self.stackValue = [0, 0.09 + 0.03 * refinement, 0.18 + 0.06 * refinement, 0.3 + 0.1 * refinement]
-        self.stacks = {"normal": None, "skill": None, "energy": math.inf}
+        self.stacks = None
 
     def normal_hit(self, rot):
         self.stacks["normal"] = rot.time + 5
@@ -103,6 +104,7 @@ class ThunderingPulse(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.stacks = {"normal": None, "skill": None, "energy": math.inf}
         character.skillCastHook.append(lambda c: OtherAction(character, c.time, lambda r: c.weapon.skill_cast(r)))
         character.normalHitHook.append(self.normal_hit)
 
@@ -136,6 +138,8 @@ class ElegyForTheEnd(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.sigils = 0
+        self.lastHit = -1
         character.skillHitHook.append(self.skill_burst_hit)
         character.burstHitHook.append(self.skill_burst_hit)
 
@@ -158,6 +162,7 @@ class SkywardHarp(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.lastHit = -5
         character.damageHook.append(self.on_damage)
 
 
@@ -196,6 +201,7 @@ class PrototypeCrescent(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.passiveExpiration = -1
         character.chargedHitHook.append(self.charged_hit)
         #character.normalHitHook.append(self.charged_hit)
 
@@ -217,6 +223,7 @@ class TheViridescentHunt(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.lastHit = -10
         character.damageHook.append(self.on_damage)
 
 
@@ -273,6 +280,7 @@ class WindblumeOde(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.buffExpiration = -1
         character.skillCastHook.append(lambda c: OtherAction(character, c.time, lambda r: c.weapon.skill_cast(r)))
 
 
@@ -319,6 +327,8 @@ class Twilight(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.lastChange = -10
+        self.state = 0
         character.damageHook.append(self.damage_hook)
 
     def get_stats(self, time):
@@ -382,6 +392,7 @@ class TTDS(Weapon):
 
     def equip(self, character):
         super().equip(character)
+        self.lastProc = -20
         character.rotation.swapHooks.append(self.on_swap)
         
 class SacFrags(Weapon):
@@ -395,15 +406,17 @@ class FavSword(Weapon):
 class Akuoumaru(Weapon):
     def __init__(self, refinement = 1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413}), "Akuoumaru")
+        self.buff = 0
 
     def equip(self, character):
         super(Akuoumaru, self).equip(character)
-        b = 0
         for c in character.rotation.characters:
-            b += c.energyCost
-        b *= 0.0009 + 0.0003*self.refinement
-        b = min(b, 0.3+0.1*self.refinement)
-        character.artifactStats += Stats({Attr.QDMG: b})
+            self.buff += c.energyCost
+        self.buff *= 0.0009 + 0.0003*self.refinement
+        self.buff = min(self.buff, 0.3+0.1*self.refinement)
+
+    def get_stats(self, time):
+        return self.stats + Stats({Attr.QDMG: self.buff})
         
 class Homa(Weapon):
     def __init__(self, refinement=1):
@@ -412,7 +425,9 @@ class Homa(Weapon):
     def equip(self, character):
         super(Homa, self).equip(character)
         # always under half kekw
-        character.artifactStats += Stats({Attr.ATK: 0.018*character.get_stats().get_hp()})
+
+    def get_stats(self, time):
+        return self.stats + Stats({Attr.ATK: 0.018*self.holder.get_stats().get_hp()})
 
 class Hunter(Weapon):
     def __init__(self, refinement=1):
@@ -423,13 +438,14 @@ class Ibis(Weapon):
         super(Ibis, self).__init__(refinement, Stats({Attr.ATKBASE: 565, Attr.ATKP: 0.276}),
                                    "Ibis Piercer")
         self.emBuff = 30 + 10 * refinement
-        self.stackExpirations = [-math.inf, -math.inf]
+        self.stackExpirations = None
 
     def hook(self, char):
         self.stackExpirations[0] = self.stackExpirations[1]
         self.stackExpirations[1] = char.time + 6
 
     def equip(self, character):
+        self.stackExpirations = [-math.inf, -math.inf]
         character.chargedHitHook.append(self.hook)
 
     def get_stats(self, time):
@@ -453,7 +469,6 @@ class Magic(Weapon):
     def equip(self, character):
         super().equip(character)
         stacks = -1
-        value = [0.12, 0.24, 0.36, 0.36]
         for other in character.rotation.characters:
             if other.element == character.element:
                 stacks += 1
@@ -462,6 +477,7 @@ class Magic(Weapon):
 
     def get_stats(self, time):
         return self.stats + self.buff
+
 class LionsRoar(Weapon):
     def __init__(self, refinement=5):
         super().__init__(refinement,

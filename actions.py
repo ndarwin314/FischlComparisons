@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from attributes import DamageType, Attr, Reactions, Element, Aura
 from icd import ICD
+import math
 import logging
 
 class Action(ABC):
@@ -8,7 +9,8 @@ class Action(ABC):
 
     def __init__(self, character, time):
         self.character: "Character" = character
-        self.time: int = time
+        self.time: float = time
+        self.frame = math.ceil(60 * time)
         try:
             self.logging = character.rotation.logging
         except AttributeError:

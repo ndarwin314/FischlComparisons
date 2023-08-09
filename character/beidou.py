@@ -9,7 +9,7 @@ class Stormbreaker(Summon):
         self.lastHit = start - 1
         self.statsRef = stats_ref
         self.aoeMod = 1 if self.rotation.enemyCount == 1 else self.summoner.bounces
-        self.icd = icd.ICD(2.5, 3)
+        self.icd = who_summoned.icdList[1]
         self.count = 0
 
     def on_hit(self, character):
@@ -28,10 +28,12 @@ class Stormbreaker(Summon):
             c.normalHitHook.append(self.on_hit)
             c.chargedHitHook.append(self.on_hit)
 
-    def recall(self):
-        super().recall()
+    def recall(self, *args):
+        super().recall(args)
         for c in self.rotation.characters:
             c.normalHitHook.remove(self.on_hit)
+
+
 
 class Beidou(Character):
 
@@ -55,6 +57,7 @@ class Beidou(Character):
         self.skillMVS = self.skillBase * scalingMultiplier[self.skillTalent]
         self.burstMVS = self.burstBase * scalingMultiplier[self.burstTalent]
         self.bounces = 3 if self.constellation < 2 else 5
+        self.icdList.append(icd.ICD(2.5, 3))
 
         self.artifactStats[Attr.ATKP] += 0.466
         erSubs = 20 - self.distributedSubs

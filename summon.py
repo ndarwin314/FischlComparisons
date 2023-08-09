@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from statObject import StatObject
+from actions import OtherAction
 import math
 
 class Summon(StatObject):
@@ -10,6 +11,7 @@ class Summon(StatObject):
         self.endTime = math.ceil(60*(start + duration))
         self.start = start
         self.duration = duration
+        self.recallEvent = None
 
     def on_frame(self):
         pass
@@ -20,10 +22,16 @@ class Summon(StatObject):
             if type(self) == type(s):
                 self.rotation.summons.remove(s)
         self.rotation.summons.append(self)
+        self.rotation.add_event(temp:=OtherAction(self.summoner, self.start+self.duration, self.recall))
+        self.recallEvent = temp
 
     @abstractmethod
-    def recall(self):
-        self.rotation.summons.remove(self)
+    def recall(self, *args):
+        try:
+            self.rotation.summons.remove(self)
+            self.rotation.events.events[self.endTime].remove(self.recallEvent)
+        except ValueError:
+            print(self.time)
 
     def get_stats(self):
         return self.stats

@@ -14,6 +14,42 @@ class AutoSequence:
         self.normal = normal
         self.charged = charged
 
+class Events:
+    def __init__(self, action_list, length, rotation):
+        self.frame = 0
+        self.events = [[] for _ in range(60 * 45)]
+        self.actionList = action_list
+        self.length = length
+        self.rotation = rotation
+        for action in action_list:
+            self.add_event(action)
+
+    @property
+    def time(self):
+        return self.frame / 60
+
+    def add_event(self, event):
+        try:
+            self.events[event.frame].append(event)
+        except IndexError:
+            pass
+
+    def reset(self):
+        self.frame = 0
+        self.events = [[] for _ in range(math.ceil((self.length+1) * 60))]
+        for action in self.actionList:
+            self.add_event(action)
+
+    def execute(self):
+        for frame in self.events:
+            for summon in self.rotation.summons:
+                summon.on_frame()
+            for action in frame:
+                action.do_action(self.rotation)
+            self.frame += 1
+
+
+
 icd0 = icd.ICD(0,1)
 class Rotation:
 
@@ -25,37 +61,26 @@ class Rotation:
         else:
             self.logging = True
             self.file = "log/" + logging
-        self.actionList = action_list
+        self.events = Events(action_list, length, self)
         self.characters = characters
         self.enemyCount = enemy_count
         self.reset()
 
     @property
     def time(self):
-        return self.frame / 60
+        return self.events.time
 
     def do_rotation(self):
         if self.logging:
             with open(self.file, "w+") as f:
                 f.write("time, damage, mv, attack, em, cr, cd, damage bonus, character, element, reaction, damage type, aoe\n")
-        frameEnd = self.length * 60
-        for frame in self.events:
-            if self.frame >= frameEnd:
-                return
-            for summon in self.summons:
-                if self.frame == summon.endTime:
-                    summon.recall()
-                summon.on_frame()
-            for action in frame:
-                action.do_action(self)
-            self.frame += 1
+        self.events.execute()
 
     def reset(self):
         self.frame = 0
         self.aura = Aura.NONE
         self.summons = []
         self.damageDict = {char: 0 for char in self.characters}
-        self.frame = 0
         self.damageHooks = []
         self.normalAttackHook = []
         self.chargedAttackHook = []
@@ -63,9 +88,7 @@ class Rotation:
         self.swapHooks = []
         self.onField = self.characters[0]
         self.enemies = [enemy.Enemy() for _ in range(self.enemyCount)]
-        self.events = [[] for _ in range(60 * 45)]
-        for action in self.actionList:
-            self.add_event(action)
+        self.events.reset()
         for char in self.characters:
             char.reset()
             char.set_rotation(self)
@@ -89,16 +112,16 @@ class Rotation:
                 s.recall()
         summon.summon()
 
-    # TODO: this wasn't a method before and it was fine so idk what is going on
+    """# TODO: this wasn't a method before and it was fine so idk what is going on
     def recall_summon(self, summon):
         for s in self.summons:
             if type(summon) == type(s):
                 s.recall()
         # why is recall summoning?
-        summon.summon()
+        summon.summon()"""
 
     def add_event(self, event):
-        self.events[math.floor(event.time * 60)].append(event)
+        self.events.add_event(event)
 
     def swap(self, character):
         self.onField.swap_off()
