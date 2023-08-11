@@ -302,13 +302,17 @@ class Hamayumi(Weapon):
 
 
 class MitternachtsWaltz(Weapon):
+
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.PHYSDMG: 0.517}), "Waltz")
-        self.passive_active = False
+        self.skillBuffID = uuid()
 
-    def set_passive(self, value):
-        self.passive_active = value
-        self.conditionalStats[Attr.EDMG] = (0.15 + 0.05 * self.refinement) * value
+    def normal_attack(self, *args):
+        self.holder.add_buff(buff.DirectBuff(Stats({Attr.EDMG: 0.2}), self.holder.time, 5, self.skillBuffID))
+
+    def equip(self, character):
+        super().equip(character)
+        character.normalHitHook.append(self.normal_attack)
 
 
 class Twilight(Weapon):
