@@ -175,14 +175,14 @@ class Water(Weapon):
 
 class Rust(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461,
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413,
                                             Attr.NADMG: 0.3 * 0.1 * refinement, Attr.CADMG: -0.1}), "Rust")
 
 
 class PrototypeCrescent(Weapon):
 
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461}), "Crescent")
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413}), "Crescent")
         self.weakpointStats = Stats({Attr.ATKP: 0.27 + 0.09 * self.refinement})
         self.passiveExpiration = -1
 
@@ -297,7 +297,7 @@ class FavoniusWarbow(Weapon):
 class Hamayumi(Weapon):
     def __init__(self, refinement=1):
         super().__init__(refinement, Stats({Attr.ATKBASE: 454, Attr.ATKP: 0.551,
-                                            Attr.NADMG: 0.12 * refinement * 5, Attr.CADMG: 0.09 + 0.03 * refinement}),
+                                            Attr.NADMG: 0.12 + 0.04 * refinement * 5, Attr.CADMG: 0.09 + 0.03 * refinement}),
                          "Hamayumi")
 
 
@@ -498,7 +498,7 @@ class Scion(Weapon):
 
 class Song(Weapon):
     def __init__(self, refinement=1):
-        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.461}, "Song"))
+        super().__init__(refinement, Stats({Attr.ATKBASE: 510, Attr.ATKP: 0.413}, "Song"))
 
     def equip(self, character):
         super().equip()
